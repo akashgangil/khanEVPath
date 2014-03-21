@@ -30,7 +30,7 @@ void* print_message(void *m){
 static int
 simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
-    simple_rec_ptr event = vevent;
+    simple_rec_ptr event = (_simple_rec*)vevent;
     printf("Iasdasdf got %s\n", event->file_path);
     
     //MAGIC NUMBER

@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <stdlib.h>
-
+#include <glob.h>
 #include <pthread.h>
 
 /* this file is evpath/examples/triv.c */
 #include "evpath.h"
+
+using namespace std;
 
 typedef struct _simple_rec {
     char* file_path;
@@ -47,8 +50,40 @@ int main(int argc, char **argv)
     EVassoc_bridge_action(cm, stone, contact_list, remote_stone);
 
     source = EVcreate_submit_handle(cm, stone, simple_format_list);
-    data.integer_field = 318;
-    EVsubmit(source, &data, NULL);
+
+    string pattern = "/net/hu21/agangil3/data" + "/*";
+
+    for(int count = 18; count > 0; count--) {
+      
+        glob((pattern +".im7").c_str(), 0, NULL, &files);        
+
+        for(int j=0; j<files.gl_pathc; j++) {
+              string file_path = files.gl_pathv[j];
+              printf("*** FILE Path *** %s\n", file_path.c_str());
+              
+              size_t path_len = file_path.size() + 1;
+              data -> file_path = malloc(sizeof(char) * path_len);
+              strncpy(data -> file_path, file_path, path_len); 
+
+              FILE *f = fopen("start.c", "rb");
+              fseek(f, 0, SEEK_END);
+              size_t fsize = ftell(f);
+              fseek(f, 0, SEEK_SET);
+
+              data -> file_buf = malloc(fsize + 1);
+              fread(data -> file_buf, fsize, 1, f);
+              fclose(f);
+
+              data -> file_buf[fsize] = 0;
+
+              EVsubmit(source, &data, NULL);
+
+        }
+      
+        pattern += "/*";
+
+    }
+
 }
 
 

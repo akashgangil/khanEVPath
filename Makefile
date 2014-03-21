@@ -5,8 +5,11 @@ LIBDIRS=-L/net/hp41/chaos/rhe6-64-icc/atl/lib -L/net/hp41/chaos/rhe6-64-icc/evpa
 LIBS=-latl -levpath -lffs -ldill -lcercs_env -lpthread
 
 net_recv: 
-	$(CCX) $(LIBDIRS) -o recv net_recv.c $(LIBS)
+	$(CCX) $(LIBDIRS) -o recv net_recv.cpp $(LIBS)
+
+net_send:
+	$(CCX) $(LIBDIRS) -o send net_send.cpp $(LIBS)
 
 all:
-	 net_recv
+	 net_recv net_send
 

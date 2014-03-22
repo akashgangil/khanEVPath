@@ -1,12 +1,11 @@
+#include <iostream>
 #include <stdio.h>
 #include <string.h>
+#include <string>
 #include <stdlib.h>
 #include <signal.h>
-//#include <pthread.h>
-
 #include "threadpool.h"
 
-/* this file is evpath/examples/triv.c */
 #include "evpath.h"
 
 threadpool_t* t_p;
@@ -20,7 +19,7 @@ typedef struct _simple_rec {
 static FMField simple_field_list[] =
 {
     {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
- //   {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
+//    {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
     {NULL, NULL, 0, 0}
 };
 
@@ -36,7 +35,11 @@ void print_message(void *vevent){
     if(event != NULL)
       printf("[THREADING ]I  got %s\n", event->file_path);
 
-    EVreturn_event_buffer(cm, vevent);
+    std::string filepath (event->file_path);
+    std::string file_name = filepath.substr(25, strlen(event->file_path) - 25);
+
+    std::cout << "FILE NAME:    " << file_name << "\n";
+
 /*
     size_t  buf_size = strlen(event->file_buf);
     printf("FILE SIZE: %zu", buf_size);
@@ -55,6 +58,7 @@ void print_message(void *vevent){
  
     fclose(pFile);
  */
+    EVreturn_event_buffer(cm, vevent);
 }
 
 static int

@@ -2,8 +2,8 @@
 #include <string.h>
 #include <string>
 #include <stdlib.h>
+
 #include <glob.h>
-#include <pthread.h>
 
 #include "evpath.h"
 
@@ -11,13 +11,13 @@ using namespace std;
 
 typedef struct _simple_rec {
     char* file_path;
-//    char* file_buf;
+    char* file_buf;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
 {
     {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
-  //  {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
+    {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
     {NULL, NULL, 0, 0}
 };
 
@@ -27,8 +27,6 @@ static FMStructDescRec simple_format_list[] =
     {NULL, NULL}
 };
 
-
-/* this file is evpath/examples/net_send.c */
 int main(int argc, char **argv)
 {
 CManager cm;
@@ -42,9 +40,10 @@ CManager cm;
         printf("Bad arguments \"%s\"\n", argv[1]);
         exit(0);
     }
+
     cm = CManager_create();
     CMlisten(cm);
-stone = EValloc_stone(cm);
+    stone = EValloc_stone(cm);
     contact_list = attr_list_from_string(string_list);
     EVassoc_bridge_action(cm, stone, contact_list, remote_stone);
 

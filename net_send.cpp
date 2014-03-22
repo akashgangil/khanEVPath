@@ -51,7 +51,7 @@ stone = EValloc_stone(cm);
     source = EVcreate_submit_handle(cm, stone, simple_format_list);
 
     //MAGIC STRING
-    string server = "/net/hu21/agangil3/data";
+    string server = "/net/hu21/agangil3/data4";
 
     string pattern = server + "/*";
     glob_t files;

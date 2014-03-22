@@ -1,4 +1,5 @@
 CCX=g++
+CC=gcc
 
 CCXFLAGS= -Wall -Wextra -O
 
@@ -8,8 +9,8 @@ LIBS=-lthr_pool -latl -levpath -lffs -ldill -lcercs_env -lpthread -lrt
 
 all:
 	$(CCX) $(LIBDIRS) -o send net_send.cpp $(LIBS)
-	$(CCX) -c thr_pool.c 
-	$(CCX) $(LIBDIRS) net_recv.cpp -o recv $(LIBS)
+	$(CCX) -c threadpool.c 
+	$(CCX) $(LIBDIRS) net_recv.cpp -o recv threadpool.o $(LIBS)
 
 clean:
-	rm send recv
+	rm send recv *.o

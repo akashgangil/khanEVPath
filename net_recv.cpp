@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <signal.h>
 //#include <pthread.h>
 
-#include "thr_pool.h"
+#include "threadpool.h"
 
 /* this file is evpath/examples/triv.c */
 #include "evpath.h"
 
-thr_pool_t* t_p;
+threadpool_t* t_p;
+CManager cm;
 
 typedef struct _simple_rec {
     char* file_path;
@@ -29,12 +30,13 @@ static FMStructDescRec simple_format_list[] =
     {NULL, NULL}
 };
 
-void* print_message(void *vevent){
-    printf("Threading\n");
+void print_message(void *vevent){
     
     simple_rec_ptr event = (_simple_rec*)vevent;
-    printf("I  got %s\n", event->file_path);
-   
+    if(event != NULL)
+      printf("[THREADING ]I  got %s\n", event->file_path);
+
+    EVreturn_event_buffer(cm, vevent);
 /*
     size_t  buf_size = strlen(event->file_buf);
     printf("FILE SIZE: %zu", buf_size);
@@ -58,7 +60,11 @@ void* print_message(void *vevent){
 static int
 simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
-    thr_pool_queue(t_p, &print_message, vevent);    
+    //simple_rec_ptr event = (_simple_rec*)vevent;
+    //printf("[NORMAL ] %s\n", event->file_path);
+    EVtake_event_buffer(cm , vevent);
+    threadpool_add(t_p, &print_message, vevent, 0);    
+
 /*    
     //MAGIC NUMBER
     size_t prefix_len = 24;
@@ -89,15 +95,17 @@ simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 
     fclose(pFile);
 */
-    
-
     return 1;
 }
 
+void cleanupHandler(int dummy=0){
+    printf("Cleanup Called\n");
+    threadpool_destroy(t_p, 0);
+    exit(0);
+}
 
 int main(int argc, char **argv)
 {
-    CManager cm;
     EVstone stone;
     char *string_list;
     cm = CManager_create();
@@ -106,8 +114,10 @@ int main(int argc, char **argv)
     EVassoc_terminal_action(cm, stone, simple_format_list, simple_handler, NULL);
     string_list = attr_list_to_string(CMget_contact_list(cm));
     printf("Contact list \"%d:%s\"\n", stone, string_list);
+
+    signal(SIGINT, cleanupHandler);
     
-    t_p = thr_pool_create(1, 4, 1000, NULL);    
+    t_p = threadpool_create( 4, 1000, 0);    
 
     CMrun_network(cm);
 

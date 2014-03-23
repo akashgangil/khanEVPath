@@ -13,13 +13,15 @@ CManager cm;
 
 typedef struct _simple_rec {
     char* file_path;
-//    char* file_buf;
+    char* file_buf;
+    long file_buf_len;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
 {
     {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
-//    {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
+    {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
+    {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
     {NULL, NULL, 0, 0}
 };
 
@@ -36,28 +38,35 @@ void print_message(void *vevent){
       printf("[THREADING ]I  got %s\n", event->file_path);
 
     std::string filepath (event->file_path);
-    std::string file_name = filepath.substr(25, strlen(event->file_path) - 25);
+    //24 is the length of the server name
+    //10 is the length of the im7 file name
+    std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
+    std::string file_name = filepath.substr(24, strlen(event->file_path) - 24);
 
-    std::cout << "FILE NAME:    " << file_name << "\n";
+    FILE* stream=popen(("mkdir -p \"" + dir_name + "\"").c_str(),"r");
+    fclose(stream);
 
-/*
-    size_t  buf_size = strlen(event->file_buf);
-    printf("FILE SIZE: %zu", buf_size);
+    //std::cout << "Directory NAME:   " << dir_name << "\n";
+    //std::cout << "FILE NAME:    " << file_name << "\n";
 
+    if(event->file_buf != NULL) {
+      
+      printf("GOT: ***: %ld\n", event->file_buf_len);
 
-    FILE* pFile = fopen("new.c","wb");
+      FILE* pFile = fopen(file_name.c_str() ,"w+b");
 
-    if (pFile){
-        /* Write your buffer to disk. */
-  /*      fwrite(event->file_buf, buf_size, 1, pFile);
-        printf("Wrote to file!");
+      if (pFile){
+          /* Write your buffer to disk. */
+          size_t w = fwrite(event->file_buf, event->file_buf_len, 1, pFile);
+          printf("Wrote to file! %zu\n", w);
+      }
+      else{
+          printf("Something wrong writing to File.");
+      }
+      fputc ( EOF , pFile ); 
+      fclose(pFile);
     }
-    else{
-        printf("Something wrong writing to File.");
-    }
- 
-    fclose(pFile);
- */
+    
     EVreturn_event_buffer(cm, vevent);
 }
 

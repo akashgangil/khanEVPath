@@ -12,12 +12,14 @@ using namespace std;
 typedef struct _simple_rec {
     char* file_path;
     char* file_buf;
+    long file_buf_len;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
 {
     {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
     {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
+    {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
     {NULL, NULL, 0, 0}
 };
 
@@ -29,7 +31,7 @@ static FMStructDescRec simple_format_list[] =
 
 int main(int argc, char **argv)
 {
-CManager cm;
+    CManager cm;
     simple_rec data;
     EVstone stone;
     EVsource source;
@@ -50,7 +52,7 @@ CManager cm;
     source = EVcreate_submit_handle(cm, stone, simple_format_list);
 
     //MAGIC STRING
-    string server = "/net/hu21/agangil3/data4";
+    string server = "/net/hu21/agangil3/data";
 
     string pattern = server + "/*";
     glob_t files;
@@ -66,24 +68,36 @@ CManager cm;
               printf("*** FILE Path *** %s\n", filepath.c_str());
               
               data.file_path = strdup(filepath.c_str());
-     /* 
-              FILE *f = fopen(file_path.c_str(), "rb");
+      
+              FILE *f = fopen(filepath.c_str(), "rb");
+                
+              if(f == NULL) { printf("File NULL\n"); continue;}
+
               fseek(f, 0, SEEK_END);
-              long fsize = ftell(f);
+              size_t fsize = ftell(f);
               fseek(f, 0, SEEK_SET);
 
+              size_t ftest = ftell(f);
+              printf("AT TELL: %zu\n", ftest);
+
+              printf("BUF SIZE: %zu\n", fsize);
+
+              data.file_buf_len = fsize;
+
               data.file_buf = (char*) malloc((fsize + 1) * sizeof(char));
-              fread(data.file_buf, fsize, 1, f);
+              size_t r;
+              r = fread(data.file_buf, fsize, 1, f);
+              printf("Bytes REad: %zu \n", r);
               fclose(f);
 
               data.file_buf[fsize] = '\0';
 
-              printf("FILE buf copied\n");
-*/
+              printf("FILE buf copied %ld\n", strlen(data.file_buf));
+
               EVsubmit(source, &data, NULL);
 
               free(data.file_path);
-  //            free(data.file_buf);
+              free(data.file_buf);
         }
       
         pattern += "/*";

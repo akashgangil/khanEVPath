@@ -2,7 +2,13 @@
 #include <string.h>
 #include <string>
 #include <stdlib.h>
+#include <unistd.h>
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <fcntl.h>
 #include <glob.h>
 
 #include "evpath.h"
@@ -57,6 +63,10 @@ int main(int argc, char **argv)
     string pattern = server + "/*";
     glob_t files;
 
+    int fdin;
+    char *src;
+    struct stat statbuf;
+
     for(int count = 18; count > 0; count--) {
       
         glob((pattern +".im7").c_str(), 0, NULL, &files);        
@@ -68,7 +78,23 @@ int main(int argc, char **argv)
               printf("*** FILE Path *** %s\n", filepath.c_str());
               
               data.file_path = strdup(filepath.c_str());
-      
+
+              if ((fdin = open (filepath.c_str(), O_RDONLY)) < 0)
+                  perror ("can't open %s for reading"); 
+
+              if (fstat (fdin,&statbuf) < 0)
+                  perror ("fstat error");
+
+              data.file_buf_len = statbuf.st_size;
+              
+              printf("Size: %ld\n", data.file_buf_len);
+
+              if ((data.file_buf = (char*)mmap (0, statbuf.st_size, PROT_READ, MAP_SHARED, fdin, 0))
+                         == (caddr_t) -1)
+                  perror ("mmap error for input");
+
+              printf("Here\n");      
+/*    
               FILE *f = fopen(filepath.c_str(), "rb");
                 
               if(f == NULL) { printf("File NULL\n"); continue;}
@@ -93,11 +119,17 @@ int main(int argc, char **argv)
               data.file_buf[fsize] = '\0';
 
               printf("FILE buf copied %ld\n", strlen(data.file_buf));
-
+*/
               EVsubmit(source, &data, NULL);
 
+              if (munmap(data.file_buf, statbuf.st_size) == -1) {
+                  perror("Error un-mmapping the file");
+              }
+
+              close(fdin);
+
               free(data.file_path);
-              free(data.file_buf);
+              //free(data.file_buf);
         }
       
         pattern += "/*";

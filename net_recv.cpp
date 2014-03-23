@@ -53,17 +53,17 @@ void print_message(void *vevent){
       
       printf("GOT: ***: %ld\n", event->file_buf_len);
 
-      FILE* pFile = fopen(file_name.c_str() ,"w+b");
+      FILE* pFile = fopen(file_name.c_str() ,"wb");
 
       if (pFile){
           /* Write your buffer to disk. */
-          size_t w = fwrite(event->file_buf, event->file_buf_len, 1, pFile);
+          size_t w = fwrite(event->file_buf, event->file_buf_len-1, 1, pFile);
           printf("Wrote to file! %zu\n", w);
       }
       else{
           printf("Something wrong writing to File.");
       }
-      fputc ( EOF , pFile ); 
+      //fputc ( EOF , pFile ); 
       fclose(pFile);
     }
     
@@ -73,41 +73,9 @@ void print_message(void *vevent){
 static int
 simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
-    //simple_rec_ptr event = (_simple_rec*)vevent;
-    //printf("[NORMAL ] %s\n", event->file_path);
     EVtake_event_buffer(cm , vevent);
     threadpool_add(t_p, &print_message, vevent, 0);    
 
-/*    
-    //MAGIC NUMBER
-    size_t prefix_len = 24;
-    size_t file_path_len = 10;//strlen(event->file_path);
-    
-    printf("%d %d", prefix_len, file_path_len);
-  
-    char file_name[200];
-
-    memcpy(file_name, event->file_path + prefix_len + 1, file_path_len - prefix_len);
-    file_name[file_path_len - prefix_len] = '\0';
-    printf("File Name is %s", file_name);
-
-    size_t  buf_size = strlen(event->file_buf);
-    printf("FILE SIZE: %zu", buf_size);
-
-
-    FILE* pFile = fopen("new.c","wb");
-
-    if (pFile){
-        /* Write your buffer to disk. */
-/*        fwrite(event->file_buf, buf_size, 1, pFile);
-        printf("Wrote to file!");
-    }
-    else{
-      printf("Something wrong writing to File.");
-    }
-
-    fclose(pFile);
-*/
     return 1;
 }
 
@@ -133,5 +101,5 @@ int main(int argc, char **argv)
     t_p = threadpool_create( 4, 1000, 0);    
 
     CMrun_network(cm);
-
+    return 0;
 }

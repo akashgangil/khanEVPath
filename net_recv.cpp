@@ -4,8 +4,9 @@
 #include <string>
 #include <stdlib.h>
 #include <signal.h>
-#include "threadpool.h"
+#include <fcntl.h>
 
+#include "threadpool.h"
 #include "evpath.h"
 
 threadpool_t* t_p;
@@ -13,15 +14,15 @@ CManager cm;
 
 typedef struct _simple_rec {
     char* file_path;
-    char* file_buf;
     long file_buf_len;
+    char* file_buf;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
 {
     {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
-    {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
     {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
+    {"file_buf", "char[file_buf_len]", sizeof(char), FMOffset(simple_rec_ptr, file_buf)},
     {NULL, NULL, 0, 0}
 };
 
@@ -34,8 +35,7 @@ static FMStructDescRec simple_format_list[] =
 void print_message(void *vevent){
     
     simple_rec_ptr event = (_simple_rec*)vevent;
-    if(event != NULL)
-      printf("[THREADING ]I  got %s\n", event->file_path);
+    if(event) printf("[THREADING ]I  got %s\n", event->file_path);
 
     std::string filepath (event->file_path);
     //24 is the length of the server name
@@ -46,27 +46,22 @@ void print_message(void *vevent){
     FILE* stream=popen(("mkdir -p \"" + dir_name + "\"").c_str(),"r");
     fclose(stream);
 
-    //std::cout << "Directory NAME:   " << dir_name << "\n";
-    //std::cout << "FILE NAME:    " << file_name << "\n";
-
     if(event->file_buf != NULL) {
-      
-      printf("GOT: ***: %ld\n", event->file_buf_len);
 
-      FILE* pFile = fopen(file_name.c_str() ,"wb");
+      int pFile = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0776);
 
       if (pFile){
-          /* Write your buffer to disk. */
-          size_t w = fwrite(event->file_buf, event->file_buf_len-1, 1, pFile);
+          size_t w = write(pFile, event->file_buf, event->file_buf_len);
+          fsync(pFile);
           printf("Wrote to file! %zu\n", w);
       }
       else{
           printf("Something wrong writing to File.");
       }
-      //fputc ( EOF , pFile ); 
-      fclose(pFile);
+      close(pFile);
     }
     
+    printf("Return event buffer\n");
     EVreturn_event_buffer(cm, vevent);
 }
 

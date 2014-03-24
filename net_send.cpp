@@ -17,15 +17,15 @@ using namespace std;
 
 typedef struct _simple_rec {
     char* file_path;
-    char* file_buf;
     long file_buf_len;
+    char* file_buf;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
 {
     {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
-    {"file_buf", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_buf)},
     {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
+    {"file_buf", "char[file_buf_len]", sizeof(char), FMOffset(simple_rec_ptr, file_buf)},
     {NULL, NULL, 0, 0}
 };
 
@@ -89,37 +89,10 @@ int main(int argc, char **argv)
               
               printf("Size: %ld\n", data.file_buf_len);
 
-              if ((data.file_buf = (char*)mmap (0, statbuf.st_size, PROT_READ, MAP_SHARED, fdin, 0))
+              if ((data.file_buf = (char*)mmap (0, statbuf.st_size, PROT_READ, MAP_PRIVATE, fdin, 0))
                          == (caddr_t) -1)
                   perror ("mmap error for input");
 
-              printf("Here\n");      
-/*    
-              FILE *f = fopen(filepath.c_str(), "rb");
-                
-              if(f == NULL) { printf("File NULL\n"); continue;}
-
-              fseek(f, 0, SEEK_END);
-              size_t fsize = ftell(f);
-              fseek(f, 0, SEEK_SET);
-
-              size_t ftest = ftell(f);
-              printf("AT TELL: %zu\n", ftest);
-
-              printf("BUF SIZE: %zu\n", fsize);
-
-              data.file_buf_len = fsize;
-
-              data.file_buf = (char*) malloc((fsize + 1) * sizeof(char));
-              size_t r;
-              r = fread(data.file_buf, fsize, 1, f);
-              printf("Bytes REad: %zu \n", r);
-              fclose(f);
-
-              data.file_buf[fsize] = '\0';
-
-              printf("FILE buf copied %ld\n", strlen(data.file_buf));
-*/
               EVsubmit(source, &data, NULL);
 
               if (munmap(data.file_buf, statbuf.st_size) == -1) {
@@ -129,7 +102,6 @@ int main(int argc, char **argv)
               close(fdin);
 
               free(data.file_path);
-              //free(data.file_buf);
         }
       
         pattern += "/*";

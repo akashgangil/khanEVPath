@@ -1,12 +1,12 @@
 #include "utils.h"
 #include "database.h"
 
-#include <pthread.h>
+//#include <//pthread.h>
 
 struct timespec start, stop;
 double time_spent;
 
-pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
 
 int vold_calls=0;
 int readdir_calls=0;
@@ -69,9 +69,9 @@ string database_setval(string file_id, string col, string val){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
     string retstring="fail";
-    pthread_mutex_lock(&mymutex);
+    //pthread_mutex_lock(&mymutex);
     retstring=redis_setval(file_id,col,val);
-    pthread_mutex_unlock(&mymutex);
+    //pthread_mutex_unlock(&mymutex);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;
@@ -107,9 +107,9 @@ string database_getval(string col, string val){
   if(DATABASE==REDIS){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    pthread_mutex_lock(&mymutex);
+    //pthread_mutex_lock(&mymutex);
     string retstring=redis_getval(col,val);
-    pthread_mutex_unlock(&mymutex);
+    //pthread_mutex_unlock(&mymutex);
     //cout<<"just got a "<<retstring<<endl;
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;;
@@ -142,9 +142,9 @@ string database_getvals(string col){
   if(DATABASE==REDIS){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    pthread_mutex_lock(&mymutex);
+    //pthread_mutex_lock(&mymutex);
     string retstr=redis_getkey_cols(col);
-    pthread_mutex_unlock(&mymutex);
+    //pthread_mutex_unlock(&mymutex);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;
@@ -178,9 +178,9 @@ void database_remove_val(string file, string col, string val){
   if(DATABASE==REDIS){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    pthread_mutex_lock(&mymutex);
+    //pthread_mutex_lock(&mymutex);
     redis_remove_val(file,col,val);
-    pthread_mutex_unlock(&mymutex);
+    //pthread_mutex_unlock(&mymutex);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;

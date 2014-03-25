@@ -14,7 +14,6 @@ static string primary_attribute = "";
 
 string call_pyfunc(string script_name, string func_name, string file_path){
 
-//    printf("inside python function FUNC NAME:  %s\n", func_name);
     printf("Python FUNCTION!\n");
     string result;
 
@@ -143,13 +142,11 @@ void process_transducers(string server) {
       //  log_msg("===Unique Attribute!=== ");
         getline(transducers_file, line);
         stringstream s_uniq(line.c_str());
-        cout << "Line   " << line << endl;
         string uniq_attr = "";
         getline(s_uniq, uniq_attr, '*');
         if(uniq_attr != ""){
           primary_attribute = uniq_attr;
         }
-        cout << primary_attribute << endl;
 
         getline(transducers_file,line);
         const char *firstchar=line.c_str();

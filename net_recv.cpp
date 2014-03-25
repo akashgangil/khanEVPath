@@ -7,8 +7,6 @@
 #include <signal.h>
 #include <fcntl.h>
 
-//#include "Python.h"
-
 #include "net_recv.h"
 #include "fileprocessor.h"
 #include "database.h"
@@ -101,8 +99,17 @@ int main(int argc, char **argv)
 
     signal(SIGINT, cleanupHandler);
 
-    t_p = threadpool_create( 4, 1000, 0);    
+    t_p = threadpool_create( 1, 1000, 0);    
     init_database();
+    //check if we've loaded metadata before
+    string output=database_getval("setup","value");
+    if(output.compare("true")==0){
+      printf("Setup Already Happened"); //setup has happened before
+      return 0;
+    }
+     
+    database_setval("setup","value","true");
+
     process_transducers("test1");
 
     Py_SetProgramName(argv[0]);  /* optional but recommended */

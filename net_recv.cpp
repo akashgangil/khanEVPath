@@ -1,3 +1,4 @@
+#include "Python.h"
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -5,6 +6,12 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
+
+//#include "Python.h"
+
+#include "net_recv.h"
+#include "fileprocessor.h"
+#include "database.h"
 
 #include "threadpool.h"
 #include "evpath.h"
@@ -32,8 +39,8 @@ static FMStructDescRec simple_format_list[] =
     {NULL, NULL}
 };
 
-void print_message(void *vevent){
-    
+void file_receive(void *vevent){
+
     simple_rec_ptr event = (_simple_rec*)vevent;
     if(event) printf("[THREADING ]I  got %s\n", event->file_path);
 
@@ -48,28 +55,29 @@ void print_message(void *vevent){
 
     if(event->file_buf != NULL) {
 
-      int pFile = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0776);
+        int pFile = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0776);
 
-      if (pFile){
-          size_t w = write(pFile, event->file_buf, event->file_buf_len);
-          fsync(pFile);
-          printf("Wrote to file! %zu\n", w);
-      }
-      else{
-          printf("Something wrong writing to File.");
-      }
-      close(pFile);
+        if (pFile){
+            size_t w = write(pFile, event->file_buf, event->file_buf_len);
+            fsync(pFile);
+            printf("Wrote to file! %zu\n", w);
+        }
+        else{
+            printf("Something wrong writing to File.");
+        }
+        close(pFile);
     }
-    
+
+    extract_attr_init(filepath);
+
     printf("Return event buffer\n");
     EVreturn_event_buffer(cm, vevent);
 }
 
-static int
-simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
+static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
     EVtake_event_buffer(cm , vevent);
-    threadpool_add(t_p, &print_message, vevent, 0);    
+    threadpool_add(t_p, &file_receive, vevent, 0);    
 
     return 1;
 }
@@ -92,8 +100,16 @@ int main(int argc, char **argv)
     printf("Contact list \"%d:%s\"\n", stone, string_list);
 
     signal(SIGINT, cleanupHandler);
-    
+
     t_p = threadpool_create( 4, 1000, 0);    
+    init_database();
+    process_transducers("test1");
+
+    Py_SetProgramName(argv[0]);  /* optional but recommended */
+    Py_Initialize();
+
+    PyRun_SimpleString("import sys");
+    PyRun_SimpleString("sys.path.append(\"/net/hu21/agangil3/KhanScripts\")");
 
     CMrun_network(cm);
     return 0;

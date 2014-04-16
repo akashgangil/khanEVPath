@@ -14,7 +14,6 @@ static string primary_attribute = "";
 
 string call_pyfunc(string script_name, string func_name, string file_path){
 
-    printf("Python FUNCTION!\n");
     string result;
 
     PyObject *pName, *pModule, *pDict, *pValue, *pArgs, *pClass, *pInstance;

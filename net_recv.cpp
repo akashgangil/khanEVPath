@@ -104,7 +104,7 @@ int main(int argc, char **argv)
     //check if we've loaded metadata before
     string output=database_getval("setup","value");
     if(output.compare("true")==0){
-      printf("Setup Already Happened"); //setup has happened before
+      printf("Database previously initialized. Exiting.\n"); //setup has happened before
       return 0;
     }
      

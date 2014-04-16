@@ -18,9 +18,19 @@ CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCDIR)/$(CLIENT_SRC
 CCX = g++
 CCXFLAGS = -Wall -Wextra -O
 
-EVPATH_LIB_DIRS = -L/net/hp41/chaos/rhe6-64-icc/atl/lib -L/net/hp41/chaos/rhe6-64-icc/evpath/lib -L/net/hp41/chaos/rhe6-64-icc/ffs/lib -L/net/hp41/chaos/rhe6-64-icc/dill/lib -L/net/hp41/chaos/rhe6-64-icc/cercs_env/lib -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/atl/lib -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/ffs/lib -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/dill/lib -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/cercs_env/lib
+EVPATH_LIB_DIRS = -L/net/hp41/chaos/rhe6-64-icc/atl/lib \
+									-L/net/hp41/chaos/rhe6-64-icc/evpath/lib \
+									-L/net/hp41/chaos/rhe6-64-icc/ffs/lib \
+									-L/net/hp41/chaos/rhe6-64-icc/dill/lib \
+									-L/net/hp41/chaos/rhe6-64-icc/cercs_env/lib \
+									-Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/atl/lib \
+									-Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/ffs/lib \
+									-Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/dill/lib \
+									-Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/cercs_env/lib
 
-EVPATH_INCLUDE_DIRS = -I/net/hp41/chaos/rhe6-64-icc/atl/include -I/net/hp41/chaos/rhe6-64-icc/ffs/include -I/net/hp41/chaos/rhe6-64-icc/evpath/include
+EVPATH_INCLUDE_DIRS = -I/net/hp41/chaos/rhe6-64-icc/atl/include \
+											-I/net/hp41/chaos/rhe6-64-icc/ffs/include \
+											-I/net/hp41/chaos/rhe6-64-icc/evpath/include
 
 REDIS_LIB_DIRS  = -L/net/hu21/agangil3/hiredis -Wl,-rpath=/net/hu21/agangil3/hiredis 
 REDIS_INCLUDE_DIRS=-I/net/hu21/agangil3/hiredis
@@ -42,7 +52,8 @@ builddir:
 	mkdir -p $(OBJDIR)
 
 $(SERVER): $(SERVER_OBJS)
-	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS)
+	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) \
+	-o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $@ $(EVPATH_LIBS)

@@ -54,7 +54,7 @@ std::string resolve_selectors(std::string path);
    
 int populate_getattr_buffer(struct stat* stbuf, std::stringstream &path); 
     
-static int khan_getattr(const char *c_path, struct stat *stbuf); 
+int khan_getattr(const char *c_path, struct stat *stbuf); 
     
 void dir_pop_buf(void* buf, fuse_fill_dir_t filler, std::string content, bool convert);
       

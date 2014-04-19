@@ -48,6 +48,8 @@ PYTHON_LIBS  = -lpython2.6
 REDIS_LIBS   = -lhiredis
 PTHREAD_LIBS = -lpthread
 
+FUSE_LIBS = `pkg-config fuse --cflags --libs`
+
 SERVER = net_recv
 CLIENT = net_send
 
@@ -58,7 +60,7 @@ builddir:
 
 $(SERVER): $(SERVER_OBJS)
 	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) \
-  -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS)
+  -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $@ $(EVPATH_LIBS)

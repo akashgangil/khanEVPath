@@ -4,7 +4,7 @@
 
 #include "fuse.h"
 
-static void xmp_initialize(void);
+void xmp_initialize(void);
 
 void *khan_init(struct fuse_conn_info*);
 

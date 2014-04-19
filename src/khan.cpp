@@ -35,7 +35,6 @@ std::string primary_attribute = "";
 
 std::string mountpoint;
 
-extern struct fuse_operations khan_ops;
 extern char msg[4096];
   void *
 initializing_khan (void *mnt_dir)
@@ -399,7 +398,7 @@ initializing_khan (void *mnt_dir)
         return -2;
       }
 
-      static int
+      int
         khan_getattr (const char *c_path, struct stat *stbuf)
         {
           /* std::cout << "started get attr" << endl << flush; */

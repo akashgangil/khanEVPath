@@ -7,7 +7,7 @@
 
 #include <fuse.h>
 #include <fuse/fuse_opt.h>
-#include <fuse/fuse_opt.h>
+#include <fuse/fuse_lowlevel.h>
 
 #include <errno.h>
 
@@ -20,10 +20,9 @@
 #include "localizations.h"
 #include "fileprocessor.h"
 
-static struct fuse_operations khan_ops;
+struct fuse_operations khan_ops;
 
-
-static void
+void
 xmp_initialize ()
 {
 

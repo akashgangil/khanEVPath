@@ -1,5 +1,14 @@
-src/cscope.out
+#Unwanted files [TODO: Remove this in future]
 src/new.c
+
+#Build files
 build/*
+
+#CScope tags
 src/tags
 tags
+src/cscope.out
+
+#Executatbles
+net_recv
+net_send

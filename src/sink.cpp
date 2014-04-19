@@ -14,6 +14,7 @@
 #include "threadpool.h"
 #include "evpath.h"
 #include "fuse.h"
+#include "khan.h" 
 
 threadpool_t* t_p;
 CManager cm;
@@ -133,8 +134,8 @@ int main(int argc, char **argv)
     }
 
     //set signal handler
-    signal(SIGTERM, my_terminate);
-    signal(SIGKILL, my_terminate);
+    signal(SIGTERM, khan_terminate);
+    signal(SIGKILL, khan_terminate);
 
 
     khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);

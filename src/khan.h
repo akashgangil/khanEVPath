@@ -58,6 +58,7 @@ using namespace std;
 
 static char command[MAX_PATH_LENGTH];
 static struct khan_state *khan_data=NULL;
+static struct fuse_operations khan_ops;
 
 time_t time_now;
 char * fpath=NULL;
@@ -94,4 +95,6 @@ void dir_pop_buf(void* buf, fuse_fill_dir_t filler, string content, bool convert
       
 void populate_readdir_buffer(void* buf, fuse_fill_dir_t filler, stringstream &path);
 
+void khan_terminate(int);
 
+void unmounting(string);

@@ -13,6 +13,7 @@
 
 #include "threadpool.h"
 #include "evpath.h"
+#include "fuse.h"
 
 threadpool_t* t_p;
 CManager cm;
@@ -118,6 +119,36 @@ int main(int argc, char **argv)
     PyRun_SimpleString("import sys");
     PyRun_SimpleString("sys.path.append(\"/net/hu21/agangil3/KhanScripts\")");
 
+    xmp_initialize();
+
+    struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+    int j;
+    const char* store_filename="stores.txt";
+    for(j = 0; j < argc; j++) {
+      if((j == 2) && (argv[j][0]!='-')) {
+        store_filename = argv[j];
+      } else {
+        fuse_opt_add_arg(&args, argv[j]);
+      }
+    }
+
+    //set signal handler
+    signal(SIGTERM, my_terminate);
+    signal(SIGKILL, my_terminate);
+
+
+    khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
+    if (khan_data == NULL)  {
+        log_msg("Could not allocate memory to khan_data!..Aborting..!\n");
+        abort();
+    }
+    if(initializing_khan(argv[1])<0)  {
+        log_msg("Could not initialize khan..Aborting..!\n");
+        return -1;
+    } 
+
+    retval=fuse_main(args.argc,args.argv, &khan_ops, khan_data);
     CMrun_network(cm);
-    return 0;
+
+    return retval;
 }

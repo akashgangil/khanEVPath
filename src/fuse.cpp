@@ -1,3 +1,54 @@
+
+static struct fuse_operations khan_ops;
+
+static void xmp_initialize(){
+
+khan_ops.getattr  = khan_getattr;
+  khan_ops.init     = khan_init;
+  khan_ops.access    = xmp_access;
+  khan_ops.readlink  = xmp_readlink;
+  khan_ops.readdir  = xmp_readdir;
+  khan_ops.mknod    = xmp_mknod;
+  khan_ops.mkdir    = xmp_mkdir;
+  khan_ops.symlink  = xmp_symlink;
+  khan_ops.unlink    = xmp_unlink;
+  khan_ops.rmdir    = xmp_rmdir;
+  khan_ops.rename    = xmp_rename;
+  khan_ops.link    = xmp_link;
+  khan_ops.chmod    = xmp_chmod;
+  khan_ops.chown    = xmp_chown;
+  khan_ops.truncate  = xmp_truncate;
+  khan_ops.create   = khan_create;
+  khan_ops.utimens  = xmp_utimens;
+  khan_ops.open    = khan_open;
+  khan_ops.read    = xmp_read;
+  khan_ops.write    = xmp_write;
+  khan_ops.statfs    = xmp_statfs;
+  khan_ops.release  = xmp_release;
+  khan_ops.fsync    = xmp_fsync;
+  khan_ops.opendir  = khan_opendir;
+  khan_ops.flush    = khan_flush;
+  khan_ops.getxattr  = xmp_getxattr;
+#ifdef APPLE
+  khan_ops.setxattr  = xmp_setxattr;
+  khan_ops.listxattr  = xmp_listxattr;
+  khan_ops.removexattr  = xmp_removexattr;
+  khan_ops.setvolname     = xmp_setvolname;
+  khan_ops.exchange       = xmp_exchange;
+  khan_ops.getxtimes      = xmp_getxtimes;
+  khan_ops.setbkuptime    = xmp_setbkuptime;
+  khan_ops.setchgtime     = xmp_setchgtime;
+  khan_ops.setcrtime      = xmp_setcrtime;
+  khan_ops.chflags        = xmp_chflags;
+  khan_ops.setattr_x      = xmp_setattr_x;
+  khan_ops.fsetattr_x     = xmp_fsetattr_x;
+#endif
+}
+
+
+
+
+
 static int xmp_access(const char *path, int mask)
 {
 

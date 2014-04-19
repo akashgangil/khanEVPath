@@ -2,6 +2,8 @@
 #ifndef FUSE_H
 #define FUSE_H
 
+static void xmp_initialize(void);
+
 static int xmp_access(const char *path, int mask);
 
 static int xmp_mknod(const char *path, mode_t mode, dev_t rdev);

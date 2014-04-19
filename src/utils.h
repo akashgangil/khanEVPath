@@ -9,7 +9,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <libgen.h>
-#include "config.h"
 #define MAX_PATH_LENGTH 2048
 
 using namespace std;

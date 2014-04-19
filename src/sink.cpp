@@ -7,14 +7,15 @@
 #include <signal.h>
 #include <fcntl.h>
 
-#include "net_recv.h"
 #include "fileprocessor.h"
 #include "database.h"
-
+#include "params.h"
 #include "threadpool.h"
 #include "evpath.h"
-#include "fuse.h"
+#include "fuseapi.h"
 #include "khan.h" 
+
+extern struct fuse_operations khan_ops;
 
 threadpool_t* t_p;
 CManager cm;
@@ -78,7 +79,6 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 {
     EVtake_event_buffer(cm , vevent);
     threadpool_add(t_p, &file_receive, vevent, 0);    
-
     return 1;
 }
 
@@ -148,8 +148,11 @@ int main(int argc, char **argv)
         return -1;
     } 
 
-    retval=fuse_main(args.argc,args.argv, &khan_ops, khan_data);
+    fuse_main(args.argc,args.argv, &khan_ops, khan_data);
+    
+    printf("test.c"); 
+
     CMrun_network(cm);
 
-    return retval;
+    return 0;
 }

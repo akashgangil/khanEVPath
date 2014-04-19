@@ -123,7 +123,7 @@ char* append_path(const char * newp) {
     char msg[100];
     sprintf(msg,"in append_path with %s and %s",servers[0].c_str(),newp);
     log_msg(msg);
-    fpath=(char*)malloc(MAX_PATH_LENGTH);
+    char* fpath=(char*)malloc(MAX_PATH_LENGTH);
     memset(fpath,0,MAX_PATH_LENGTH);
     sprintf(&fpath[0],"%s%s",servers[0].c_str(),newp);
     //log_msg("returning");

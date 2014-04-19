@@ -1,8 +1,18 @@
 
-#ifndef FUSE_H
-#define FUSE_H
+#ifndef FUSE_API_H
+#define FUSE_API_H
+
+#include "fuse.h"
 
 static void xmp_initialize(void);
+
+void *khan_init(struct fuse_conn_info*);
+
+int khan_flush(const char*, struct fuse_file_info*); 
+
+int khan_create(const char *, mode_t, struct fuse_file_info*);
+
+int khan_open(const char*, struct fuse_file_info*);
 
 static int xmp_access(const char *path, int mask);
 
@@ -38,4 +48,10 @@ static int xmp_release(const char *path, struct fuse_file_info *fi);
     
 static int xmp_fsync(const char *path, int isdatasync,struct fuse_file_info *fi); 
 
-#endif FUSE_H
+static int xmp_rename(const char*, const char*);
+
+static int xmp_readdir(const char*, void*, fuse_fill_dir_t, off_t, struct fuse_file_info*);
+
+static int xmp_getxattr(const char*, const char*, char*, size_t);
+
+#endif

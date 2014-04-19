@@ -3,6 +3,8 @@
 
 #include <pthread.h>
 
+extern char msg[4096];
+
 struct timespec start, stop;
 double time_spent;
 

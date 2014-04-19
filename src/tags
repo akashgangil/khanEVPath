@@ -1,0 +1,277 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BDB	database.h	25;"	d
+BILLION	database.h	27;"	d
+CLOCK_REALTIME	database.h	32;"	d
+DATABASE	database.h	26;"	d
+DATA_ANALYTICS_H	data_analytics.h	2;"	d
+FILE_PROCESSOR_H	fileprocessor.h	3;"	d
+FUSE_API_H	fuseapi.h	3;"	d
+FUSE_HELPER_H	fuse_helper.h	2;"	d
+FUSE_USE_VERSION	params.h	10;"	d
+GID	params.h	29;"	d
+HAVE_TIMER	stopwatch.cpp	72;"	d	file:
+KHAN_DATA	params.h	26;"	d
+KHAN_H	khan.h	6;"	d
+LOGDIR	log.cpp	/^static const char* LOGDIR = "\/net\/hu21\/agangil3\/KhanLogs\/";$/;"	v	file:
+MAX_LEN	khan.h	8;"	d
+MAX_PATH_LENGTH	khan.h	11;"	d
+MAX_PATH_LENGTH	utils.h	13;"	d
+PACKAGE_VERSION	khan.h	37;"	d
+PID	params.h	28;"	d
+REDIS	database.h	24;"	d
+REDIS_FOUND	config.h	2;"	d
+SELECTOR_C	fuse_helper.h	9;"	d
+SELECTOR_C	khan.h	15;"	d
+SELECTOR_S	fuse_helper.h	10;"	d
+SELECTOR_S	khan.h	19;"	d
+STOPWATCH_H	stopwatch.h	2;"	d
+TIMER_DESC	stopwatch.cpp	13;"	d	file:
+UID	params.h	27;"	d
+USE_STD_CREATE	stopwatch.cpp	15;"	d	file:
+USE_STD_DESTROY	stopwatch.cpp	16;"	d	file:
+UTILS_H	utils.h	2;"	d
+VOLDEMORT	database.h	23;"	d
+_LOG_H_	log.h	2;"	d
+_PARAMS_H_	params.h	5;"	d
+_THREADPOOL_H_	threadpool.h	30;"	d
+_simple_rec	sink.cpp	/^typedef struct _simple_rec {$/;"	s	file:
+_simple_rec	source.cpp	/^typedef struct _simple_rec {$/;"	s	file:
+access_avg_time	database.cpp	/^double access_avg_time=0;$/;"	v
+access_calls	database.cpp	/^int access_calls=0;$/;"	v
+analytics	data_analytics.cpp	/^void analytics(void) {$/;"	f
+append_path	utils.cpp	/^char* append_path(const char * newp) {$/;"	f
+append_path2	utils.cpp	/^char* append_path2(string newp) {$/;"	f
+args	khan.h	/^char *args=NULL;$/;"	v
+argument	threadpool.c	/^    void *argument;$/;"	m	struct:__anon2	file:
+bdb_getkey_cols	bdb.cpp	/^string bdb_getkey_cols(string col) {$/;"	f
+bdb_getval	bdb.cpp	/^string bdb_getval(string file_id, string col) {$/;"	f
+bdb_init	bdb.cpp	/^bool bdb_init() {$/;"	f
+bdb_remove_val	bdb.cpp	/^void bdb_remove_val(string fileid, string col, string val){$/;"	f
+bdb_setval	bdb.cpp	/^string bdb_setval(string file_id, string col, string val) { $/;"	f
+bin2hex	utils.cpp	/^string bin2hex(const char* input, size_t size)$/;"	f
+bootstrapUrls	voldemort.cpp	/^list<string> bootstrapUrls;$/;"	v
+buf	log.cpp	/^char buf[80];$/;"	v
+c	redis.cpp	/^redisContext* c;$/;"	v
+call_pyfunc	fileprocessor.cpp	/^string call_pyfunc(string script_name, string func_name, string file_path){$/;"	f
+cleanupHandler	sink.cpp	/^void cleanupHandler(int dummy=0){$/;"	f
+cleanup_str	redis.cpp	/^string cleanup_str(string str) {$/;"	f
+clock_gettime	utils.cpp	/^int clock_gettime(int i, struct timespec* b) { $/;"	f
+cm	sink.cpp	/^CManager cm;$/;"	v
+command	khan.h	/^static char command[MAX_PATH_LENGTH];$/;"	v
+content_has	khan.cpp	/^    content_has (std::string vals, std::string val)$/;"	f
+count	threadpool.c	/^  int count;$/;"	m	struct:threadpool_t	file:
+count_string	utils.cpp	/^int count_string(string tobesplit){$/;"	f
+create_avg_time	database.cpp	/^double create_avg_time=0;$/;"	v
+create_calls	database.cpp	/^int create_calls=0;$/;"	v
+currentDateTime	log.cpp	/^char* currentDateTime() {$/;"	f
+database_getval	database.cpp	/^string database_getval(string col, string val){$/;"	f
+database_getvals	database.cpp	/^string database_getvals(string col){$/;"	f
+database_remove_val	database.cpp	/^void database_remove_val(string file, string col, string val){$/;"	f
+database_setval	database.cpp	/^string database_setval(string file_id, string col, string val){$/;"	f
+dbp	bdb.cpp	/^DB *dbp;$/;"	v
+dbt_from_str	bdb.cpp	/^DBT dbt_from_str(string str) {$/;"	f
+de_dup	redis.cpp	/^string de_dup(string val) {$/;"	f
+dir_pop_buf	khan.cpp	/^        dir_pop_buf (void *buf, fuse_fill_dir_t filler, std::string content, bool convert)$/;"	f
+dir_pop_stbuf	fuse_helper.cpp	/^dir_pop_stbuf (struct stat *stbuf, std::string contents)$/;"	f
+elapsed	stopwatch.cpp	/^elapsed (struct timeval start, struct timeval stop)$/;"	f	file:
+extract_attr_init	fileprocessor.cpp	/^void extract_attr_init(std::string file_path) {$/;"	f
+fileDescriptor	log.cpp	/^FILE *fileDescriptor = NULL;$/;"	v
+file_buf	sink.cpp	/^    char* file_buf;$/;"	m	struct:_simple_rec	file:
+file_buf	source.cpp	/^    char* file_buf;$/;"	m	struct:_simple_rec	file:
+file_buf_len	sink.cpp	/^    long file_buf_len;$/;"	m	struct:_simple_rec	file:
+file_buf_len	source.cpp	/^    long file_buf_len;$/;"	m	struct:_simple_rec	file:
+file_path	sink.cpp	/^    char* file_path;$/;"	m	struct:_simple_rec	file:
+file_path	source.cpp	/^    char* file_path;$/;"	m	struct:_simple_rec	file:
+file_pop_stbuf	fuse_helper.cpp	/^file_pop_stbuf (struct stat *stbuf, std::string filename)$/;"	f
+file_receive	sink.cpp	/^void file_receive(void *vevent){$/;"	f
+find	khan.cpp	/^    find (std::string str, std::vector < std::string > arr)$/;"	f
+flags	bdb.cpp	/^u_int32_t flags;$/;"	v
+fpath	khan.h	/^char * fpath=NULL;$/;"	v
+function	threadpool.c	/^    void (*function)(void *);$/;"	m	struct:__anon2	file:
+gclient	voldemort.cpp	/^auto_ptr<StoreClient> *gclient;$/;"	v
+gconfig	voldemort.cpp	/^ClientConfig *gconfig;$/;"	v
+genre_location	localizations.cpp	/^string genre_location(string fileid) {$/;"	f
+get	bdb.cpp	/^string get(string key) {$/;"	f
+get_all_attr_vals	localizations.cpp	/^vector<string> get_all_attr_vals(string attr) {$/;"	f
+get_all_files	localizations.cpp	/^vector<string> get_all_files(string ext) {$/;"	f
+get_attr_numeric_val	localizations.cpp	/^int get_attr_numeric_val(string attr, string val) {$/;"	f
+get_file_size	utils.cpp	/^int get_file_size(string path){$/;"	f
+get_location	localizations.cpp	/^string get_location(string fileid) {$/;"	f
+getattr_avg_time	database.cpp	/^double getattr_avg_time=0;$/;"	v
+getattr_calls	database.cpp	/^int getattr_calls=0;$/;"	v
+gfactory	voldemort.cpp	/^SocketStoreClientFactory *gfactory;$/;"	v
+gid	params.h	/^    int gid;$/;"	m	struct:khan_state
+graceful_shutdown	threadpool.c	/^    graceful_shutdown  = 2$/;"	e	enum:__anon1	file:
+head	threadpool.c	/^  int head;$/;"	m	struct:threadpool_t	file:
+hex2bin	utils.cpp	/^string hex2bin(string in) {$/;"	f
+immediate_shutdown	threadpool.c	/^    immediate_shutdown = 1,$/;"	e	enum:__anon1	file:
+init_database	database.cpp	/^bool init_database(){$/;"	f
+initializing_khan	khan.cpp	/^initializing_khan (void *mnt_dir)$/;"	f
+intersect	utils.cpp	/^string intersect(string files1, string files2){$/;"	f
+is_running_	stopwatch.h	/^    int is_running_;$/;"	m	struct:stopwatch_t
+join	utils.cpp	/^string join(vector<string> these, string delim) {$/;"	f
+khan_create	fuseapi.cpp	/^khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)$/;"	f
+khan_data	khan.h	/^static struct khan_state *khan_data=NULL;$/;"	v	typeref:struct:khan_state
+khan_flush	fuseapi.cpp	/^khan_flush (const char *path, struct fuse_file_info *info)$/;"	f
+khan_getattr	khan.cpp	/^        khan_getattr (const char *c_path, struct stat *stbuf)$/;"	f	file:
+khan_init	fuseapi.cpp	/^khan_init (struct fuse_conn_info *conn)$/;"	f
+khan_mode	khan.h	/^mode_t khan_mode=S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH;$/;"	v
+khan_open	fuseapi.cpp	/^khan_open (const char *path, struct fuse_file_info *fi)$/;"	f
+khan_opendir	khan.cpp	/^    khan_opendir (const char *c_path, struct fuse_file_info *fi)$/;"	f
+khan_ops	fuseapi.cpp	/^static struct fuse_operations khan_ops;$/;"	v	typeref:struct:fuse_operations	file:
+khan_state	params.h	/^struct khan_state $/;"	s
+khan_terminate	khan.cpp	/^        khan_terminate (int param)$/;"	f
+knn_location	localizations.cpp	/^string knn_location(string fileid) {$/;"	f
+localize_time	database.cpp	/^double localize_time=0;$/;"	v
+lock	threadpool.c	/^  pthread_mutex_t lock;$/;"	m	struct:threadpool_t	file:
+log	khan.h	12;"	d
+log_msg	log.cpp	/^void log_msg(const char *msg) {$/;"	f
+log_open	log.cpp	/^int log_open() {$/;"	f
+main	sink.cpp	/^int main(int argc, char **argv)$/;"	f
+main	source.cpp	/^int main(int argc, char **argv)$/;"	f
+map_path	fuse_helper.cpp	/^map_path (std::string path, std::string fileid)$/;"	f
+mountpoint	khan.cpp	/^std::string mountpoint;$/;"	v
+msg	log.h	/^char msg[4096];$/;"	v
+myclient	voldemort.cpp	/^StoreClient *myclient;$/;"	v
+mymutex	database.cpp	/^pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;$/;"	v
+notify	threadpool.c	/^  pthread_cond_t notify;$/;"	m	struct:threadpool_t	file:
+openFile	log.cpp	/^static int openFile = 0;$/;"	v	file:
+pid	params.h	/^    int pid;$/;"	m	struct:khan_state
+populate_getattr_buffer	khan.cpp	/^    populate_getattr_buffer (struct stat *stbuf, std::stringstream & path)$/;"	f
+populate_readdir_buffer	khan.cpp	/^        populate_readdir_buffer (void *buf, fuse_fill_dir_t filler,$/;"	f
+primary_attribute	fileprocessor.cpp	/^static string primary_attribute = "";$/;"	v	file:
+primary_attribute	khan.cpp	/^std::string primary_attribute = "";$/;"	v
+print_db	bdb.cpp	/^void print_db() {$/;"	f
+process_file	fileprocessor.cpp	/^void process_file(string server, string fileid, string file_path) {$/;"	f
+process_transducers	fileprocessor.cpp	/^void process_transducers(string server) {$/;"	f
+put	bdb.cpp	/^void put(string key, string val) {$/;"	f
+queue	threadpool.c	/^  threadpool_task_t *queue;$/;"	m	struct:threadpool_t	file:
+queue_size	threadpool.c	/^  int queue_size;$/;"	m	struct:threadpool_t	file:
+random_location	localizations.cpp	/^string random_location(string fileid) {$/;"	f
+read_avg_time	database.cpp	/^double read_avg_time=0;$/;"	v
+read_calls	database.cpp	/^int read_calls=0;$/;"	v
+readdir_avg_time	database.cpp	/^double readdir_avg_time=0;$/;"	v
+readdir_calls	database.cpp	/^int readdir_calls=0;$/;"	v
+redis_avg_time	database.cpp	/^double redis_avg_time=0;$/;"	v
+redis_calls	database.cpp	/^int redis_calls=0;$/;"	v
+redis_getkey_cols	redis.cpp	/^string redis_getkey_cols(string col) {$/;"	f
+redis_getval	redis.cpp	/^string redis_getval(string file_id, string col) {$/;"	f
+redis_init	redis.cpp	/^bool redis_init() {$/;"	f
+redis_remove_val	redis.cpp	/^void redis_remove_val(string fileid, string col, string val){$/;"	f
+redis_setval	redis.cpp	/^string redis_setval(string file_id, string col, string val) {  $/;"	f
+rename_avg_time	database.cpp	/^double rename_avg_time=0;$/;"	v
+rename_calls	database.cpp	/^int rename_calls=0;$/;"	v
+reply	redis.cpp	/^redisReply* reply;$/;"	v
+resolve_selectors	fuse_helper.cpp	/^resolve_selectors (std::string path)$/;"	f
+rootdir	params.h	/^    char *rootdir;$/;"	m	struct:khan_state
+server_ids	khan.cpp	/^std::vector<std::string> server_ids;$/;"	v
+servers	khan.cpp	/^std::vector<std::string> servers;$/;"	v
+shutdown	threadpool.c	/^  int shutdown;$/;"	m	struct:threadpool_t	file:
+simple_field_list	sink.cpp	/^static FMField simple_field_list[] =$/;"	v	file:
+simple_field_list	source.cpp	/^static FMField simple_field_list[] =$/;"	v	file:
+simple_format_list	sink.cpp	/^static FMStructDescRec simple_format_list[] =$/;"	v	file:
+simple_format_list	source.cpp	/^static FMStructDescRec simple_format_list[] =$/;"	v	file:
+simple_handler	sink.cpp	/^static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)$/;"	f	file:
+simple_rec	sink.cpp	/^} simple_rec, *simple_rec_ptr;$/;"	t	typeref:struct:_simple_rec	file:
+simple_rec	source.cpp	/^} simple_rec, *simple_rec_ptr;$/;"	t	typeref:struct:_simple_rec	file:
+simple_rec_ptr	sink.cpp	/^} simple_rec, *simple_rec_ptr;$/;"	t	typeref:struct:_simple_rec	file:
+simple_rec_ptr	source.cpp	/^} simple_rec, *simple_rec_ptr;$/;"	t	typeref:struct:_simple_rec	file:
+split	utils.cpp	/^vector<string> split(string istr, string delim) {$/;"	f
+start	database.cpp	/^struct timespec start, stop;$/;"	v	typeref:struct:timespec
+started	threadpool.c	/^  int started;$/;"	m	struct:threadpool_t	file:
+stop	database.cpp	/^struct timespec start, stop;$/;"	v	typeref:struct:
+stopwatch_create	stopwatch.cpp	/^stopwatch_create (void)$/;"	f
+stopwatch_destroy	stopwatch.cpp	/^stopwatch_destroy (struct stopwatch_t* T)$/;"	f
+stopwatch_elapsed	stopwatch.cpp	/^stopwatch_elapsed (struct stopwatch_t* T)$/;"	f
+stopwatch_init	stopwatch.cpp	/^stopwatch_init (void)$/;"	f
+stopwatch_start	stopwatch.cpp	/^stopwatch_start (struct stopwatch_t* T)$/;"	f
+stopwatch_stop	stopwatch.cpp	/^stopwatch_stop (struct stopwatch_t* T)$/;"	f
+stopwatch_t	stopwatch.h	/^struct stopwatch_t$/;"	s
+str_intersect	khan.cpp	/^    str_intersect (std::string str1, std::string str2)$/;"	f
+strdup	utils.cpp	/^char* strdup(const char* str) {$/;"	f
+subtract	utils.cpp	/^string subtract(string files1, string files2){$/;"	f
+t_p	sink.cpp	/^threadpool_t* t_p;$/;"	v
+t_start_	stopwatch.h	/^    struct timeval t_start_;$/;"	m	struct:stopwatch_t	typeref:struct:stopwatch_t::timeval
+t_stop_	stopwatch.h	/^    struct timeval t_stop_;$/;"	m	struct:stopwatch_t	typeref:struct:stopwatch_t::timeval
+tail	threadpool.c	/^  int tail;$/;"	m	struct:threadpool_t	file:
+temp	khan.h	/^char * temp=NULL;$/;"	v
+temp2	khan.h	/^char * temp2=NULL;$/;"	v
+thread_count	threadpool.c	/^  int thread_count;$/;"	m	struct:threadpool_t	file:
+threadpool_add	threadpool.c	/^int threadpool_add(threadpool_t *pool, void (*function)(void *),$/;"	f
+threadpool_create	threadpool.c	/^threadpool_t *threadpool_create(int thread_count, int queue_size, int flags)$/;"	f
+threadpool_destroy	threadpool.c	/^int threadpool_destroy(threadpool_t *pool, int flags)$/;"	f
+threadpool_destroy_flags_t	threadpool.h	/^} threadpool_destroy_flags_t;$/;"	t	typeref:enum:__anon4
+threadpool_error_t	threadpool.h	/^} threadpool_error_t;$/;"	t	typeref:enum:__anon3
+threadpool_free	threadpool.c	/^int threadpool_free(threadpool_t *pool)$/;"	f
+threadpool_graceful	threadpool.h	/^    threadpool_graceful       = 1$/;"	e	enum:__anon4
+threadpool_invalid	threadpool.h	/^    threadpool_invalid        = -1,$/;"	e	enum:__anon3
+threadpool_lock_failure	threadpool.h	/^    threadpool_lock_failure   = -2,$/;"	e	enum:__anon3
+threadpool_queue_full	threadpool.h	/^    threadpool_queue_full     = -3,$/;"	e	enum:__anon3
+threadpool_shutdown	threadpool.h	/^    threadpool_shutdown       = -4,$/;"	e	enum:__anon3
+threadpool_shutdown_t	threadpool.c	/^} threadpool_shutdown_t;$/;"	t	typeref:enum:__anon1	file:
+threadpool_t	threadpool.c	/^struct threadpool_t {$/;"	s	file:
+threadpool_t	threadpool.h	/^typedef struct threadpool_t threadpool_t;$/;"	t	typeref:struct:threadpool_t
+threadpool_task_t	threadpool.c	/^} threadpool_task_t;$/;"	t	typeref:struct:__anon2	file:
+threadpool_thread	threadpool.c	/^static void *threadpool_thread(void *threadpool)$/;"	f	file:
+threadpool_thread_failure	threadpool.h	/^    threadpool_thread_failure = -5$/;"	e	enum:__anon3
+threads	threadpool.c	/^  pthread_t *threads;$/;"	m	struct:threadpool_t	file:
+time_now	khan.h	/^time_t time_now;$/;"	v
+time_spent	database.cpp	/^double time_spent;$/;"	v
+timestamp	khan.h	/^int timestamp;$/;"	v
+tot_time	database.cpp	/^double tot_time=0;$/;"	v
+trim	utils.cpp	/^string trim(string source, string t)$/;"	f
+trim_left	utils.cpp	/^string trim_left( string source, string t = " \\n")$/;"	f
+trim_right	utils.cpp	/^string trim_right(string source, string t = " \\n")$/;"	f
+uid	params.h	/^    int uid;$/;"	m	struct:khan_state
+unmap_path	fuse_helper.cpp	/^unmap_path (std::string path, std::string fileid)$/;"	f
+unmounting	khan.cpp	/^        unmounting (std::string mnt_dir)$/;"	f
+usage_localize	localizations.cpp	/^void usage_localize() {$/;"	f
+vold_avg_time	database.cpp	/^double vold_avg_time=0;$/;"	v
+vold_calls	database.cpp	/^int vold_calls=0;$/;"	v
+vold_last_id	voldemort.cpp	/^int vold_last_id=1;$/;"	v
+voldemort_getkey_cols	voldemort.cpp	/^string voldemort_getkey_cols(string col){$/;"	f
+voldemort_getkey_values	voldemort.cpp	/^string voldemort_getkey_values(string col){$/;"	f
+voldemort_getval	voldemort.cpp	/^string voldemort_getval(string file_id, string col){$/;"	f
+voldemort_init	voldemort.cpp	/^bool voldemort_init() {$/;"	f
+voldemort_remove_val	voldemort.cpp	/^void voldemort_remove_val(string fileid, string col, string val){$/;"	f
+voldemort_setval	voldemort.cpp	/^string voldemort_setval(string file_id, string col, string val){$/;"	f
+write_avg_time	database.cpp	/^double write_avg_time=0;$/;"	v
+write_calls	database.cpp	/^int write_calls=0;$/;"	v
+xmp_access	fuseapi.cpp	/^xmp_access (const char *path, int mask)$/;"	f	file:
+xmp_chflags	fuseapi.cpp	/^        xmp_chflags (const char *param1, uint32_t param2)$/;"	f	file:
+xmp_chmod	fuseapi.cpp	/^xmp_chmod (const char *path, mode_t mode)$/;"	f	file:
+xmp_chown	fuseapi.cpp	/^xmp_chown (const char *path, uid_t uid, gid_t gid)$/;"	f	file:
+xmp_exchange	fuseapi.cpp	/^        xmp_exchange (const char *param1, const char *param2, unsigned long param3)$/;"	f	file:
+xmp_fsetattr_x	fuseapi.cpp	/^        xmp_fsetattr_x (const char *param1, struct setattr_x *param2,$/;"	f	file:
+xmp_fsync	fuseapi.cpp	/^xmp_fsync (const char *path, int isdatasync, struct fuse_file_info *fi)$/;"	f	file:
+xmp_getxattr	fuseapi.cpp	/^    xmp_getxattr (const char *path, const char *name, char *value, size_t size,$/;"	f	file:
+xmp_getxtimes	fuseapi.cpp	/^        xmp_getxtimes (const char *param1, struct timespec *param2,$/;"	f	file:
+xmp_initialize	fuseapi.cpp	/^xmp_initialize ()$/;"	f	file:
+xmp_link	fuseapi.cpp	/^xmp_link (const char *from, const char *to)$/;"	f	file:
+xmp_listxattr	fuseapi.cpp	/^        xmp_listxattr (const char *path, char *list, size_t size)$/;"	f	file:
+xmp_mkdir	fuseapi.cpp	/^xmp_mkdir (const char *path, mode_t mode)$/;"	f	file:
+xmp_mknod	fuseapi.cpp	/^xmp_mknod (const char *path, mode_t mode, dev_t rdev)$/;"	f	file:
+xmp_read	fuseapi.cpp	/^xmp_read (const char *path, char *buf, size_t size, off_t offset,$/;"	f	file:
+xmp_readdir	fuseapi.cpp	/^xmp_readdir (const char *c_path, void *buf, fuse_fill_dir_t filler,$/;"	f	file:
+xmp_readlink	fuseapi.cpp	/^xmp_readlink (const char *path, char *buf, size_t size)$/;"	f	file:
+xmp_release	fuseapi.cpp	/^xmp_release (const char *path, struct fuse_file_info *fi)$/;"	f	file:
+xmp_removexattr	fuseapi.cpp	/^        xmp_removexattr (const char *path, const char *name)$/;"	f	file:
+xmp_rename	fuseapi.cpp	/^xmp_rename (const char *from, const char *to)$/;"	f	file:
+xmp_rmdir	fuseapi.cpp	/^xmp_rmdir (const char *path)$/;"	f	file:
+xmp_setattr_x	fuseapi.cpp	/^        xmp_setattr_x (const char *param1, struct setattr_x *param2)$/;"	f	file:
+xmp_setbkuptime	fuseapi.cpp	/^        xmp_setbkuptime (const char *param1, const struct timespec *param2)$/;"	f	file:
+xmp_setchgtime	fuseapi.cpp	/^        xmp_setchgtime (const char *param1, const struct timespec *param2)$/;"	f	file:
+xmp_setcrtime	fuseapi.cpp	/^        xmp_setcrtime (const char *param1, const struct timespec *param2)$/;"	f	file:
+xmp_setvolname	fuseapi.cpp	/^        xmp_setvolname (const char *param)$/;"	f	file:
+xmp_setxattr	fuseapi.cpp	/^xmp_setxattr (const char *path, const char *name, const char *value,$/;"	f	file:
+xmp_statfs	fuseapi.cpp	/^xmp_statfs (const char *path, struct statvfs *stbuf)$/;"	f	file:
+xmp_symlink	fuseapi.cpp	/^xmp_symlink (const char *from, const char *to)$/;"	f	file:
+xmp_truncate	fuseapi.cpp	/^xmp_truncate (const char *path, off_t size)$/;"	f	file:
+xmp_unlink	fuseapi.cpp	/^xmp_unlink (const char *path)$/;"	f	file:
+xmp_utimens	fuseapi.cpp	/^xmp_utimens (const char *path, const struct timespec ts[2])$/;"	f	file:
+xmp_write	fuseapi.cpp	/^xmp_write (const char *path, const char *buf, size_t size, off_t offset,$/;"	f	file:

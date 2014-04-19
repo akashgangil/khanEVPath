@@ -5,6 +5,8 @@
 
 using namespace std;
 
+static char msg[4096];
+
 int log_open(void);
 void log_fi (struct fuse_file_info *fi);
 void log_stat(struct stat *si);

@@ -3,7 +3,8 @@
 #include <sstream>
 #include <string>
 
-#include "config.h"
+#define REDIS_FOUND
+
 #include "log.h"
 
 #ifdef REDIS_FOUND

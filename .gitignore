@@ -1,3 +1,5 @@
 src/cscope.out
 src/new.c
 build/*
+src/tags
+tags

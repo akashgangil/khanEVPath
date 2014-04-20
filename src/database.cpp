@@ -50,7 +50,7 @@ bool init_database(){
 }
 
 
-string database_setval(string file_id, string col, string val){
+std::string database_setval(std::string file_id, std::string col, std::string val){
   file_id=trim(file_id);
   col=trim(col);
   val=trim(val);
@@ -58,19 +58,19 @@ string database_setval(string file_id, string col, string val){
   if(DATABASE==VOLDEMORT){
     vold_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    string retstring="fail";
-    retstring=voldemort_setval(file_id,col,val);
+    std::string retstd::string="fail";
+    retstd::string=voldemort_setval(file_id,col,val);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     vold_avg_time=(vold_avg_time*(vold_calls-1)+time_spent)/vold_calls;
-    return retstring;
+    return retstd::string;
   }
   #endif
   #ifdef REDIS_FOUND
   if(DATABASE==REDIS){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    string retstring="fail";
+    std::string retstring="fail";
     pthread_mutex_lock(&mymutex);
     retstring=redis_setval(file_id,col,val);
     pthread_mutex_unlock(&mymutex);
@@ -82,14 +82,14 @@ string database_setval(string file_id, string col, string val){
   #endif
   #ifdef BDB_FOUND
   if(DATABASE==BDB) {
-    string retstring = bdb_setval(file_id, col, val);
+    std::string retstring = bdb_setval(file_id, col, val);
     return retstring;
   }
   #endif  
 }
 
 
-string database_getval(string col, string val){
+std::string database_getval(std::string col, std::string val){
   //fprintf(stderr, "in getval with %s %s", col.c_str(), val.c_str());
   col=trim(col);
   val=trim(val);
@@ -98,11 +98,11 @@ string database_getval(string col, string val){
     //log_msg("using vold");
     vold_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    string retstring=voldemort_getval(col,val);
+    std::string retstd::string=voldemort_getval(col,val);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;;
     vold_avg_time=(vold_avg_time*(vold_calls-1)+time_spent)/vold_calls;
-    return retstring;
+    return retstd::string;
   }
   #endif
   #ifdef REDIS_FOUND
@@ -110,9 +110,9 @@ string database_getval(string col, string val){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
     pthread_mutex_lock(&mymutex);
-    string retstring=redis_getval(col,val);
+    std::string retstring=redis_getval(col,val);
     pthread_mutex_unlock(&mymutex);
-    //cout<<"just got a "<<retstring<<endl;
+    //cout<<"just got a "<<retstd::string<<endl;
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;
@@ -121,19 +121,19 @@ string database_getval(string col, string val){
   #endif
   #ifdef BDB_FOUND
   if(DATABASE==BDB) {
-    string retstring = bdb_getval(col, val);
-    return retstring;
+    std::string retstd::string = bdb_getval(col, val);
+    return retstd::string;
   }
   #endif  
 }
 
-string database_getvals(string col){
+std::string database_getvals(std::string col){
   col=trim(col);
   #ifdef VOLDEMORT_FOUND
   if(DATABASE==VOLDEMORT){
     vold_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    string retstr=voldemort_getkey_cols(col);
+    std::string retstr=voldemort_getkey_cols(col);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     vold_avg_time=(vold_avg_time*(vold_calls-1)+time_spent)/vold_calls;
@@ -145,7 +145,7 @@ string database_getvals(string col){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
     pthread_mutex_lock(&mymutex);
-    string retstr=redis_getkey_cols(col);
+    std::string retstr=redis_getkey_cols(col);
     pthread_mutex_unlock(&mymutex);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
@@ -155,13 +155,13 @@ string database_getvals(string col){
   #endif
   #ifdef BDB_FOUND
   if(DATABASE==BDB) {
-    string retstring = bdb_getkey_cols(col);
-    return retstring;
+    std::string retstd::string = bdb_getkey_cols(col);
+    return retstd::string;
   }
   #endif  
 }
 
-void database_remove_val(string file, string col, string val){
+void database_remove_val(std::string file, std::string col, std::string val){
   file=trim(file);
   col=trim(col);
   val=trim(val);

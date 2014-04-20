@@ -5,11 +5,9 @@
 #include <db_cxx.h>
 #include "log.h"
 
-using namespace std;
-
 bool bdb_init();
-string bdb_getval(string file_id, string col);
-string bdb_getkey_cols(string col);
-string bdb_setval(string file_id, string col, string val);
-void bdb_remove_val(string fileid, string col, string val);
+std::string bdb_getval(std::string file_id, std::string col);
+std::string bdb_getkey_cols(std::string col);
+std::string bdb_setval(std::string file_id, std::string col, std::string val);
+void bdb_remove_val(std::string fileid, std::string col, std::string val);
 

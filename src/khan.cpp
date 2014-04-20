@@ -22,14 +22,14 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include <boost/log/trivial.hpp>
 
 #include "khan.h"
 #include "data_analytics.h"
 #include "fileprocessor.h"
 #include "database.h"
 #include "utils.h"
-std::vector<std::string> servers;
-std::vector<std::string> server_ids;
+
 
 std::string primary_attribute = "";
 
@@ -37,14 +37,17 @@ std::string mountpoint;
 
 extern char msg[4096];
   void *
-initializing_khan (void *mnt_dir)
+initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vector < std::string > server_ids)
 {
+
+  BOOST_LOG_TRIVIAL(info) << "test";
+
   log_msg ("In initialize\n");
   /* unmounting((char *)mnt_dir); */
   /* Opening root directory and creating if not present */
   sprintf (msg, "khan_root[0] is %s\n", servers.at (0).c_str ());
   log_msg (msg);
-  /* std::cout<<"khan_root[0] is "<<servers.at(0)<<endl; */
+  /* std::cout<<"khan_root[0] is "<<servers.at(0)<<std::endl; */
   if (NULL == opendir (servers.at (0).c_str ()))
   {
     sprintf (msg, "Error msg on opening directory : %s\n",
@@ -104,7 +107,7 @@ initializing_khan (void *mnt_dir)
      *         continue;
      *      }
      *      int n = PyList_Size(myResult);
-     *      std::cout << "SIZE = " << n << endl << flush; 
+     *      std::cout << "SIZE = " << n << std::endl << flush; 
      */
     /*for (int j = 0; j < n; j++)
     {
@@ -116,7 +119,7 @@ initializing_khan (void *mnt_dir)
         continue;
       }
       std::string filename = temp;
-      /* std::cout << "Checking " << filename << " ... " << endl << flush; */
+      /* std::cout << "Checking " << filename << " ... " << std::endl << flush; */
       /*if (database_getval ("name", filename) == "null")
       {
         std::string fileid = database_setval ("null", "name", filename);
@@ -178,7 +181,7 @@ initializing_khan (void *mnt_dir)
     glob_t files;
     std::string pattern = servers.at (0) + "/*";
     static int experiment_id = 0;
-    set < std::string > experiments;
+//    set < std::string > experiments;
 
     for (int count = 18; count > 0; count--)
     {
@@ -315,24 +318,24 @@ initializing_khan (void *mnt_dir)
       bool loop = true;
       while (loop)
       {
-        /* std::cout << "top of loop" << endl << flush; */
+        /* std::cout << "top of loop" << std::endl << flush; */
         loop = false;
         if (aint)
         {
           std::string query = database_getval ("attrs", attr);
-          /*    std::cout << "PrINT "  << "  " << attr << " " << query << endl; */
+          /*    std::cout << "PrINT "  << "  " << attr << " " << query << std::endl; */
           if (query != "null")
           {
             std::string content = database_getvals (attr);
-            /*      std::cout << "Query not null   " << content << endl; */
+            /*      std::cout << "Query not null   " << content << std::endl; */
             if (vint)
             {
-              /*          std::cout << "Vint is true " << endl; */
-              std::cout << "Value is " << content_has (content, val) << endl;
-              std::cout << "Val is  " << val << endl;
+              /*          std::cout << "Vint is true " << std::endl; */
+              std::cout << "Value is " << content_has (content, val) << std::endl;
+              std::cout << "Val is  " << val << std::endl;
               if (content_has (content, val) || (attr == "tags"))
               {
-                /*        std::cout << "Here1 " << val << endl; */
+                /*        std::cout << "Here1 " << val << std::endl; */
                 std::string dir_content = database_getval (attr, val);
                 if (current != "none")
                 {
@@ -341,7 +344,7 @@ initializing_khan (void *mnt_dir)
                 std::string attrs_content = database_getvals ("attrs");
                 if (fint)
                 {
-                  /*          std::cout << "fint is true " << file << endl; */
+                  /*          std::cout << "fint is true " << file << std::endl; */
                   std::string fileid = database_getval ("name", file);
                   if (content_has (dir_content, fileid))
                   {
@@ -371,7 +374,7 @@ initializing_khan (void *mnt_dir)
                 {
                   /* /attr/val dir */
                   std::cout << "Fint is flase " << dir_content +
-                    attrs_content << endl;
+                    attrs_content << std::endl;
                   /* if(dir_content != ""){ */
                   dir_pop_stbuf (stbuf, dir_content + attrs_content);
                   return 0;
@@ -381,7 +384,7 @@ initializing_khan (void *mnt_dir)
               else
               {
                 /* /attr dir */
-                /* std::cout << " Here 2  " << content << endl; */
+                /* std::cout << " Here 2  " << content << std::endl; */
                 dir_pop_stbuf (stbuf, content);
                 return 0;
               }
@@ -390,7 +393,7 @@ initializing_khan (void *mnt_dir)
           else
           {
             std::string types = database_getvals ("attrs");
-            /* std::cout << " HEre 3 " << types << endl; */
+            /* std::cout << " HEre 3 " << types << std::endl; */
             dir_pop_stbuf (stbuf, types);
             return 0;
           }
@@ -401,21 +404,21 @@ initializing_khan (void *mnt_dir)
       int
         khan_getattr (const char *c_path, struct stat *stbuf)
         {
-          /* std::cout << "started get attr" << endl << flush; */
+          /* std::cout << "started get attr" << std::endl << flush; */
           std::string pre_processed = c_path + 1;
           if (pre_processed == ".DS_Store")
           {
             file_pop_stbuf (stbuf, pre_processed);
             return 0;
           }
-          /* std::cout << "starting to resolve selectors" << endl << flush; */
+          /* std::cout << "starting to resolve selectors" << std::endl << flush; */
           std::string after = resolve_selectors (pre_processed);
           std::stringstream path (after);
-          /*std::cout << "working to pop buffer" << endl << flush;
+          /*std::cout << "working to pop buffer" << std::endl << flush;
            *         file_pop_stbuf(stbuf, "test");
            *                 int ret = 0; */
           int ret = populate_getattr_buffer (stbuf, path);
-          /* std::cout << "ended get attr" << endl << flush; */
+          /* std::cout << "ended get attr" << std::endl << flush; */
           return ret;
         }
 
@@ -440,7 +443,7 @@ initializing_khan (void *mnt_dir)
             }
             else
             {
-              std::cout << "Convert is false " << endl;
+              std::cout << "Convert is false " << std::endl;
               filler (buf, contents[i].c_str (), NULL, 0);
             }
           }
@@ -454,7 +457,7 @@ initializing_khan (void *mnt_dir)
           unmounting (mountpoint);
           chdir ("/net/hu21/agangil3/Mediakhan/");
           log_msg ("killing...\n ");
-          std::cout << "killing... " << flush << endl;
+          //std::cout << "killing... " << flush << std::endl;
           exit (1);
         }
 
@@ -499,34 +502,34 @@ initializing_khan (void *mnt_dir)
           while (loop)
           {
             loop = false;
-            std::cout << "HO HO JUMPING!!  " << endl;
+            std::cout << "HO HO JUMPING!!  " << std::endl;
             std::string content = database_getvals ("attrs");
 
-            std::cout << "Attrs is " << content << endl;
+            std::cout << "Attrs is " << content << std::endl;
 
             if (aint)
             {
-              std::cout << "Aint is true " << endl;
-              std::cout << "Attr " << attr << endl;
+              std::cout << "Aint is true " << std::endl;
+              std::cout << "Attr " << attr << std::endl;
               if (content_has (content, attr))
               {
                 current_attrs += ":";
                 current_attrs += attr;
                 content = database_getvals (attr);
 
-                std::cout << "Current Content   " << current_content << endl;
+                std::cout << "Current Content   " << current_content << std::endl;
 
 
                 if (current_content != "none")
                 {
-                  std::cout << "Content " << content << endl;
+                  std::cout << "Content " << content << std::endl;
 
                   non_empty_content = "";
 
                   std::vector < std::string > vec_1 = split (content, ":");
                   for (int i = 0; i < vec_1.size (); ++i)
                   {
-                    std::cout << "Attr " << attr << "  Val " << vec_1[i] << endl;
+                    std::cout << "Attr " << attr << "  Val " << vec_1[i] << std::endl;
                     std::string dir_content = database_getval (attr, vec_1[i]);
                     if (current_content != "none")
                     {
@@ -534,7 +537,7 @@ initializing_khan (void *mnt_dir)
                         str_intersect (current_content, dir_content);
                     }
                     std::cout << "Iteration " << " ** " << i << "   " <<
-                      dir_content << endl;
+                      dir_content << std::endl;
                     if (dir_content != "")
                     {
                       non_empty_content += vec_1[i] + ":";
@@ -545,27 +548,27 @@ initializing_khan (void *mnt_dir)
                   non_empty_content = content;
 
 
-                std::cout << "Non Empty Content  " << non_empty_content << endl;
+                std::cout << "Non Empty Content  " << non_empty_content << std::endl;
 
                 if (vint)
                 {
-                  std::cout << " Content is " << content << endl;
-                  std::cout << "Value is  " << content_has (content, val) << endl;
-                  std::cout << "Vint is true " << endl;
+                  std::cout << " Content is " << content << std::endl;
+                  std::cout << "Value is  " << content_has (content, val) << std::endl;
+                  std::cout << "Vint is true " << std::endl;
                   if (content_has (content, val) || (attr == "tags"))
                   {
                     std::string dir_content = database_getval (attr, val);
-                    std::cout << " ABRA  " << endl;
+                    std::cout << " ABRA  " << std::endl;
                     if (current_content != "none")
                     {
-                      std::cout << " f sdfdsfsdf " << endl;
+                      std::cout << " f sdfdsfsdf " << std::endl;
                       dir_content =
                         intersect (current_content, dir_content);
                     }
                     std::string attrs_content = database_getvals ("attrs");
                     if (fint)
                     {
-                      std::cout << "Fint is true " << endl;
+                      std::cout << "Fint is true " << std::endl;
                       if (content_has (attrs_content, file))
                       {
                         /* repeat with aint = fint, vint = mint, etc */
@@ -588,8 +591,8 @@ initializing_khan (void *mnt_dir)
                       log_msg (msg);
                       attrs_content =
                         subtract (attrs_content, current_attrs);
-                      std::cout << "Dir Content  " << dir_content << endl;
-                      std::cout << "Attr Content  " << attrs_content << endl;
+                      std::cout << "Dir Content  " << dir_content << std::endl;
+                      std::cout << "Attr Content  " << attrs_content << std::endl;
                       dir_pop_buf (buf, filler, dir_content, true);
                       dir_pop_buf (buf, filler, attrs_content, false);
                     }
@@ -598,16 +601,16 @@ initializing_khan (void *mnt_dir)
                 else
                 {
                   /* /attr dir */
-                  std::cout << "Going solo1 " << non_empty_content << endl;
+                  std::cout << "Going solo1 " << non_empty_content << std::endl;
                   dir_pop_buf (buf, filler, non_empty_content, false);
                 }
               }
             }
             else
             {
-              std::cout << " Going solo2 " << endl;
+              std::cout << " Going solo2 " << std::endl;
               dir_pop_buf (buf, filler, content, false);
             }
           }
-          std::cout << "populate read dir end  " << endl;
+          std::cout << "populate read dir end  " << std::endl;
         }

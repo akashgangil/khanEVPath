@@ -7,49 +7,49 @@
 #include "database.h"
 #include "localizations.h"
 
-extern vector<string> servers;
-extern vector<string> server_ids;
+extern std::vector < std::string > servers;
+extern std::vector < std::string > server_ids;
 
-vector<string> get_all_files(string ext) {
-  cout << " GET ALL FILES " << endl;
-  vector<string> files;
-  string mp3s = database_getvals("all_"+ext+"s");
-  stringstream ss(mp3s);
-  string filename;
+std::vector<std::string> get_all_files(std::string ext) {
+  std::cout << " GET ALL FILES " << std::endl;
+  std::vector<std::string> files;
+  std::string mp3s = database_getvals("all_"+ext+"s");
+  std::stringstream ss(mp3s);
+  std::string filename;
   while(getline(ss, filename, ':')) {
     if(filename.compare("")!=0) {
-      string fileid = database_getval("name",filename);
+      std::string fileid = database_getval("name",filename);
       files.push_back(fileid);
-      cout << "added id:"<<fileid<<endl;
+      std::cout << "added id:"<<fileid<<std::endl;
     }
   }
-  cout << " DONE " << endl;
+  std::cout << " DONE " << std::endl;
   return files;
 }
 
-string random_location(string fileid) {
+std::string random_location(std::string fileid) {
   return servers.at(rand()%servers.size());	
 }
 
-string genre_location(string fileid) {
+std::string genre_location(std::string fileid) {
   //get genre of file
-  string genre = database_getval(fileid, "genre");
-  cout << "looking for "<<genre<<endl;
-  vector<int> server_counts(servers.size());
+  std::string genre = database_getval(fileid, "genre");
+  std::cout << "looking for "<<genre<<std::endl;
+  std::vector<int> server_counts(servers.size());
   //for each file
-  vector<string> files = get_all_files("mp3");
+  std::vector<std::string> files = get_all_files("mp3");
   for(int i=0; i<files.size(); i++) {
     //if genre = file genre
     if(fileid.compare(files.at(i))) {
-      string file_genre = database_getval(files.at(i), "genre");
-      cout << "file genre "<<file_genre<<endl;
+      std::string file_genre = database_getval(files.at(i), "genre");
+      std::cout << "file genre "<<file_genre<<std::endl;
       if(file_genre.compare(genre)==0) {
-        cout << "match "<<endl;
-        string server = database_getval(files.at(i), "server");
+        std::cout << "match "<<std::endl;
+        std::string server = database_getval(files.at(i), "server");
         for(int j=0; j<servers.size(); j++) {
           if(servers.at(j).compare(server)==0) {
             server_counts.at(j) = server_counts.at(j) + 1;
-            cout << "new count "<<server_counts.at(j) << endl;
+            std::cout << "new count "<<server_counts.at(j) << std::endl;
           }
         }
       }
@@ -57,9 +57,9 @@ string genre_location(string fileid) {
   }
   //place on highest count server
   int max_num = 0;
-  string max ="";
+  std::string max ="";
   for(int j=0; j<servers.size(); j++) {
-    cout << "looking at server " << j << " with count " << server_counts.at(j) << endl;
+    std::cout << "looking at server " << j << " with count " << server_counts.at(j) << std::endl;
     if(server_counts.at(j)>max_num) {
       max_num = server_counts.at(j);
       max = servers.at(j);
@@ -68,11 +68,11 @@ string genre_location(string fileid) {
   return max;
 }
 
-vector<string> get_all_attr_vals(string attr) {
-  vector<string> vals;
-  string mp3s = database_getvals(attr);
-  stringstream ss(mp3s);
-  string val;
+std::vector<std::string> get_all_attr_vals(std::string attr) {
+  std::vector<std::string> vals;
+  std::string mp3s = database_getvals(attr);
+  std::stringstream ss(mp3s);
+  std::string val;
   while(getline(ss, val, ':')) {
     if(val.compare("")!=0) {
       vals.push_back(val);
@@ -82,9 +82,9 @@ vector<string> get_all_attr_vals(string attr) {
 }
 
 
-int get_attr_numeric_val(string attr, string val) {
+int get_attr_numeric_val(std::string attr, std::string val) {
   //get all attr vals
-  vector<string> vals = get_all_attr_vals(attr);
+  std::vector<std::string> vals = get_all_attr_vals(attr);
   //sort
   //sort(vals.begin(), vals.end());
   //return index of val
@@ -97,21 +97,21 @@ int get_attr_numeric_val(string attr, string val) {
   return index;
 }
 
-string knn_location(string fileid) {
+std::string knn_location(std::string fileid) {
   //keep track of min distance file
   float min_dist = 1000000;
-  string min_file = fileid;
+  std::string min_file = fileid;
   //for each file
-  string ext = database_getval(fileid, "ext");
-  vector<string> files = get_all_files(ext);
+  std::string ext = database_getval(fileid, "ext");
+  std::vector<std::string> files = get_all_files(ext);
   for(int i=0; i<files.size(); i++) {
     if(files.at(i).compare(fileid)!=0) {
-      vector<string> attrs = get_all_attr_vals(fileid);
+      std::vector<std::string> attrs = get_all_attr_vals(fileid);
       int sum = 0;
       //for each file attr
       for(int j =0; j<attrs.size(); j++) {
         // get files attr numeric vals
-        string val = database_getval(files.at(i), attrs.at(j));
+        std::string val = database_getval(files.at(i), attrs.at(j));
         int fv = get_attr_numeric_val(attrs.at(j), val);
         val = database_getval(fileid, attrs.at(j));
         int iv = get_attr_numeric_val(attrs.at(j), val);
@@ -130,15 +130,15 @@ string knn_location(string fileid) {
     }
   }
   
-  cout << "KNN SELECTED A LOCATION "<<endl;
-  cout << min_file << endl;
+  std::cout << "KNN SELECTED A LOCATION "<<std::endl;
+  std::cout << min_file << std::endl;
   //get closest file server
-  string min_file_server = database_getval(min_file, "server");
+  std::string min_file_server = database_getval(min_file, "server");
   return min_file_server;
 }
 
-string get_location(string fileid) {
-  string type = "random";
+std::string get_location(std::string fileid) {
+  std::string type = "random";
   if(type.compare("random")==0) {
     return random_location(fileid);
   } else if(type.compare("genre")==0) {
@@ -154,37 +154,37 @@ string get_location(string fileid) {
 
 void usage_localize() {
   //for all files
-  vector<string> files = get_all_files("mp3");
+  std::vector<std::string> files = get_all_files("mp3");
   for(int i=0; i<files.size(); i++) {
     //for each server
     int max_usage=0;
     int max_server=0;
-    cout << "looking at file " << i << endl;
+    std::cout << "looking at file " << i << std::endl;
     for(int j=0; j<server_ids.size(); j++) {
-      cout << "looking at server " << j << endl; 
+      std::cout << "looking at server " << j << std::endl; 
       //track max usage count server
-      string res=database_getval(files.at(i), server_ids.at(j));
+      std::string res=database_getval(files.at(i), server_ids.at(j));
       int usage = atoi(res.c_str());
-      cout << "this server usage " << usage << endl;
+      std::cout << "this server usage " << usage << std::endl;
       if(usage>max_usage) {
-        cout << "new max " << usage << endl;
+        std::cout << "new max " << usage << std::endl;
         max_usage = usage;
         max_server = j;
       }
     }
     //move to server
-    string filename = database_getval(files.at(i), "name");
-    string current = database_getval(files.at(i), "server");
-    string cur_path = current + "/" + filename;
-    string dst_path = servers.at(max_server) + "/" + filename;
+    std::string filename = database_getval(files.at(i), "name");
+    std::string current = database_getval(files.at(i), "server");
+    std::string cur_path = current + "/" + filename;
+    std::string dst_path = servers.at(max_server) + "/" + filename;
     if(cur_path.compare(dst_path)) {
-      cout << "moving to server " << max_server << endl;
-      string command="mv " + cur_path + " " + dst_path;
+      std::cout << "moving to server " << max_server << std::endl;
+      std::string command="mv " + cur_path + " " + dst_path;
       FILE* stream=popen(command.c_str(),"r");
       pclose(stream);
       //rename(cur_path.c_str(), dst_path.c_str());
       database_setval(files.at(i), "server", dst_path);
     }
   }
-  cout << "done usage localize " << endl;
+  std::cout << "done usage localize " << std::endl;
 }

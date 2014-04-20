@@ -16,37 +16,37 @@ bool redis_init() {
   return 1;
 }
 
-string de_dup(string val) {
+std::string de_dup(std::string val) {
   // cout << "dedup " << val << " into ";
-  vector<string> vals = split(val, ":");
-  vector<string> uniques;
+  std::vector<std::string> vals = split(val, ":");
+  std::vector<std::string> uniques;
   for(int i=0; i<vals.size(); i++) {
     // cout << "looking at " << vals[i] << endl;
-    string ret = join(uniques,":");
+    std::string ret = join(uniques,":");
     size_t found = ret.find(vals[i]);
-    if(found==string::npos) {
+    if(found==std::string::npos) {
       // cout << "unique" << endl;
       if(vals[i]!="") {
         uniques.push_back(vals[i]);
       }
     }
   } 
-  string new_ret = join(uniques, ":");
+  std::string new_ret = join(uniques, ":");
   // cout << new_ret << endl;
   return new_ret;  
 }
 
-string cleanup_str(string str) {
+std::string cleanup_str(std::string str) {
   if(str.at(0)==':') {
     str = str.substr(1);
   }
   return str;
 }
 
-string redis_getval(string file_id, string col) {
+std::string redis_getval(std::string file_id, std::string col) {
   reply = (redisReply*)redisCommand(c,"hget %s %s",file_id.c_str(),col.c_str());
 
-  string output = "null";
+  std::string output = "null";
     
   if(reply->len!=0) {
     output = reply->str;
@@ -56,10 +56,10 @@ string redis_getval(string file_id, string col) {
   return cleanup_str(output);
 }
 
-string redis_getkey_cols(string col) {
+std::string redis_getkey_cols(std::string col) {
   //cout << "fetching col " << col << endl;
   reply = (redisReply*)redisCommand(c,"hkeys %s",col.c_str());
-  string output = "null";
+  std::string output = "null";
 
   if(reply->elements!=0) {
     //cout << "nonzero" << endl << flush;
@@ -77,10 +77,10 @@ string redis_getkey_cols(string col) {
 }
 
 
-string redis_setval(string file_id, string col, string val) {  
+std::string redis_setval(std::string file_id, std::string col, std::string val) {  
   // generate file_id if needed
   if(file_id.compare("null")==0) {
-    string file_id=redis_getval("redis_last_id","val");
+    std::string file_id=redis_getval("redis_last_id","val");
     //cout << "got file id " << file_id << endl;	
     if(file_id.compare("null")==0) {
       file_id="1";
@@ -89,13 +89,13 @@ string redis_setval(string file_id, string col, string val) {
     int redis_last_id=0;
     redis_last_id=atoi(file_id.c_str());
     redis_last_id++;//find non-local solution (other table?)
-    ostringstream result;
+    std::stringstream result;
     result<<redis_last_id;
     //cout << "removing " << file_id << endl;
     redis_remove_val("redis_last_id","val",file_id);
     reply = (redisReply*)redisCommand(c,"hget redis_last_id val");
     if(reply->len!=0) {
-      string rep_str = reply->str;
+      std::string rep_str = reply->str;
       //cout << "did it take?" << rep_str << endl;
     }
     //freeReplyObject(reply);
@@ -109,10 +109,10 @@ string redis_setval(string file_id, string col, string val) {
 
   // handle file_id key
   reply = (redisReply*)(redisReply*)redisCommand(c,"hget %s %s",file_id.c_str(),col.c_str());
-  string output = val;
+  std::string output = val;
     
   if(reply->len != 0) {
-    string rep_str = reply->str;
+    std::string rep_str = reply->str;
     output = rep_str + ":" + output;
   }
   //freeReplyObject(reply);
@@ -125,7 +125,7 @@ string redis_setval(string file_id, string col, string val) {
   output = file_id;
     
   if(reply->len != 0) {
-    string rep_str = reply->str;
+    std::string rep_str = reply->str;
     output = rep_str + ":" + output;
   }
   //freeReplyObject(reply);
@@ -138,17 +138,17 @@ string redis_setval(string file_id, string col, string val) {
 
 
 
-void redis_remove_val(string fileid, string col, string val){
+void redis_remove_val(std::string fileid, std::string col, std::string val){
   //cout << "in remove val" << endl;
   //cout << "updating fileid" << endl;
   reply = (redisReply*)redisCommand(c,"hget %s %s",fileid.c_str(),col.c_str());
   if(reply->len != 0 ) {
-    string source = reply->str;
+    std::string source = reply->str;
     //freeReplyObject(reply);
 
     //cout << "got " << source << endl;
     size_t found = source.find(val);
-    if(found != string::npos) {
+    if(found != std::string::npos) {
       source.erase(found, val.length());
       //cout << "after erase " << source << endl;
     }
@@ -165,10 +165,10 @@ void redis_remove_val(string fileid, string col, string val){
   
   //remove from col entry
   //cout << "updating col entry" << endl;
-  string col_entry = redis_getval(col, val);
+  std::string col_entry = redis_getval(col, val);
   //cout << "got " << col_entry << endl;
   size_t found = col_entry.find(fileid);
-  if(found != string::npos) {
+  if(found != std::string::npos) {
     col_entry.erase(found, fileid.length());
     //cout << "after erase " << col_entry << endl;
   }

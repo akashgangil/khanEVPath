@@ -13,16 +13,16 @@ char* strdup(const char* str) {
 }
 #endif
 
-int get_file_size(string path){
+int get_file_size(std::string path){
     struct stat st;
-    cout << "Path: " << path << endl;
+    std::cout << "Path: " << path << std::endl;
     stat(path.c_str(), &st);
     return st.st_size;
 }
 
-vector<string> split(string istr, string delim) {
+std::vector<std::string> split(std::string istr, std::string delim) {
     int start=0, end; 
-    vector<string> vec; 
+    std::vector<std::string> vec; 
     char *saveptr;
     char *token;
     char *str = strdup(istr.c_str());
@@ -30,13 +30,13 @@ vector<string> split(string istr, string delim) {
     for(token = strtok_r(str, delimiters, &saveptr);
             token != NULL;
             token = strtok_r(NULL, delimiters, &saveptr)) {
-        vec.push_back(string(token));
+        vec.push_back(std::string(token));
     }
     return vec; 
 }
 
-string join(vector<string> these, string delim) {
-    string ret = "";
+std::string join(std::vector<std::string> these, std::string delim) {
+    std::string ret = "";
     for(int i=0; i<these.size(); i++) {
         if(i>0) {
             ret+=delim;
@@ -47,13 +47,13 @@ string join(vector<string> these, string delim) {
 }
 
 
-string subtract(string files1, string files2){
-    string ret="";
-    string tok1="";
-    string tok2="";
-    stringstream f1(files1);
+std::string subtract(std::string files1, std::string files2){
+    std::string ret="";
+    std::string tok1="";
+    std::string tok2="";
+    std::stringstream f1(files1);
     while(getline(f1,tok1,':')){
-        stringstream f2(files2);
+        std::stringstream f2(files2);
         bool found = false;
         while(getline(f2,tok2,':')){
             if(strcmp(tok1.c_str(),tok2.c_str())==0){
@@ -66,13 +66,13 @@ string subtract(string files1, string files2){
     }
     return ret;
 }
-string intersect(string files1, string files2){
-    string ret="";
-    string tok1="";
-    string tok2="";
-    stringstream f1(files1);
+std::string intersect(std::string files1, std::string files2){
+    std::string ret="";
+    std::string tok1="";
+    std::string tok2="";
+    std::stringstream f1(files1);
     while(getline(f1,tok1,':')){
-        stringstream f2(files2);
+        std::stringstream f2(files2);
         while(getline(f2,tok2,':')){
             if(strcmp(tok1.c_str(),tok2.c_str())==0){
                 ret+=":"+tok1;
@@ -82,32 +82,32 @@ string intersect(string files1, string files2){
     return ret;
 }
 
-string trim_right(string source, string t = " \n")
+std::string trim_right(std::string source, std::string t = " \n")
 {
-    string str = source;
+    std::string str = source;
     return str.erase( str.find_last_not_of(t) + 1);
 }
 
-string trim_left( string source, string t = " \n")
+std::string trim_left( std::string source, std::string t = " \n")
 {
     std::string str = source;
     return str.erase(0 , source.find_first_not_of(t) );
 }
 
-string trim(string source, string t)
+std::string trim(std::string source, std::string t)
 {
-    string str = source;
+    std::string str = source;
     return trim_left( trim_right( str , t) , t );
 }
 
 
-int count_string(string tobesplit){
+int count_string(std::string tobesplit){
     int count=0;
     if(strcmp(tobesplit.c_str(),"null")==0){
         return 0;
     } else {
-        stringstream ss(tobesplit.c_str());
-        string token;
+        std::stringstream ss(tobesplit.c_str());
+        std::string token;
         while(getline(ss, token, ':')){
             if(token.length()>0) {
                 count++;
@@ -119,7 +119,7 @@ int count_string(string tobesplit){
 
 
 char* append_path(const char * newp) {
-    string servers[] = {"test1"};
+    std::string servers[] = {"test1"};
     char msg[100];
     sprintf(msg,"in append_path with %s and %s",servers[0].c_str(),newp);
     log_msg(msg);
@@ -130,21 +130,21 @@ char* append_path(const char * newp) {
     return fpath;
 }
 
-char* append_path2(string newp) {
+char* append_path2(std::string newp) {
 
-    string fid = database_getval("name", newp);
-    string file_path = database_getval(fid, "file_path");
+    std::string fid = database_getval("name", newp);
+    std::string file_path = database_getval(fid, "file_path");
 
     return strdup(file_path.c_str());
     /*
     //get file from database
-    //cout<<"in append_path2"<<endl;
-    string fid=database_getval("name",newp);
-    //cout<<"got fid:"<<fid<<endl;
+    //std::cout<<"in append_path2"<<std::endl;
+    std::string fid=database_getval("name",newp);
+    //std::cout<<"got fid:"<<fid<<std::endl;
     //get server name
-    string server=database_getval(fid,"server");
-    //cout<<"got server:"<<server<<endl;
-    vector<string> places = split(server, ":");
+    std::string server=database_getval(fid,"server");
+    //std::cout<<"got server:"<<server<<std::endl;
+    std::vector<std::string> places = split(server, ":");
     int i=0;
     server = "";
     for(i=0; i<places.size(); i++) {
@@ -160,7 +160,7 @@ char* append_path2(string newp) {
     */
 }
 
-string bin2hex(const char* input, size_t size)
+std::string bin2hex(const char* input, size_t size)
 {
     std::string res;
     const char hex[] = "0123456789ABCDEF";
@@ -175,7 +175,7 @@ string bin2hex(const char* input, size_t size)
     return res;
 }
 
-string hex2bin(string in) {
+std::string hex2bin(std::string in) {
     for(int i=0; i<in.length(); i++) {
         in[i]-=10;
     }

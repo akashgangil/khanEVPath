@@ -10,26 +10,26 @@
 
 #include "fuse_helper.h"
 
-extern vector<std::string> server_ids;
+extern std::vector < std::string > server_ids;
 
 
   void
 map_path (std::string path, std::string fileid)
 {
-  /* cout << "in map_path" << endl;
-   * cout << "path: " << path << " fileid: " << fileid << endl;
+  /* std::cout << "in map_path" << std::endl;
+   * std::cout << "path: " << path << " fileid: " << fileid << std::endl;
    */
   std::string token = "";
   std::string attr = "";
   std::stringstream ss2 (path.c_str ());
   while (getline (ss2, token, '/'))
   {
-    /* cout << "got token " << token << endl; */
+    /* std::cout << "got token " << token << std::endl; */
     if (strcmp (token.c_str (), "null") != 0)
     {
       if (attr.length () > 0)
       {
-        /* cout << "mapping " << attr << " to " << token << endl; */
+        /* std::cout << "mapping " << attr << " to " << token << std::endl; */
         database_setval (fileid, attr, token);
         if (attr == "location")
         {
@@ -49,26 +49,26 @@ map_path (std::string path, std::string fileid)
       }
     }
   }
-  /* cout << "finished map_path" << endl << endl; */
+  /* std::cout << "finished map_path" << std::endl << std::endl; */
 }
 
   void
 unmap_path (std::string path, std::string fileid)
 {
-  /* cout << "in unmap_path" << endl;
-   *      * cout << "path: " << path << " fileid: " << fileid << endl;
+  /* std::cout << "in unmap_path" << std::endl;
+   *      * std::cout << "path: " << path << " fileid: " << fileid << std::endl;
    *           */
   std::string token = "";
   std::string attr = "";
   std::stringstream ss2 (path.c_str ());
   while (getline (ss2, token, '/'))
   {
-    /* cout << "got token " << token << endl; */
+    /* std::cout << "got token " << token << std::endl; */
     if (strcmp (token.c_str (), "null") != 0)
     {
       if (attr.length () > 0)
       {
-        /* cout << "removing map " << attr << " to " << token << endl; */
+        /* std::cout << "removing map " << attr << " to " << token << std::endl; */
         database_remove_val (fileid, attr, token);
         if (attr == "location")
         {
@@ -89,13 +89,13 @@ unmap_path (std::string path, std::string fileid)
       }
     }
   }
-  /* cout << "finished unmap_path" << endl << endl; */
+  /* std::cout << "finished unmap_path" << std::endl << std::endl; */
 }
 
   void
 dir_pop_stbuf (struct stat *stbuf, std::string contents)
 {
-  cout << "Dir pop STBUF called ! " << endl;
+  std::cout << "Dir pop STBUF called ! " << std::endl;
   time_t current_time;
   time (&current_time);
   stbuf->st_mode = S_IFDIR | 0755;
@@ -122,32 +122,32 @@ file_pop_stbuf (struct stat *stbuf, std::string filename)
   std::string
 resolve_selectors (std::string path)
 {
-  /* cout << "starting split" << endl << flush; */
+  /* std::cout << "starting split" << std::endl << flush; */
   std::vector < std::string > pieces = split (path, "/");
-  /* cout << "starting process" << endl << flush; */
+  /* std::cout << "starting process" << std::endl << flush; */
   for (int i = 0; i < pieces.size (); i++)
   {
-    /* cout << "looking at " << pieces[i] << endl << flush; */
+    /* std::cout << "looking at " << pieces[i] << std::endl << flush; */
     if (pieces[i].at (0) == SELECTOR_C)
     {
-      /* cout << "is a selector" << endl << flush; */
+      /* std::cout << "is a selector" << std::endl << flush; */
       std::vector < std::string > selectores = split (pieces[i], SELECTOR_S);
       pieces[i] = "";
-      /* cout << selectores.size() << " selectors to be exact" << endl << flush; */
+      /* std::cout << selectores.size() << " selectors to be exact" << std::endl << flush; */
       for (int j = 0; j < selectores.size (); j++)
       {
-        /* cout << "checking " << selectores[j] << endl << flush; */
+        /* std::cout << "checking " << selectores[j] << std::endl << flush; */
         bool matched = false;
         std::string content = database_getvals ("attrs");
-        /* cout << "content " << content << endl << flush; */
+        /* std::cout << "content " << content << std::endl << flush; */
         std::vector < std::string > attr_vec = split (content, ":");
-        /* cout << "vs " << attr_vec.size() << " attrs" << endl << flush; */
+        /* std::cout << "vs " << attr_vec.size() << " attrs" << std::endl << flush; */
         /* for all attrs */
         for (int k = 0; k < attr_vec.size (); k++)
         {
-          /* cout << "on " << attr_vec[k] << endl << flush; */
+          /* std::cout << "on " << attr_vec[k] << std::endl << flush; */
           std::string vals = database_getvals (attr_vec[k]);
-          /* cout << "with " << vals << endl << flush; */
+          /* std::cout << "with " << vals << std::endl << flush; */
           /* see if piece is in vals */
           if (content_has (vals, selectores[j]))
           {
@@ -169,6 +169,6 @@ resolve_selectors (std::string path)
     }
   }
   std::string ret = join (pieces, "/");
-  /* cout << "selector path " << path << " resolved to " << ret << endl; */
+  /* std::cout << "selector path " << path << " resolved to " << ret << std::endl; */
   return ret;
 }

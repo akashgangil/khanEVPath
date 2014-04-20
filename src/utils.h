@@ -11,22 +11,20 @@
 #include <libgen.h>
 #define MAX_PATH_LENGTH 2048
 
-using namespace std;
-
 extern char* fpath;
-extern vector<string> servers;
+extern std::vector<std::string> servers;
 
-string trim(string source, string t = " \n");
-char* append_path2(string newp);
+std::string trim(std::string source, std::string t = " \n");
+char* append_path2(std::string newp);
 char* append_path(const char * newp);
-int count_string(string tobesplit);
-string intersect(string files1, string files2);
-string subtract(string files1, string files2);
-int get_file_size(string file_name);
-vector<string> split(string str, string delim);
-string join(vector<string> these, string delim);
-string bin2hex(const char* input, size_t size);
-string hex2bin(string in);
+int count_string(std::string tobesplit);
+std::string intersect(std::string files1, std::string files2);
+std::string subtract(std::string files1, std::string files2);
+int get_file_size(std::string file_name);
+std::vector<std::string> split(std::string str, std::string delim);
+std::string join(std::vector<std::string> these, std::string delim);
+std::string bin2hex(const char* input, size_t size);
+std::string hex2bin(std::string in);
 
 
 #ifdef APPLE

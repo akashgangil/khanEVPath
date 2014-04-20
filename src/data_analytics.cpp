@@ -9,9 +9,9 @@
 #include "log.h"
 #include "utils.h"
 
-extern vector<string> server_ids;
-extern vector<string> servers;
-extern string primary_attribute;
+extern std::vector < std::string > server_ids;
+extern std::vector < std::string > servers;
+extern std::string primary_attribute;
 
 extern char msg[4096];
 
@@ -19,7 +19,7 @@ void analytics(void) {
   std::string experiments =  database_getvals(primary_attribute); 
   sprintf(msg, "Experiment Id's: %s\n", experiments.c_str());
   log_msg(msg);
-  vector<std::string> experiment_list = split(experiments, ":");
+  std::vector<std::string> experiment_list = split(experiments, ":");
   FILE *stream;
   for(int i=0; i<experiment_list.size(); ++i) {
     if(experiment_list[i] != "null") 
@@ -29,7 +29,7 @@ void analytics(void) {
       std::string vals = database_getval("Time", experiment_list[i]);
       sprintf(msg, "File Ids: %s\n", vals.c_str());
       log_msg(msg);
-      vector<std::string> exp_vec = split(vals, ":");
+      std::vector<std::string> exp_vec = split(vals, ":");
 
       std::string intensityframe1 = "";
       std::string intensityframe2 = "";

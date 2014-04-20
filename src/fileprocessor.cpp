@@ -10,11 +10,11 @@
 
 #include "fileprocessor.h"
 
-static string primary_attribute = "";
+static std::string primary_attribute = "";
 
-string call_pyfunc(string script_name, string func_name, string file_path){
+std::string call_pyfunc(std::string script_name, std::string func_name, std::string file_path){
 
-    string result;
+    std::string result;
 
     PyObject *pName, *pModule, *pDict, *pValue, *pArgs, *pClass, *pInstance;
 
@@ -59,17 +59,17 @@ string call_pyfunc(string script_name, string func_name, string file_path){
 
 /*processes files: issues the mp3info command for the file
  *   and fills in the values of the attributes*/
-void process_file(string server, string fileid, string file_path) {
+void process_file(std::string server, std::string fileid, std::string file_path) {
     printf("inside process_file\n");
-    string file = database_getval(fileid, "name");
-    string ext = database_getval(fileid, "ext");
+    std::string file = database_getval(fileid, "name");
+    std::string ext = database_getval(fileid, "ext");
     file = server + "/" + file;
-    string attrs=database_getval(ext,"attrs");
+    std::string attrs=database_getval(ext,"attrs");
 
     char msg4[100];
     if(attrs != "null"){
-        string token="";
-        stringstream ss2(attrs.c_str());
+        std::string token="";
+        std::stringstream ss2(attrs.c_str());
 
         while(getline(ss2,token,':')){
             if(strcmp(token.c_str(),"null")!=0){
@@ -79,7 +79,7 @@ void process_file(string server, string fileid, string file_path) {
                 }
                 //printf("Token: %s %s\n", token.c_str(), file_path.c_str()); 
                 //fflush(stdout);
-                string res =  call_pyfunc("Khan",token, file_path);
+                std::string res =  call_pyfunc("Khan",token, file_path);
                 //printf("token:response  =  %s:%s\n", token.c_str(), res.c_str());
                 database_setval(fileid, token , res.c_str());
             }
@@ -115,15 +115,15 @@ void extract_attr_init(std::string file_path) {
     }   
 }
 
-void process_transducers(string server) {
+void process_transducers(std::string server) {
 
     //log_msg("Process Transducers\n");
 
     if(server == "cloud") {
         return;
     }
-    string line;
-    ifstream transducers_file(("/net/hu21/agangil3/KhanScripts/transducers.txt"));
+    std::string line;
+    std::ifstream transducers_file(("/net/hu21/agangil3/KhanScripts/transducers.txt"));
     getline(transducers_file, line);
     while(transducers_file.good()){
       //  log_msg("=============== got type =   \n");
@@ -136,12 +136,12 @@ void process_transducers(string server) {
         database_setval(line, "attrs", "experiment_id");
         database_setval(line, "attrs", "file_path");
 
-        string ext=line;
+        std::string ext=line;
 
       //  log_msg("===Unique Attribute!=== ");
         getline(transducers_file, line);
-        stringstream s_uniq(line.c_str());
-        string uniq_attr = "";
+        std::stringstream s_uniq(line.c_str());
+        std::string uniq_attr = "";
         getline(s_uniq, uniq_attr, '*');
         if(uniq_attr != ""){
           primary_attribute = uniq_attr;
@@ -150,11 +150,11 @@ void process_transducers(string server) {
         getline(transducers_file,line);
         const char *firstchar=line.c_str();
         while(firstchar[0]=='-') {
-            stringstream ss(line.c_str());
-            string attr;
+            std::stringstream ss(line.c_str());
+            std::string attr;
             getline(ss,attr,'-');
             getline(ss,attr,':');
-            string command;
+            std::string command;
             getline(ss,command,':');
             //log_msg("============ checking attr = \n");
             //log_msg("============ checking command = \n");

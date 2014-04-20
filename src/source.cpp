@@ -13,8 +13,6 @@
 
 #include "evpath.h"
 
-using namespace std;
-
 typedef struct _simple_rec {
     char* file_path;
     long file_buf_len;
@@ -58,9 +56,9 @@ int main(int argc, char **argv)
     source = EVcreate_submit_handle(cm, stone, simple_format_list);
 
     //MAGIC STRING
-    string server = "/net/hu21/agangil3/data";
+    std::string server = "/net/hu21/agangil3/data";
 
-    string pattern = server + "/*";
+    std::string pattern = server + "/*";
     glob_t files;
 
     int fdin;
@@ -74,7 +72,7 @@ int main(int argc, char **argv)
         printf("Globbing with pattern: %s .im7\n", pattern.c_str());
 
         for(int j=0; j<files.gl_pathc; j++) {
-              string filepath = files.gl_pathv[j];
+              std::string filepath = files.gl_pathv[j];
               printf("*** FILE Path *** %s\n", filepath.c_str());
               
               data.file_path = strdup(filepath.c_str());
@@ -103,9 +101,7 @@ int main(int argc, char **argv)
 
               free(data.file_path);
         }
-      
         pattern += "/*";
-
     }
 }
 

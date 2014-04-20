@@ -2,9 +2,20 @@ OBJDIR = build
 SRCDIR = src
 BINDIR = bin
 
-SERVER_SRCS  = $(SRCDIR)/localizations.cpp \
+BOOST_INCLUDE_DIR = -I/net/hu21/agangil3/boost_1_55_0
+
+BOOST_LIB_DIRS = -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/log/build/gcc-4.4.7/release/build-no/link-static/log-api-unix/threading-multi \
+								 -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/system/build/gcc-4.4.7/release/link-static/threading-multi \
+								 -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/thread/build/gcc-4.4.7/release/link-static/threading-multi \
+								 -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/date_time/build/gcc-4.4.7/release/link-static/threading-multi 
+
+BOOST_LIBS = -lboost_log -lboost_system -lboost_thread -lboost_date_time
+
+
+
+SERVER_SRCS  = $(SRCDIR)/khan.cpp \
 							 $(SRCDIR)/data_analytics.cpp \
-							 $(SRCDIR)/khan.cpp \
+							 $(SRCDIR)/localizations.cpp \
 							 $(SRCDIR)/fuseapi.cpp \
 							 $(SRCDIR)/fuse_helper.cpp \
 							 $(SRCDIR)/redis.cpp \
@@ -59,14 +70,14 @@ builddir:
 	mkdir -p $(OBJDIR)
 
 $(SERVER): $(SERVER_OBJS)
-	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) \
-  -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS)
+	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) $(BOOST_LIB_DIRS) \
+  -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS) $(BOOST_LIBS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $@ $(EVPATH_LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CCX) $(CCXFLAGS) $(EVPATH_INCLUDE_DIRS) $(PYTHON_INCLUDE_DIRS) $(REDIS_INCLUDE_DIRS) $(OPTS) -c $< -o $@
+	$(CCX) $(CCXFLAGS) $(EVPATH_INCLUDE_DIRS) $(PYTHON_INCLUDE_DIRS) $(REDIS_INCLUDE_DIRS) $(BOOST_INCLUDE_DIR) $(OPTS) -c $< -o $@
 
 clean:
 	rm $(SERVER) $(CLIENT) $(OBJDIR) -Rf

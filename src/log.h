@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string>
 
-using namespace std;
-
 static char msg[4096];
 
 int log_open(void);
@@ -14,5 +12,5 @@ void log_statvfs(struct statvfs *sv);
 void log_utime(struct utimbuf *buf);
 
 void log_msg(const char *format);
-void log_msg(const string message);
+void log_msg(const std::string message);
 #endif

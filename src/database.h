@@ -1,3 +1,6 @@
+#ifndef DATABASE_H
+#define DATABASE_H
+
 #include <stdlib.h>
 #include <iostream>
 #include <sstream>
@@ -18,8 +21,6 @@
 #ifdef BDB_FOUND
 #include "bdb.h"
 #endif
-
-using namespace std;
 
 #define VOLDEMORT 1
 #define REDIS 2
@@ -59,7 +60,9 @@ extern int bdb_calls;
 extern double bdb_avg_time;
 
 bool init_database();
-string database_setval(string file_id, string col, string val);
-string database_getval(string col, string val);
-string database_getvals(string col);
-void database_remove_val(string file, string col, string val);
+std::string database_setval(std::string file_id, std::string col, std::string val);
+std::string database_getval(std::string col, std::string val);
+std::string database_getvals(std::string col);
+void database_remove_val(std::string file, std::string col, std::string val);
+
+#endif

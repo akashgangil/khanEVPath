@@ -94,10 +94,10 @@ khan_flush (const char *path, struct fuse_file_info *info)
 
   sprintf (msg, "Khan flush: %s\n", path);
   log_msg (msg);
-  string filename = basename (strdup (path));
-  string fileid = database_getval ("name", filename);
-  string server = database_getval (fileid, "server");
-  string file_path = database_getval (fileid, "file_path");
+  std::string filename = basename (strdup (path));
+  std::string fileid = database_getval ("name", filename);
+  std::string server = database_getval (fileid, "server");
+  std::string file_path = database_getval (fileid, "file_path");
 
   process_file (server, fileid, file_path);
   return 0;
@@ -111,18 +111,18 @@ khan_open (const char *path, struct fuse_file_info *fi)
   int retstat = 0;
   int fd;
   path = basename (strdup (path));
-  /* cout << "in khan_open with file " << path << endl << flush;
+  /* std::cout << "in khan_open with file " << path << std::endl << flush;
    *          * get file id */
-  string fileid = database_getval ("name", path);
+  std::string fileid = database_getval ("name", path);
   /* get server  */
-  string server = database_getval (fileid, "server");
-  /* cout << fileid << " " << server << endl << flush; */
+  std::string server = database_getval (fileid, "server");
+  /* std::cout << fileid << " " << server << std::endl << flush; */
   if (server == "cloud")
   {
-    /* cout << "looking at cloud" << endl << flush;  */
-    string long_path = "/tmp/";
+    /* std::cout << "looking at cloud" << std::endl << flush;  */
+    std::string long_path = "/tmp/";
     long_path += path;
-    /* cout << "downloading to "<< long_path << endl << flush;
+    /* std::cout << "downloading to "<< long_path << std::endl << flush;
      *              * cloud_download(path, long_path);
      *                           */
   }
@@ -137,15 +137,15 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
   sprintf (msg, "Khan xmp_create: %s\n", path);
   log_msg (msg);
 
-  string fileid = database_getval ("name", basename (strdup (path)));
+  std::string fileid = database_getval ("name", basename (strdup (path)));
   if (strcmp (fileid.c_str (), "null") == 0)
   {
     fileid = database_setval ("null", "name", basename (strdup (path)));
     database_setval (fileid, "server", servers.at (0));
-    string ext = strrchr (basename (strdup (path)), '.') + 1;
+    std::string ext = strrchr (basename (strdup (path)), '.') + 1;
     database_setval (fileid, "ext", ext);
   }
-  string server = database_getval (fileid, "server");
+  std::string server = database_getval (fileid, "server");
 
   process_file (server, fileid, "");
 
@@ -171,9 +171,9 @@ xmp_access (const char *path, int mask)
   return 0;
   /*  } */
 
-  string dirs = database_getval ("alldirs", "paths");
-  string temptok = "";
-  stringstream dd (dirs);
+  std::string dirs = database_getval ("alldirs", "paths");
+  std::string temptok = "";
+  std::stringstream dd (dirs);
   while (getline (dd, temptok, ':'))
   {
     if (strcmp (temptok.c_str (), path) == 0)
@@ -190,8 +190,8 @@ xmp_access (const char *path, int mask)
   }
 
   /*decompose path */
-  stringstream ss0 (path + 1);
-  string type, attr, val, file, more;
+  std::stringstream ss0 (path + 1);
+  std::string type, attr, val, file, more;
   void *tint = getline (ss0, type, '/');
   void *fint = getline (ss0, file, '/');
   void *mint = getline (ss0, more, '/');
@@ -200,9 +200,9 @@ xmp_access (const char *path, int mask)
   /*check for filetype */
   if (tint)
   {
-    string types = database_getval ("allfiles", "types");
-    stringstream ss (types.c_str ());
-    string token;
+    std::string types = database_getval ("allfiles", "types");
+    std::stringstream ss (types.c_str ());
+    std::string token;
     while (getline (ss, token, ':'))
     {
       if (strcmp (type.c_str (), token.c_str ()) == 0)
@@ -217,17 +217,17 @@ xmp_access (const char *path, int mask)
       /* get attr and val */
       found = 0;
       void *aint = fint;
-      string attr = file;
+      std::string attr = file;
       void *vint = mint;
-      string val = more;
+      std::string val = more;
       fint = getline (ss0, file, '/');
       mint = getline (ss0, more, '/');
 
       /* check for attr */
       if (reta && aint)
       {
-        string attrs = database_getval (type, "attrs");
-        stringstream ss3 (attrs.c_str ());
+        std::string attrs = database_getval (type, "attrs");
+        std::stringstream ss3 (attrs.c_str ());
         reta = 0;
         while (getline (ss3, token, ':'))
         {
@@ -240,7 +240,7 @@ xmp_access (const char *path, int mask)
         /* check for val */
         if (reta && vint)
         {
-          cout << val << endl;
+          std::cout << val << std::endl;
           if (strcmp (attr.c_str (), ("all_" + type + "s").c_str ())
               == 0)
           {
@@ -255,12 +255,12 @@ xmp_access (const char *path, int mask)
                time_spent) / access_calls;
             return 0;
           }
-          string vals = database_getvals (attr);
-          stringstream ss4 (vals.c_str ());
+          std::string vals = database_getvals (attr);
+          std::stringstream ss4 (vals.c_str ());
           reta = 0;
           while (getline (ss4, token, ':'))
           {
-            cout << val << token << endl;
+            std::cout << val << token << std::endl;
             if (strcmp (val.c_str (), token.c_str ()) == 0)
             {
               reta = 1;
@@ -270,9 +270,9 @@ xmp_access (const char *path, int mask)
           /* check for file */
           if (reta && fint)
           {
-            cout << file << endl;
-            string files = database_getval (attr, val);
-            stringstream ss4 (files.c_str ());
+            std::cout << file << std::endl;
+            std::string files = database_getval (attr, val);
+            std::stringstream ss4 (files.c_str ());
             if (!mint)
             {
               reta = 0;
@@ -284,7 +284,7 @@ xmp_access (const char *path, int mask)
                   reta = 1;
                 }
               }
-              stringstream ss5 (attrs.c_str ());
+              std::stringstream ss5 (attrs.c_str ());
               while (getline (ss5, token, ':'))
               {
                 if (strcmp (file.c_str (), token.c_str ()) == 0)
@@ -341,61 +341,61 @@ xmp_mkdir (const char *path, mode_t mode)
   struct timespec mkdir_start, mkdir_stop;
   sprintf (msg, "Khan mkdir: %s\n", path);
   log_msg (msg);
-  string strpath = path;
-  if (strpath.find ("localize") != string::npos)
+  std::string strpath = path;
+  if (strpath.find ("localize") != std::string::npos)
   {
-    if (strpath.find ("usage") != string::npos)
+    if (strpath.find ("usage") != std::string::npos)
     {
       usage_localize ();
     }
     else
     {
-      /*cout << "LOCALIZING" << endl;
-       *                  *cout << strpath << endl;
+      /*std::ut << "LOCALIZING" << std::endl;
+       *                  *std::cout << strpath << std::endl;
        *                                   *check location */
-      string filename = "winter.mp3";
-      string fileid = database_getval ("name", filename);
-      string location = get_location (fileid);
-      string server = database_getval (fileid, "server");
-      /*cout << "======== LOCATION: " << location << endl << endl; */
+      std::string filename = "winter.mp3";
+      std::string fileid = database_getval ("name", filename);
+      std::string location = get_location (fileid);
+      std::string server = database_getval (fileid, "server");
+      /*std::cout << "======== LOCATION: " << location << std::endl << std::endl; */
       /*if not current */
       if (location.compare (server) != 0)
       {
         /*  move to new location */
-        /*cout << " MUST MOVE "<<server<<" TO "<<location<<endl; */
+        /*std::cout << " MUST MOVE "<<server<<" TO "<<location<<std::endl; */
         database_setval (fileid, "server", location);
-        string from = server + "/" + filename;
-        string to = location + "/" + filename;
-        string command = "mv " + from + " " + to;
+        std::string from = server + "/" + filename;
+        std::string to = location + "/" + filename;
+        std::string command = "mv " + from + " " + to;
         FILE *stream = popen (command.c_str (), "r");
         pclose (stream);
       }
     }
-    /* cout << "LOCALIZATION TIME:" << localize_time << endl <<endl; */
+    /* std::cout << "LOCALIZATION TIME:" << localize_time << std::endl <<std::endl; */
     return -1;
   }
-  if (strpath.find ("stats") != string::npos)
+  if (strpath.find ("stats") != std::string::npos)
   {
     /* print stats and reset */
-    ofstream stfile;
+    std::ofstream stfile;
     //    stfile.open(stats_file.c_str(), ofstream::out);
-    stfile << "TOT TIME    :" << tot_time << endl;
-    stfile << "Vold Calls   :" << vold_calls << endl;
-    stfile << "     Avg Time:" << vold_avg_time << endl;
-    stfile << "Readdir Calls:" << readdir_calls << endl;
-    stfile << "     Avg Time:" << readdir_avg_time << endl;
-    stfile << "Access Calls :" << access_calls << endl;
-    stfile << "     Avg Time:" << access_avg_time << endl;
-    stfile << "Read Calls   :" << read_calls << endl;
-    stfile << "     Avg Time:" << read_avg_time << endl;
-    stfile << "Getattr Calls:" << getattr_calls << endl;
-    stfile << "     Avg Time:" << getattr_avg_time << endl;
-    stfile << "Write Calls  :" << write_calls << endl;
-    stfile << "     Avg Time:" << write_avg_time << endl;
-    stfile << "Create Calls :" << create_calls << endl;
-    stfile << "     Avg Time:" << create_avg_time << endl;
-    stfile << "Rename Calls :" << rename_calls << endl;
-    stfile << "     Avg Time:" << rename_avg_time << endl;
+    stfile << "TOT TIME    :" << tot_time << std::endl;
+    stfile << "Vold Calls   :" << vold_calls << std::endl;
+    stfile << "     Avg Time:" << vold_avg_time << std::endl;
+    stfile << "Readdir Calls:" << readdir_calls << std::endl;
+    stfile << "     Avg Time:" << readdir_avg_time << std::endl;
+    stfile << "Access Calls :" << access_calls << std::endl;
+    stfile << "     Avg Time:" << access_avg_time << std::endl;
+    stfile << "Read Calls   :" << read_calls << std::endl;
+    stfile << "     Avg Time:" << read_avg_time << std::endl;
+    stfile << "Getattr Calls:" << getattr_calls << std::endl;
+    stfile << "     Avg Time:" << getattr_avg_time << std::endl;
+    stfile << "Write Calls  :" << write_calls << std::endl;
+    stfile << "     Avg Time:" << write_avg_time << std::endl;
+    stfile << "Create Calls :" << create_calls << std::endl;
+    stfile << "     Avg Time:" << create_avg_time << std::endl;
+    stfile << "Rename Calls :" << rename_calls << std::endl;
+    stfile << "     Avg Time:" << rename_avg_time << std::endl;
     stfile.close ();
     vold_calls = 0;
     readdir_calls = 0;
@@ -458,25 +458,25 @@ xmp_unlink (const char *path)
   log_msg (msg);
   /* TODO: handle in vold somehow */
   int res;
-  string fileid = database_getval ("name", basename (strdup (path)));
+  std::string fileid = database_getval ("name", basename (strdup (path)));
 
-  string fromext = database_getval (fileid, "ext");
-  string file = append_path2 (basename (strdup (path)));
-  string attrs = database_getval (fromext, "attrs");
-  /*cout << fromext <<  fileid << endl;
-   *          cout<<"HERE!"<<endl; */
+  std::string fromext = database_getval (fileid, "ext");
+  std::string file = append_path2 (basename (strdup (path)));
+  std::string attrs = database_getval (fromext, "attrs");
+  /*std::cout << fromext <<  fileid << std::endl;
+   *          std::cout<<"HERE!"<<std::endl; */
   database_remove_val (fileid, "attrs", "all_" + fromext + "s");
-  /*cout<<"THERE!"<<endl;
+  /*std::cout<<"THERE!"<<std::endl;
    *database_remove_val("all_"+fromext+"s",strdup(basename(strdup(from))),fileid);
-   *cout<<"WHERE!"<<endl;*/
-  string token = "";
-  stringstream ss2 (attrs.c_str ());
+   *std::cout<<"WHERE!"<<std::endl;*/
+  std::string token = "";
+  std::stringstream ss2 (attrs.c_str ());
   while (getline (ss2, token, ':'))
   {
     if (strcmp (token.c_str (), "null") != 0)
     {
-      string cmd = database_getval (token + "gen", "command");
-      string msg2 = (cmd + " " + file).c_str ();
+      std::string cmd = database_getval (token + "gen", "command");
+      std::string msg2 = (cmd + " " + file).c_str ();
       FILE *stream = popen (msg2.c_str (), "r");
       if (fgets (msg, 200, stream) != 0)
       {
@@ -622,14 +622,14 @@ xmp_read (const char *path, char *buf, size_t size, off_t offset,
   sprintf (msg, "Khan xmp_read: %s", path);
   log_msg (msg);
   path = append_path2 (basename (strdup (path)));
-  /* cout<<"Converted Path: "<<path<<endl<<endl<<endl<<endl; */
+  /* std::cout<<"Converted Path: "<<path<<std::endl<<std::endl<<std::endl<<std::endl; */
 
   FILE *thefile = fopen (path, "r");
   if (thefile != NULL)
   {
     fseek (thefile, offset, SEEK_SET);
     res = fread (buf, 1, size, thefile);
-    /* cout << "READ THIS MANY"<<endl<<res<<endl<<endl<<endl<<endl<<endl; */
+    /* std::cout << "READ THIS MANY"<<std::endl<<res<<std::endl<<std::endl<<std::endl<<std::endl<<std::endl; */
 
     if (res == -1)
       res = -errno;
@@ -674,7 +674,7 @@ xmp_statfs (const char *path, struct statvfs *stbuf)
   int res = statvfs (path, stbuf);
   if (res != 0)
   {
-    fprintf (log, "statfs error for %s\n", path);
+    //fprintf (log, "statfs error for %s\n", path);
     return errno;
   }
   return 0;
@@ -684,7 +684,7 @@ xmp_statfs (const char *path, struct statvfs *stbuf)
 xmp_release (const char *path, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
-  fprintf (log, "in xmp_release with path %s\n", path);
+  //fprintf (log, "in xmp_release with path %s\n", path);
   return 0;
 }
 
@@ -692,7 +692,7 @@ xmp_release (const char *path, struct fuse_file_info *fi)
 xmp_fsync (const char *path, int isdatasync, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
-  fprintf (log, "in xmp_fsync with path %s\n", path);
+  //fprintf (log, "in xmp_fsync with path %s\n", path);
   return 0;
 }
 
@@ -701,26 +701,26 @@ xmp_rename (const char *from, const char *to)
 {
   sprintf (msg, "Khan Rename Directory From: %s To: %s", from, to);
   log_msg (msg);
-  /* cout << endl << endl << endl << "Entering Rename Function" << endl; */
+  /* std::cout << std::endl << std::endl << std::endl << "Entering Rename Function" << std::endl; */
   double start_time = 0;
   struct timeval start_tv;
   gettimeofday (&start_tv, NULL);
   start_time = start_tv.tv_sec;
   start_time += (start_tv.tv_usec / 1000000.0);
-  //start_times << fixed << start_time << endl << flush;
-  string src = basename (strdup (from));
-  string dst = basename (strdup (to));
-  string fileid = database_getval ("name", src);
-  /* cout << fileid << endl; */
+  //start_times << fixed << start_time << std::endl << flush;
+  std::string src = basename (strdup (from));
+  std::string dst = basename (strdup (to));
+  std::string fileid = database_getval ("name", src);
+  /* std::cout << fileid << std::endl; */
   database_remove_val (fileid, "name", src);
-  /* cout << src << endl; */
+  /* std::cout << src << std::endl; */
   database_setval (fileid, "name", dst);
-  /* cout << dst << endl; */
-  string orig_path = append_path2 (src);
-  string orig_loc = database_getval (fileid, "location");
+  /* std::cout << dst << std::endl; */
+  std::string orig_path = append_path2 (src);
+  std::string orig_loc = database_getval (fileid, "location");
   map_path (resolve_selectors (to), fileid);
-  string new_path = append_path2 (dst);
-  string new_loc = database_getval (fileid, "location");
+  std::string new_path = append_path2 (dst);
+  std::string new_loc = database_getval (fileid, "location");
   if (new_loc != orig_loc)
   {
     if (new_loc == "google_music")
@@ -744,8 +744,8 @@ xmp_rename (const char *from, const char *to)
   gettimeofday (&end_tv, NULL);
   rename_time = end_tv.tv_sec - start_tv.tv_sec;
   rename_time += (end_tv.tv_usec - start_tv.tv_usec) / 1000000.0;
-  //start_times << fixed << rename_time << endl << flush;
-  /* cout << "Exiting Rename Function" << endl << endl << endl << endl; */
+  //start_times << fixed << rename_time << std::endl << flush;
+  /* std::cout << "Exiting Rename Function" << std::endl << std::endl << std::endl << std::endl; */
   return 0;
 }
 
@@ -758,11 +758,11 @@ xmp_readdir (const char *c_path, void *buf, fuse_fill_dir_t filler,
   log_msg (msg);
   filler (buf, ".", NULL, 0);
   filler (buf, "..", NULL, 0);
-  string pre_processed = c_path + 1;
-  string after = resolve_selectors (pre_processed);
-  stringstream path (after);
+  std::string pre_processed = c_path + 1;
+  std::string after = resolve_selectors (pre_processed);
+  std::stringstream path (after);
   populate_readdir_buffer (buf, filler, path);
-  //cout << "xmp_readdir  end " << endl;
+  std::cout << "xmp_readdir  end " << std::endl;
   return 0;
 }
 
@@ -778,11 +778,11 @@ xmp_setxattr (const char *path, const char *name, const char *value,
         size_t size, int flags)
     {
 #endif
-      string attr = bin2hex (value, size);
+      std::string attr = bin2hex (value, size);
       sprintf (msg, "setxattr call\npath:%sname:%svalue:%s\n\n\n\n\n\n\n\n\n\n",
           path, name, value);
       log_msg (msg);
-      string xpath = "xattr:";
+      std::string xpath = "xattr:";
       xpath += path;
       redis_setval (xpath, name, attr.c_str ());
       sprintf (msg, "setxattr call\n %s, %s, %s\n\n\n\n\n\n\n\n\n\n",
@@ -802,9 +802,9 @@ xmp_setxattr (const char *path, const char *name, const char *value,
         {
 #endif
           fprintf (stderr, "getxattr call\n %s, %s, %s\n", path, name, value);
-          string xpath = "xattr:";
+          std::string xpath = "xattr:";
           xpath += path;
-          string db_val = redis_getval (xpath, name);
+          std::string db_val = redis_getval (xpath, name);
           sprintf (msg,
               "getxattr call\npath:%s\nname:%s\nvalue:%s\nsize:%zd\n\n\n\n\n",
               xpath.c_str (), name, db_val.c_str (), size);
@@ -819,7 +819,7 @@ xmp_setxattr (const char *path, const char *name, const char *value,
             }
             memcpy (value, db_val.c_str (), size);
             size_t num = snprintf (value, size, "%s", db_val.c_str ());
-            sprintf (msg, "returned\nstring:%s\ncount:%zd\n\n", value, num);
+            sprintf (msg, "returned\nstd::string:%s\ncount:%zd\n\n", value, num);
             log_msg (msg);
             errno = 0;
             return size;
@@ -833,9 +833,9 @@ xmp_setxattr (const char *path, const char *name, const char *value,
         {
           sprintf (msg, "listxattr call\n %s, %s\n\n", path, list);
           log_msg (msg);
-          string xpath = "xattr:";
+          std::string xpath = "xattr:";
           xpath += path;
-          string attrs = database_getvals (xpath);
+          std::string attrs = database_getvals (xpath);
           char *mal = strdup (attrs.c_str ());
           int count = 1;
           int str_size = strlen (mal);

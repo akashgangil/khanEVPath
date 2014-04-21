@@ -34,7 +34,7 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
     struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
     //printf("size, nmemb, curl_size = %d, %d, %d\n", size, nmemb, curl_size);
-    mem->memory = realloc(mem->memory, mem->bytesize + curl_size + 1); //for the following copy
+    mem->memory = (char*)realloc(mem->memory, mem->bytesize + curl_size + 1); //for the following copy
     if (mem->memory == NULL) {
         /* out of memory! */
         printf("not enough memory (realloc returned NULL)\n");
@@ -54,8 +54,8 @@ int get_token(const char *tname, const char *username, const char *pswd, const c
     //char strURL[URL_STR_SIZE] = "";
     //char *strToken = NULL;
     //char *strURL = NULL;
-    *token = malloc(TOKEN_STR_SIZE*sizeof(char));
-    *url = malloc(URL_STR_SIZE*sizeof(char));
+    *token = (char*)malloc(TOKEN_STR_SIZE*sizeof(char));
+    *url = (char*)malloc(URL_STR_SIZE*sizeof(char));
     int iSuccess = -1;
     /*
        strcpy(cmd, "curl -s -d '{\"auth\": {\"tenantName\": \"");
@@ -304,7 +304,7 @@ struct MemoryStruct* download_object(const char *token, const char *url, const c
         printf("Error in calloc sData\n");
         return NULL;
     }
-    sData->memory = malloc(1); // only 1 byte space
+    sData->memory = (char*)malloc(1); // only 1 byte space
     sData->bytesize = 0;    
 
     if(curl){

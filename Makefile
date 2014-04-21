@@ -23,7 +23,9 @@ SERVER_SRCS  = $(SRCDIR)/khan.cpp \
                $(SRCDIR)/database.cpp \
                $(SRCDIR)/fileprocessor.cpp \
                $(SRCDIR)/threadpool.c \
-               $(SRCDIR)/sink.cpp 
+               $(SRCDIR)/sink.cpp \
+							 $(SRCDIR)/cloudupload_v1.c \
+							 $(SRCDIR)/cloudupload_supplement.c
 
 SERVER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SERVER_SRCS))
 
@@ -57,6 +59,7 @@ EVPATH_LIBS  = -latl -levpath -lffs -ldill -lcercs_env -lrt
 PYTHON_LIBS  = -lpython2.6
 REDIS_LIBS   = -lhiredis
 PTHREAD_LIBS = -lpthread
+CURL_LIBS = -lcurl
 
 FUSE_LIBS = `pkg-config fuse --cflags --libs`
 
@@ -70,7 +73,7 @@ builddir:
 
 $(SERVER): $(SERVER_OBJS)
 	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) $(BOOST_LIB_DIRS) \
-  -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS) $(BOOST_LIBS)
+  -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS) $(BOOST_LIBS) $(CURL_LIBS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $@ $(EVPATH_LIBS)

@@ -4,6 +4,7 @@
 
 #include "cloudupload_supplement.h"
 #include "list.h"
+#include "cloudupload.h"
 
 char *token = NULL;
 char *purl  = NULL;

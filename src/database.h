@@ -8,8 +8,6 @@
 
 #define REDIS_FOUND
 
-#include "log.h"
-
 #ifdef REDIS_FOUND
 #include "redis.h"
 #endif

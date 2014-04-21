@@ -3,7 +3,6 @@
 #include <sstream>
 #include <string>
 #include "hiredis.h"
-#include "log.h"
 
 
 bool redis_init();

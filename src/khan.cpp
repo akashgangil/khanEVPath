@@ -1,26 +1,14 @@
-//mkdir stats prints stats to stats file and console:
-//std::string stats_file="./stats.txt";
-//std::string rename_times_file_name="./rename_times.txt";
-//std::string start_times_file_name = "./start_times.txt";
-//std::vector<std::string> servers;
-//std::string this_server;
-//std::string this_server_id;
-//
-//static std::string primary_attribute = "";
-//
-////PyObject* cloud_interface;
-//ofstream rename_times;
-//ofstream start_times;  
-
 #include <string>
 #include <stdio.h>
 #include <vector>
 #include <iostream>
 #include <errno.h>
 #include <glob.h>
+#include <string.h>
 #include <set>
 #include <sys/types.h>
 #include <dirent.h>
+#include <errno.h>
 
 #include <boost/log/trivial.hpp>
 
@@ -40,30 +28,27 @@ extern char msg[4096];
 initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vector < std::string > server_ids)
 {
 
-  BOOST_LOG_TRIVIAL(info) << "test";
-
-  log_msg ("In initialize\n");
+  BOOST_LOG_TRIVIAL(info) << "Initializing Khan";
+  
   /* unmounting((char *)mnt_dir); */
+
   /* Opening root directory and creating if not present */
-  sprintf (msg, "khan_root[0] is %s\n", servers.at (0).c_str ());
-  log_msg (msg);
-  /* std::cout<<"khan_root[0] is "<<servers.at(0)<<std::endl; */
+  BOOST_LOG_TRIVIAL(debug) << "Khan Root 0 is " << servers[0];
+  
   if (NULL == opendir (servers.at (0).c_str ()))
   {
-    sprintf (msg, "Error msg on opening directory : %s\n",
-        strerror (errno));
-    log_msg (msg);
-    log_msg ("Root directory might not exist..Creating\n");
+    BOOST_LOG_TRIVIAL(error) << "Error message on opening directory" << strerror(errno);
+    BOOST_LOG_TRIVIAL(error) << "Root directory might not exist.. Creating";
     std::string command = "mkdir " + servers.at (0);
     if (system (command.c_str ()) < 0)
     {
-      log_msg ("Unable to create storage directory...Aborting\n");
+      BOOST_LOG_TRIVIAL(fatal) << "Unable to create storage directory... Aborting";
       exit (1);
     }
   }
   else
   {
-    log_msg ("directory opened successfully\n");
+    BOOST_LOG_TRIVIAL(info) << "Directory opened successfully";
   }
 
   init_database ();
@@ -72,7 +57,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   std::string output = database_getval ("setup", "value");
   if (output.compare ("true") == 0)
   {
-    log_msg ("Database was previously initialized.");
+    BOOST_LOG_TRIVIAL(info) << "Database was previously initialized";
     tot_time +=
       (stop.tv_sec - start.tv_sec) + (stop.tv_nsec -
           start.tv_nsec) / BILLION;
@@ -80,132 +65,44 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   }
 
   /* if we have not setup, do so now */
-  log_msg ("it hasnt happened, setvalue then setup\n");
+  BOOST_LOG_TRIVIAL(info) << "Set database setup value to true and setup the database";
   database_setval ("setup", "value", "true");
 
   /* load metadata associatons */
   for (int i = 0; i < servers.size (); i++)
   {
-    /* log_msg("servers: " + servers.at(i) + "\n"); */
     process_transducers (servers.at (i));
   }
 
   /* load metadata for each file on each server */
   std::string types = database_getval ("allfiles", "types");
-  sprintf (msg, "=== types to look for = %s\n", types.c_str ());
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "Types to look for" << types;
 
-  /* log_msg("Server Size" + servers.size() + "\n"); */
   for (int i = 0; i < servers.size (); i++)
   {
-    /*    if(servers.at(i) == "cloud") {
-     *      std::cout << " Cloud \n";
-     *      PyObject* myFunction = PyObject_GetAttrString(cloud_interface,(char*)"get_all_titles");
-     *      PyObject* myResult = PyObject_CallObject(myFunction, NULL);
-     *      if(myResult==NULL) {
-     *         PyErr_PrintEx(0);
-     *         continue;
-     *      }
-     *      int n = PyList_Size(myResult);
-     *      std::cout << "SIZE = " << n << std::endl << flush; 
-     */
-    /*for (int j = 0; j < n; j++)
-    {
-      PyObject *title = PyList_GetItem (myResult, j);
-      char *temp = PyString_AsString (title);
-      if (temp == NULL)
-      {
-        PyErr_PrintEx (0);
-        continue;
-      }
-      std::string filename = temp;
-      /* std::cout << "Checking " << filename << " ... " << std::endl << flush; */
-      /*if (database_getval ("name", filename) == "null")
-      {
-        std::string fileid = database_setval ("null", "name", filename);
-        std::string ext = strrchr (filename.c_str (), '.') + 1;
-        database_setval (fileid, "ext", ext);
-        database_setval (fileid, "server", servers.at (i));
-        database_setval (fileid, "location", server_ids.at (i));
-        std::string attrs = database_getval (ext, "attrs");
-        std::string token = "";
-        std::stringstream ss2 (attrs.c_str ());
-        PyObject *myFunction =
-          PyObject_GetAttrString (cloud_interface,
-              (char *) "get_metadata");
-        while (getline (ss2, token, ':'))
-        {
-          if (strcmp (token.c_str (), "null") != 0)
-          {
-
-            PyObject *arglist = PyTuple_New (2);
-            PyTuple_SetItem (arglist, 0,
-                PyString_FromString (filename.
-                  c_str ()));
-            PyTuple_SetItem (arglist, 1,
-                PyString_FromString (token.c_str ()));
-            PyObject *myResult =
-              PyObject_CallObject (myFunction, arglist);
-
-            if (myResult == NULL)
-            {
-              PyErr_PrintEx (0);
-              continue;
-            }
-            char *msg = PyString_AsString (myResult);
-            if (!msg)
-            {
-              PyErr_PrintEx (0);
-              continue;
-            }
-            std::string val = msg;
-            Py_DECREF (arglist);
-            Py_DECREF (myResult);
-
-            if (val != "na")
-            {
-              database_setval (fileid, token, val);
-            }
-          }
-        }
-      }
-    }
-  }
-  else
-  {*/
-    log_msg ("Not Cloud \n");
-
-    /*      std::string command = "find -type d | awk -F'/' '{print NF-1}' | sort -n | tail -1"; */
+    /* std::string command = "find -type d | awk -F'/' '{print NF-1}' | sort -n | tail -1"; */
     /* std::string command = "find /net/hp100/ihpcae -type d | awk -F'/' '{print NF-1}' | sort -n | tail -1"; */
 
     glob_t files;
     std::string pattern = servers.at (0) + "/*";
     static int experiment_id = 0;
-//    set < std::string > experiments;
 
     for (int count = 18; count > 0; count--)
     {
-      sprintf (msg, "Globbing with pattern: %s .im7\n", pattern.c_str ());
-      /* log_msg("Globbing with pattern " + pattern + ".im7\n"); */
-      log_msg (msg);
+      BOOST_LOG_TRIVIAL(info) << "Globbing with pattern " << pattern << ".im7"; 
+      
       glob ((pattern + ".im7").c_str (), 0, NULL, &files);
 
-      sprintf (msg, "Glob Buffer: %d\n", files.gl_pathc);
-      log_msg (msg);
-
-      /*log_msg("Glob buffer" + files.gl_pathc + "\n");
-       *                      if(files.gl_pathc != 0 ) {
-       *                                               experiment_id++;
-       *                                                                   } */
+      BOOST_LOG_TRIVIAL(info) << "Glob Buffer: " << files.gl_pathc;
 
       for (int j = 0; j < files.gl_pathc; j++)
-      {			/* for each file */
+      {			
+        /* for each file */
         std::string file_path = files.gl_pathv[j];
-        /* experiments.insert(file_path.substr(0, file_path.size()-11));
-         *                         ostd::stringstream ss;
-         *                                                 ss.flush();
-         *                                                                         ss << experiments.size(); */
-        sprintf (msg, "*** FILE Path *** %s\n", file_path.c_str ());
+        
+        BOOST_LOG_TRIVIAL(info) << "File Path: " << file_path; 
+        
         std::string ext = strrchr (file_path.c_str (), '.') + 1;
         std::string filename = strrchr (file_path.c_str (), '/') + 1;
         if (database_getval ("name", filename) == "null" || 1)
@@ -214,7 +111,6 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
           database_setval (fileid, "ext", ext);
           database_setval (fileid, "server", servers.at (i));
           database_setval (fileid, "location", server_ids.at (i));
-          /*                          database_setval(fileid, "experiment_id", ss.str()); */
           database_setval (fileid, "file_path", file_path);
           for (int k = 0; k < server_ids.size (); k++)
           {
@@ -232,9 +128,10 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
       pattern += "/*";
     }
 
-
-    log_msg ("At the end of initialize\n");
     analytics ();
+    
+    BOOST_LOG_TRIVIAL(info) << "Khan Initialized";
+    
     return 0;
   }
   }
@@ -426,8 +323,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
         dir_pop_buf (void *buf, fuse_fill_dir_t filler, std::string content, bool convert)
         {
 
-          sprintf (msg, "Inside dir_pop_buf: %s\n", content.c_str ());
-          log_msg (msg);
+          BOOST_LOG_TRIVIAL(info) << "Inside dir_pop_buf " << content;
 
           std::vector < std::string > contents = split (content, ":");
           for (int i = 0; i < contents.size (); i++)
@@ -435,15 +331,10 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
             if (convert)
             {
               std::string filename = database_getval (contents[i].c_str (), "name");
-
-              sprintf (msg, "dir_pop_buf loop%s\n", filename.c_str ());
-              log_msg (msg);
-
               filler (buf, filename.c_str (), NULL, 0);
             }
             else
             {
-              std::cout << "Convert is false " << std::endl;
               filler (buf, contents[i].c_str (), NULL, 0);
             }
           }
@@ -452,12 +343,14 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
       void
         khan_terminate (int param)
         {
-          sprintf (msg, "Unmounting: %s\n", mountpoint.c_str ());
-          log_msg (msg);
+
+          BOOST_LOG_TRIVIAL(info) << "Unmounting " << mountpoint;
+          
           unmounting (mountpoint);
           chdir ("/net/hu21/agangil3/Mediakhan/");
-          log_msg ("killing...\n ");
-          //std::cout << "killing... " << flush << std::endl;
+          
+          BOOST_LOG_TRIVIAL(info) << "Killing";
+
           exit (1);
         }
 
@@ -465,7 +358,8 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
       void
         unmounting (std::string mnt_dir)
         {
-          log_msg ("in umounting\n");
+          
+          BOOST_LOG_TRIVIAL(debug) << "In unmounting";
 #ifdef APPLE
           std::string command = "umount " + mnt_dir + "\n";
 #else
@@ -473,11 +367,11 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
 #endif
           if (system (command.c_str ()) < 0)
           {
-            log_msg ("Could not unmount mounted directory!\n");
-            log_msg (msg);
+            BOOST_LOG_TRIVIAL(error) << "Could not unmount the specfied directory";
             return;
           }
-          log_msg ("fusermount successful\n");
+          
+          BOOST_LOG_TRIVIAL(info) << "fuserunmount successful";
         }
 
 
@@ -486,9 +380,8 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
             std::stringstream & path)
         {
 
-          log_msg ("Populate Read Dir Buffer\n");
-          sprintf (msg, "Path is %s\n", path.str ().c_str ());
-          log_msg (msg);
+          BOOST_LOG_TRIVIAL(info) << "Populate read directory buffer";
+
           std::string attr, val, file, more;
           std::string current_content = "none";
           std::string current_attrs = "none";
@@ -585,10 +478,8 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
                     else
                     {
                       /* /attr/val dir */
-                      sprintf (msg, "Else %s, %s\n\n\n\n\n\n",
-                          attrs_content.c_str (),
-                          current_attrs.c_str ());
-                      log_msg (msg);
+      
+                      BOOST_LOG_TRIVIAL(info) << "Else " << attrs_content <<" " << current_attrs;
                       attrs_content =
                         subtract (attrs_content, current_attrs);
                       std::cout << "Dir Content  " << dir_content << std::endl;

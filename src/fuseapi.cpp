@@ -9,9 +9,10 @@
 #include <fuse/fuse_opt.h>
 #include <fuse/fuse_lowlevel.h>
 
+#include <boost/log/trivial.hpp>
+
 #include <errno.h>
 
-#include "log.h"
 #include "khan.h"
 #include "fuseapi.h"
 #include "fuse_helper.h"
@@ -72,28 +73,24 @@ xmp_initialize ()
 khan_init (struct fuse_conn_info *conn)
 {
 
-  sprintf(msg, "khan_init() is called \n");
-  log_msg (msg);
-  sprintf (msg, "khan_root is : %s\n", servers.at (0).c_str ());
-  log_msg (msg);
+  BOOST_LOG_TRIVIAL(info) << "khan_init called";
+  
   if (chdir (servers.at (0).c_str ()) < 0)
   {
-    sprintf (msg, "could not change directory ,errno %s\n",
-        strerror (errno));
-    log_msg (msg);
+    BOOST_LOG_TRIVIAL(error) << "Could not change directory " << "Errno " << strerror(errno);
     perror (servers.at (0).c_str ());
   }
-  sprintf (msg, "AT THE END OF INIT\n");
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "khan_int ends";
   return KHAN_DATA;
 }
 
   int
 khan_flush (const char *path, struct fuse_file_info *info)
 {
-
-  sprintf (msg, "Khan flush: %s\n", path);
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "Khan Flush";
+  
   std::string filename = basename (strdup (path));
   std::string fileid = database_getval ("name", filename);
   std::string server = database_getval (fileid, "server");
@@ -106,25 +103,21 @@ khan_flush (const char *path, struct fuse_file_info *info)
   int
 khan_open (const char *path, struct fuse_file_info *fi)
 {
-  sprintf (msg, "Khan Open directory %s\n ", path);
-  log_msg (msg);
+
+  BOOST_LOG_TRIVIAL(info) << "Khan Open Directory";
+  
   int retstat = 0;
   int fd;
   path = basename (strdup (path));
-  /* std::cout << "in khan_open with file " << path << std::endl << flush;
-   *          * get file id */
   std::string fileid = database_getval ("name", path);
-  /* get server  */
+  
+  /* Get server  */
   std::string server = database_getval (fileid, "server");
-  /* std::cout << fileid << " " << server << std::endl << flush; */
   if (server == "cloud")
   {
     /* std::cout << "looking at cloud" << std::endl << flush;  */
     std::string long_path = "/tmp/";
     long_path += path;
-    /* std::cout << "downloading to "<< long_path << std::endl << flush;
-     *              * cloud_download(path, long_path);
-     *                           */
   }
   return 0;
 }
@@ -134,9 +127,8 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
 {
   create_calls++;
 
-  sprintf (msg, "Khan xmp_create: %s\n", path);
-  log_msg (msg);
-
+  BOOST_LOG_TRIVIAL(info) << "Khan xmp_create";
+  
   std::string fileid = database_getval ("name", basename (strdup (path)));
   if (strcmp (fileid.c_str (), "null") == 0)
   {
@@ -158,18 +150,16 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
 xmp_access (const char *path, int mask)
 {
 
-  sprintf (msg, "Khan Access: %s", path);
-  log_msg (msg);
+  BOOST_LOG_TRIVIAL(info) << "Khan Access " << path;
   char *path_copy = strdup (path);
   if (strcmp (path, "/") == 0)
   {
-    log_msg ("at root");
+    
+    BOOST_LOG_TRIVIAL(info) << "At root " ;
     return 0;
   }
-  /* if(strcmp(path,"/")==0) { */
-  log_msg ("at root\n");
+  BOOST_LOG_TRIVIAL(info) << "At root " ;
   return 0;
-  /*  } */
 
   std::string dirs = database_getval ("alldirs", "paths");
   std::string temptok = "";
@@ -317,11 +307,10 @@ xmp_access (const char *path, int mask)
   static int
 xmp_mknod (const char *path, mode_t mode, dev_t rdev)
 {
-  log_msg ("in xmp_mknod\n");
-
   path = append_path2 (basename (strdup (path)));
-  sprintf (msg, "khan_mknod, path=%s\n", path);
-  log_msg (msg);
+
+  BOOST_LOG_TRIVIAL(info) << "In xmp_mknod Path = " << path  ;
+  
   int res;
   if (S_ISFIFO (mode))
     res = mkfifo (path, mode);
@@ -339,8 +328,9 @@ xmp_mknod (const char *path, mode_t mode, dev_t rdev)
 xmp_mkdir (const char *path, mode_t mode)
 {
   struct timespec mkdir_start, mkdir_stop;
-  sprintf (msg, "Khan mkdir: %s\n", path);
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "Khan mkdir " << path;
+  
   std::string strpath = path;
   if (strpath.find ("localize") != std::string::npos)
   {
@@ -350,19 +340,14 @@ xmp_mkdir (const char *path, mode_t mode)
     }
     else
     {
-      /*std::ut << "LOCALIZING" << std::endl;
-       *                  *std::cout << strpath << std::endl;
-       *                                   *check location */
       std::string filename = "winter.mp3";
       std::string fileid = database_getval ("name", filename);
       std::string location = get_location (fileid);
       std::string server = database_getval (fileid, "server");
-      /*std::cout << "======== LOCATION: " << location << std::endl << std::endl; */
       /*if not current */
       if (location.compare (server) != 0)
       {
         /*  move to new location */
-        /*std::cout << " MUST MOVE "<<server<<" TO "<<location<<std::endl; */
         database_setval (fileid, "server", location);
         std::string from = server + "/" + filename;
         std::string to = location + "/" + filename;
@@ -371,14 +356,12 @@ xmp_mkdir (const char *path, mode_t mode)
         pclose (stream);
       }
     }
-    /* std::cout << "LOCALIZATION TIME:" << localize_time << std::endl <<std::endl; */
     return -1;
   }
   if (strpath.find ("stats") != std::string::npos)
   {
     /* print stats and reset */
     std::ofstream stfile;
-    //    stfile.open(stats_file.c_str(), ofstream::out);
     stfile << "TOT TIME    :" << tot_time << std::endl;
     stfile << "Vold Calls   :" << vold_calls << std::endl;
     stfile << "     Avg Time:" << vold_avg_time << std::endl;
@@ -417,9 +400,7 @@ xmp_mkdir (const char *path, mode_t mode)
     return -1;
   }
 
-  log_msg ("xmp_mkdir\n");
-  sprintf (msg, "khan_mkdir for path=%s\n", path);
-  log_msg (msg);
+  BOOST_LOG_TRIVIAL(info) << "xmp_mkdir for path = " << path;
   struct stat *st;
   if (khan_getattr (path, st) < 0)
   {
@@ -429,7 +410,7 @@ xmp_mkdir (const char *path, mode_t mode)
   }
   else
   {
-    log_msg ("Directory exists\n");
+    BOOST_LOG_TRIVIAL(info) << "Directory exists";
   }
   return 0;
 }
@@ -438,10 +419,10 @@ xmp_mkdir (const char *path, mode_t mode)
   static int
 xmp_readlink (const char *path, char *buf, size_t size)
 {
-  sprintf (msg, "Khan Read Link: %s\n", path);
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "xmp_readlink Path = " << path;
+  
   /* TODO: handle in vold somehow */
-  log_msg ("In readlink\n");
   int res = -1;
   path = append_path2 (basename (strdup (path)));
   /* res = readlink(path, buf, size - 1); */
@@ -454,8 +435,8 @@ xmp_readlink (const char *path, char *buf, size_t size)
   static int
 xmp_unlink (const char *path)
 {
-  sprintf (msg, "Khan Unlink Directory: %s", path);
-  log_msg (msg);
+
+  BOOST_LOG_TRIVIAL(info) << "xmp_unlink, PATH = " << path;
   /* TODO: handle in vold somehow */
   int res;
   std::string fileid = database_getval ("name", basename (strdup (path)));
@@ -463,12 +444,7 @@ xmp_unlink (const char *path)
   std::string fromext = database_getval (fileid, "ext");
   std::string file = append_path2 (basename (strdup (path)));
   std::string attrs = database_getval (fromext, "attrs");
-  /*std::cout << fromext <<  fileid << std::endl;
-   *          std::cout<<"HERE!"<<std::endl; */
   database_remove_val (fileid, "attrs", "all_" + fromext + "s");
-  /*std::cout<<"THERE!"<<std::endl;
-   *database_remove_val("all_"+fromext+"s",strdup(basename(strdup(from))),fileid);
-   *std::cout<<"WHERE!"<<std::endl;*/
   std::string token = "";
   std::stringstream ss2 (attrs.c_str ());
   while (getline (ss2, token, ':'))
@@ -478,6 +454,7 @@ xmp_unlink (const char *path)
       std::string cmd = database_getval (token + "gen", "command");
       std::string msg2 = (cmd + " " + file).c_str ();
       FILE *stream = popen (msg2.c_str (), "r");
+      char msg[200];
       if (fgets (msg, 200, stream) != 0)
       {
         database_remove_val (fileid, token, msg);
@@ -497,8 +474,7 @@ xmp_unlink (const char *path)
   static int
 xmp_rmdir (const char *path)
 {
-  sprintf (msg, "Khan Remove Directory: %s\n", path);
-  log_msg (msg);
+  BOOST_LOG_TRIVIAL(info) << "xmp_rmdir PATH = " << path;
   /*if hardcoded, just remove */
   database_remove_val ("alldirs", "paths", path);
 
@@ -514,16 +490,13 @@ xmp_rmdir (const char *path)
   static int
 xmp_symlink (const char *from, const char *to)
 {
-  sprintf (msg, "Khan Sym Link Directory From: %s  To: %s", from, to);
-  log_msg (msg);
   /*TODO: handle in vold somehow */
   int res = -1;
   from = append_path2 (basename (strdup (from)));
   to = append_path2 (basename (strdup (to)));
-  sprintf (msg, "In symlink creating a symbolic link from %s to %s\n", from,
-      to);
-  log_msg (msg);
-  /*res = symlink(from, to); */
+  
+  BOOST_LOG_TRIVIAL(info) << "xmp_symlink From " << from << " to " << to;
+  
   if (res == -1)
     return -errno;
   return 0;
@@ -532,15 +505,11 @@ xmp_symlink (const char *from, const char *to)
   static int
 xmp_link (const char *from, const char *to)
 {
-  sprintf (msg, "Khan Link: From: %s To: %s\n", from, to);
-  log_msg (msg);
   /*TODO:handle in vold somehow... */
   int retstat = 0;
   from = append_path2 (basename (strdup (from)));
   to = append_path2 (basename (strdup (to)));
-  sprintf (msg, "khan_link initial path=\"%s\", initial to=\"%s\")\n", from,
-      to);
-  log_msg (msg);
+  BOOST_LOG_TRIVIAL(info) << "xmp_link. From " << from << " To: " << to;
   retstat = link (from, to);
   return retstat;
 }
@@ -548,13 +517,11 @@ xmp_link (const char *from, const char *to)
   static int
 xmp_chmod (const char *path, mode_t mode)
 {
-  sprintf (msg, "Khan Chmod Directory: %s\n", path);
-  log_msg (msg);
-
   int res;
   path = append_path2 (basename (strdup (path)));
-  sprintf (msg, "In chmod for: %s\n", path);
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "xmp_chmod Path = " << path;
+  
   res = chmod (path, mode);
 #ifdef APPLE
   res = chmod (path, mode);
@@ -569,12 +536,11 @@ xmp_chmod (const char *path, mode_t mode)
   static int
 xmp_chown (const char *path, uid_t uid, gid_t gid)
 {
-  sprintf (msg, "Khan Chown Directory: %s\n", path);
-  log_msg (msg);
   int res;
   path = append_path2 (basename (strdup (path)));
-  sprintf (msg, "In chown for : %s\n", path);
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "xmp_chown, PATH = " << path;
+  
   res = lchown (path, uid, gid);
   if (res == -1)
     return -errno;
@@ -585,10 +551,9 @@ xmp_chown (const char *path, uid_t uid, gid_t gid)
 xmp_truncate (const char *path, off_t size)
 {
   /*update for vold? */
-  sprintf (msg, "Khan Truncate Directory: %s", path);
-  log_msg (msg);
   int res;
   path++;
+  BOOST_LOG_TRIVIAL(info) << "xmp_truncate, PATH = " << path;
   res = truncate (path, size);
   if (res == -1)
     return -errno;
@@ -598,12 +563,12 @@ xmp_truncate (const char *path, off_t size)
   static int
 xmp_utimens (const char *path, const struct timespec ts[2])
 {
-  log_msg ("in utimens\n");
   int res;
   struct timeval tv[2];
   path = append_path2 (basename (strdup (path)));
-  sprintf (msg, "in utimens for path : %s\n", path);
-  log_msg (msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "xmp_utimens, PATH = " << path;
+
   tv[0].tv_sec = ts[0].tv_sec;
   tv[0].tv_usec = ts[0].tv_nsec / 1000;
   tv[1].tv_sec = ts[1].tv_sec;
@@ -619,18 +584,15 @@ xmp_read (const char *path, char *buf, size_t size, off_t offset,
     struct fuse_file_info *fi)
 {
   int res = 0;
-  sprintf (msg, "Khan xmp_read: %s", path);
-  log_msg (msg);
+
   path = append_path2 (basename (strdup (path)));
-  /* std::cout<<"Converted Path: "<<path<<std::endl<<std::endl<<std::endl<<std::endl; */
+  BOOST_LOG_TRIVIAL(info) << "xmp_read , PATH = " << path;
 
   FILE *thefile = fopen (path, "r");
   if (thefile != NULL)
   {
     fseek (thefile, offset, SEEK_SET);
     res = fread (buf, 1, size, thefile);
-    /* std::cout << "READ THIS MANY"<<std::endl<<res<<std::endl<<std::endl<<std::endl<<std::endl<<std::endl; */
-
     if (res == -1)
       res = -errno;
     fclose (thefile);
@@ -646,12 +608,11 @@ xmp_read (const char *path, char *buf, size_t size, off_t offset,
 xmp_write (const char *path, const char *buf, size_t size, off_t offset,
     struct fuse_file_info *fi)
 {
-  sprintf (msg, "Khan xmp_write: %s\n", path);
-  log_msg (msg);
   int fd;
   int res;
 
   path = append_path2 (basename (strdup (path)));
+  BOOST_LOG_TRIVIAL(info) << "xmp_write, PATH = " << path;
   (void) fi;
   fd = open (path, O_WRONLY);
   if (fd == -1)
@@ -669,8 +630,8 @@ xmp_write (const char *path, const char *buf, size_t size, off_t offset,
 xmp_statfs (const char *path, struct statvfs *stbuf)
 {
   /* Pass the call through to the underlying system which has the media. */
-  sprintf (msg, "Khan xmp_statfs: %s\n", path);
-  log_msg (msg);
+
+  BOOST_LOG_TRIVIAL(info) << "xmp_statfs, PATH = " << path;
   int res = statvfs (path, stbuf);
   if (res != 0)
   {
@@ -684,7 +645,7 @@ xmp_statfs (const char *path, struct statvfs *stbuf)
 xmp_release (const char *path, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
-  //fprintf (log, "in xmp_release with path %s\n", path);
+  BOOST_LOG_TRIVIAL(debug) << "xmp_release, PATH = " << path;
   return 0;
 }
 
@@ -692,30 +653,25 @@ xmp_release (const char *path, struct fuse_file_info *fi)
 xmp_fsync (const char *path, int isdatasync, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
-  //fprintf (log, "in xmp_fsync with path %s\n", path);
+  BOOST_LOG_TRIVIAL(info) << "xmp_fsync, PATH = " << path;
   return 0;
 }
 
   static int
 xmp_rename (const char *from, const char *to)
 {
-  sprintf (msg, "Khan Rename Directory From: %s To: %s", from, to);
-  log_msg (msg);
-  /* std::cout << std::endl << std::endl << std::endl << "Entering Rename Function" << std::endl; */
+  
+  BOOST_LOG_TRIVIAL(info) << "xmp_rename, From: " << from << " To: " << to;
   double start_time = 0;
   struct timeval start_tv;
   gettimeofday (&start_tv, NULL);
   start_time = start_tv.tv_sec;
   start_time += (start_tv.tv_usec / 1000000.0);
-  //start_times << fixed << start_time << std::endl << flush;
   std::string src = basename (strdup (from));
   std::string dst = basename (strdup (to));
   std::string fileid = database_getval ("name", src);
-  /* std::cout << fileid << std::endl; */
   database_remove_val (fileid, "name", src);
-  /* std::cout << src << std::endl; */
   database_setval (fileid, "name", dst);
-  /* std::cout << dst << std::endl; */
   std::string orig_path = append_path2 (src);
   std::string orig_loc = database_getval (fileid, "location");
   map_path (resolve_selectors (to), fileid);
@@ -744,8 +700,6 @@ xmp_rename (const char *from, const char *to)
   gettimeofday (&end_tv, NULL);
   rename_time = end_tv.tv_sec - start_tv.tv_sec;
   rename_time += (end_tv.tv_usec - start_tv.tv_usec) / 1000000.0;
-  //start_times << fixed << rename_time << std::endl << flush;
-  /* std::cout << "Exiting Rename Function" << std::endl << std::endl << std::endl << std::endl; */
   return 0;
 }
 
@@ -754,15 +708,13 @@ xmp_readdir (const char *c_path, void *buf, fuse_fill_dir_t filler,
     off_t offset, struct fuse_file_info *fi)
 {
 
-  sprintf (msg, "Khan Read directory: %s\n", c_path);
-  log_msg (msg);
+  BOOST_LOG_TRIVIAL(info) << "xmp_readdir PATH = " << c_path;
   filler (buf, ".", NULL, 0);
   filler (buf, "..", NULL, 0);
   std::string pre_processed = c_path + 1;
   std::string after = resolve_selectors (pre_processed);
   std::stringstream path (after);
   populate_readdir_buffer (buf, filler, path);
-  std::cout << "xmp_readdir  end " << std::endl;
   return 0;
 }
 
@@ -779,15 +731,15 @@ xmp_setxattr (const char *path, const char *name, const char *value,
     {
 #endif
       std::string attr = bin2hex (value, size);
-      sprintf (msg, "setxattr call\npath:%sname:%svalue:%s\n\n\n\n\n\n\n\n\n\n",
-          path, name, value);
-      log_msg (msg);
+
+      BOOST_LOG_TRIVIAL(info) << "setxattr call Path: " << path << " Name: " << name << " Value: " << value;
+      
       std::string xpath = "xattr:";
       xpath += path;
       redis_setval (xpath, name, attr.c_str ());
-      sprintf (msg, "setxattr call\n %s, %s, %s\n\n\n\n\n\n\n\n\n\n",
-          xpath.c_str (), name, attr.c_str ());
-      log_msg (msg);
+      
+      BOOST_LOG_TRIVIAL(info) << "setxattr call " << xpath << name << attr;
+      
       return 0;
     }
 
@@ -805,10 +757,10 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           std::string xpath = "xattr:";
           xpath += path;
           std::string db_val = redis_getval (xpath, name);
-          sprintf (msg,
-              "getxattr call\npath:%s\nname:%s\nvalue:%s\nsize:%zd\n\n\n\n\n",
-              xpath.c_str (), name, db_val.c_str (), size);
-          log_msg (msg);
+      
+          BOOST_LOG_TRIVIAL(info) << "getxattr call " << "Path: " << xpath << "Name: " << name
+                      << "Value: " << db_val << "Size: " << size;
+          
           if (db_val != "null")
           {
             db_val = hex2bin (db_val);
@@ -819,8 +771,9 @@ xmp_setxattr (const char *path, const char *name, const char *value,
             }
             memcpy (value, db_val.c_str (), size);
             size_t num = snprintf (value, size, "%s", db_val.c_str ());
-            sprintf (msg, "returned\nstd::string:%s\ncount:%zd\n\n", value, num);
-            log_msg (msg);
+          
+            BOOST_LOG_TRIVIAL(debug) << "Returned String: " << value << "Count: " << num;
+            
             errno = 0;
             return size;
           }
@@ -831,8 +784,8 @@ xmp_setxattr (const char *path, const char *name, const char *value,
       static int
         xmp_listxattr (const char *path, char *list, size_t size)
         {
-          sprintf (msg, "listxattr call\n %s, %s\n\n", path, list);
-          log_msg (msg);
+
+          BOOST_LOG_TRIVIAL(debug) << "listxattr call " << path << list;
           std::string xpath = "xattr:";
           xpath += path;
           std::string attrs = database_getvals (xpath);
@@ -849,13 +802,13 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           }
           if (list == NULL)
           {
-            sprintf (msg, "returning %d\n", str_size);
-            log_msg (msg);
+            BOOST_LOG_TRIVIAL(debug) << "returning " << str_size;
             return str_size;
           }
           snprintf (list, size, "%s", attrs.c_str ());
-          sprintf (msg, "returning %s and %d\n", list, count);
-          log_msg (msg);
+          
+          BOOST_LOG_TRIVIAL(debug) << "Returning " << list << count;
+          
           return count;
         }
 

@@ -5,8 +5,9 @@
 #include <string>
 #include <vector>
 
+#include <boost/log/trivial.hpp>
+
 #include "database.h"
-#include "log.h"
 #include "utils.h"
 
 extern std::vector < std::string > server_ids;
@@ -17,18 +18,21 @@ extern char msg[4096];
 
 void analytics(void) {
   std::string experiments =  database_getvals(primary_attribute); 
-  sprintf(msg, "Experiment Id's: %s\n", experiments.c_str());
-  log_msg(msg);
+  
+  BOOST_LOG_TRIVIAL(info) << "Experiment Id's " << experiments;
+
   std::vector<std::string> experiment_list = split(experiments, ":");
   FILE *stream;
   for(int i=0; i<experiment_list.size(); ++i) {
     if(experiment_list[i] != "null") 
     {
-      sprintf(msg, "Experiment Number: %s\n", experiment_list[i].c_str());
-      log_msg(msg);
+
+      BOOST_LOG_TRIVIAL(info) << "Experiment Number: " << experiment_list[i];
+      
       std::string vals = database_getval("Time", experiment_list[i]);
-      sprintf(msg, "File Ids: %s\n", vals.c_str());
-      log_msg(msg);
+      
+      BOOST_LOG_TRIVIAL(info) << "File Ids: " << vals;
+      
       std::vector<std::string> exp_vec = split(vals, ":");
 
       std::string intensityframe1 = "";

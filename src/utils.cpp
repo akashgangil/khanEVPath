@@ -1,6 +1,8 @@
 #include "database.h"
 #include "utils.h"
 
+#include <boost/log/trivial.hpp>
+
 #ifdef APPLE
 int clock_gettime(int i, struct timespec* b) { 
     return 0;
@@ -121,12 +123,12 @@ int count_string(std::string tobesplit){
 char* append_path(const char * newp) {
     std::string servers[] = {"test1"};
     char msg[100];
-    sprintf(msg,"in append_path with %s and %s",servers[0].c_str(),newp);
-    log_msg(msg);
+    
+    BOOST_LOG_TRIVIAL(debug) << "append_path " << servers[0] << " " << newp;
+    
     char* fpath=(char*)malloc(MAX_PATH_LENGTH);
     memset(fpath,0,MAX_PATH_LENGTH);
     sprintf(&fpath[0],"%s%s",servers[0].c_str(),newp);
-    //log_msg("returning");
     return fpath;
 }
 
@@ -136,28 +138,6 @@ char* append_path2(std::string newp) {
     std::string file_path = database_getval(fid, "file_path");
 
     return strdup(file_path.c_str());
-    /*
-    //get file from database
-    //std::cout<<"in append_path2"<<std::endl;
-    std::string fid=database_getval("name",newp);
-    //std::cout<<"got fid:"<<fid<<std::endl;
-    //get server name
-    std::string server=database_getval(fid,"server");
-    //std::cout<<"got server:"<<server<<std::endl;
-    std::vector<std::string> places = split(server, ":");
-    int i=0;
-    server = "";
-    for(i=0; i<places.size(); i++) {
-    //prefer local to cloud
-    if(places[i]=="cloud" && server=="") {
-    server = "/tmp";
-    } else {
-    server = places[i];
-    }
-    }
-    //append and return c_str
-    return strdup((server+"/"+newp).c_str());
-    */
 }
 
 std::string bin2hex(const char* input, size_t size)
@@ -168,8 +148,6 @@ std::string bin2hex(const char* input, size_t size)
     {
         unsigned char c = input[i];
         res += (char)(c+10);
-        /* res += hex[c >> 4];
-         *               res += hex[c & 0xf]; */
     }
 
     return res;

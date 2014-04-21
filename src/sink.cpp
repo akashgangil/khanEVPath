@@ -8,6 +8,8 @@
 #include <signal.h>
 #include <fcntl.h>
 
+#include <boost/log/trivial.hpp>
+
 #include "fileprocessor.h"
 #include "database.h"
 #include "params.h"
@@ -163,7 +165,7 @@ int main(int argc, char **argv)
 
   khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
   if (khan_data == NULL)  {
-    log_msg("Could not allocate memory to khan_data!..Aborting..!\n");
+    BOOST_LOG_TRIVIAL(fatal) << "Could not allocate memory to khan_data.. Aborting";
     abort();
   }
 
@@ -171,7 +173,7 @@ int main(int argc, char **argv)
   std::cout << "Servers : " << servers[0] << std::endl;
   std::cout << "Server Ids: " << server_ids[0] << std::endl;
   if(initializing_khan(argv[1], servers, server_ids)<0)  {
-    log_msg("Could not initialize khan..Aborting..!\n");
+    BOOST_LOG_TRIVIAL(fatal) << "Could not initialize khan.. aborting..";
     return -1;
   } 
 

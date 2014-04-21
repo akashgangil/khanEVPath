@@ -21,7 +21,6 @@ SERVER_SRCS  = $(SRCDIR)/khan.cpp \
 							 $(SRCDIR)/redis.cpp \
                $(SRCDIR)/utils.cpp \
                $(SRCDIR)/database.cpp \
-               $(SRCDIR)/log.cpp \
                $(SRCDIR)/fileprocessor.cpp \
                $(SRCDIR)/threadpool.c \
                $(SRCDIR)/sink.cpp 

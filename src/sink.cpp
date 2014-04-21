@@ -10,6 +10,7 @@
 
 #include <boost/log/trivial.hpp>
 #include <boost/thread.hpp>
+#include <boost/log/utility/setup/file.hpp>
 
 #include "fileprocessor.h"
 #include "database.h"
@@ -98,12 +99,35 @@ static void cleanupHandler(int dummy=0){
   exit(0);
 }
 
+void log_init() {
+    boost::log::add_file_log("sample.log");
+
+    boost::log::core::get()->set_filter
+    (
+        boost::log::trivial::severity >= boost::log::trivial::info
+    );
+    boost::log::keywords::auto_flush = true; 
+}
+
 int main(int argc, char **argv)
 {
+
+  //log_init();
+
   EVstone stone;
   char *string_list;
+  int forked = 0;
+
   cm = CManager_create();
+  forked = CMfork_comm_thread(cm);
+  assert(forked == 1);
+  if (forked) {
+    printf("Forked a communication thread\n");
+  } else {
+    printf("Doing non-threaded communication handling\n");
+  }
   CMlisten(cm);
+  
   stone = EValloc_stone(cm);
   EVassoc_terminal_action(cm, stone, simple_format_list, simple_handler, NULL);
   string_list = attr_list_to_string(CMget_contact_list(cm));
@@ -172,15 +196,9 @@ int main(int argc, char **argv)
 
   BOOST_LOG_TRIVIAL(info) << "Initialized Khan";
   
-  //boost::thread fuse_thread(fuse_main, args.argc, args.argv, &khan_ops, khan_data);
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
 
   BOOST_LOG_TRIVIAL(info) << "Fuse Running";
   
-  CMrun_network(cm);
-
-  BOOST_LOG_TRIVIAL(info) << "EVPath Running";
-
-
   return 0;
 }

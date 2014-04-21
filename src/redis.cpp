@@ -1,3 +1,6 @@
+
+#include <boost/log/trivial.hpp>
+
 #include "redis.h"
 #include "utils.h"
 
@@ -5,6 +8,9 @@ redisContext* c;
 redisReply* reply;
 
 bool redis_init() {
+ 
+  BOOST_LOG_TRIVIAL(info) << "Redis initialized";
+  
   struct timeval timeout = { 3600, 0};
   c=redisConnectWithTimeout((char*)"localhost",6379, timeout);
     

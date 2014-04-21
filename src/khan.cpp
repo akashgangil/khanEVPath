@@ -23,7 +23,6 @@ std::string primary_attribute = "";
 
 std::string mountpoint;
 
-extern char msg[4096];
   void *
 initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vector < std::string > server_ids)
 {
@@ -55,6 +54,9 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
 
   /* check if we've loaded metadata before */
   std::string output = database_getval ("setup", "value");
+  
+  std::cout << "OUtPut  " << output << std::endl;
+  
   if (output.compare ("true") == 0)
   {
     BOOST_LOG_TRIVIAL(info) << "Database was previously initialized";

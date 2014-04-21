@@ -9,6 +9,7 @@
 #include <fcntl.h>
 
 #include <boost/log/trivial.hpp>
+#include <boost/thread.hpp>
 
 #include "fileprocessor.h"
 #include "database.h"
@@ -92,7 +93,7 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 }
 
 static void cleanupHandler(int dummy=0){
-  printf("Cleanup Called\n");
+  BOOST_LOG_TRIVIAL(info) << "Cleanup Called";
   threadpool_destroy(t_p, 0);
   exit(0);
 }
@@ -106,12 +107,12 @@ int main(int argc, char **argv)
   stone = EValloc_stone(cm);
   EVassoc_terminal_action(cm, stone, simple_format_list, simple_handler, NULL);
   string_list = attr_list_to_string(CMget_contact_list(cm));
-  printf("Contact list \"%d:%s\"\n", stone, string_list);
+  
+  BOOST_LOG_TRIVIAL(info) << "Contact List: " << stone << ":" << string_list;
 
   signal(SIGINT, cleanupHandler);
 
   t_p = threadpool_create( 1, 1000, 0);    
-  init_database();
 
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
@@ -137,7 +138,9 @@ int main(int argc, char **argv)
   signal(SIGTERM, khan_terminate);
   signal(SIGKILL, khan_terminate);
 
-  fprintf(stderr, "store filename: %s\n", store_filename);
+
+  BOOST_LOG_TRIVIAL(debug) << "Store filename: " << store_filename;
+
   FILE* stores = fopen(store_filename, "r");
   char buffer[100];
   char buffer2[100];
@@ -157,10 +160,6 @@ int main(int argc, char **argv)
   }
   fclose(stores);
 
-  for(int i = 0 ; i < servers.size(); ++i){
-    std::cout << servers[i] << std::endl;
-  }
-
   umask(0);
 
   khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
@@ -169,23 +168,19 @@ int main(int argc, char **argv)
     abort();
   }
 
-  std::cout << "Argv: " << argv[1] << std::endl;
-  std::cout << "Servers : " << servers[0] << std::endl;
-  std::cout << "Server Ids: " << server_ids[0] << std::endl;
-  if(initializing_khan(argv[1], servers, server_ids)<0)  {
-    BOOST_LOG_TRIVIAL(fatal) << "Could not initialize khan.. aborting..";
-    return -1;
-  } 
+  boost::thread khan_init_thread(initializing_khan, argv[1], servers, server_ids);
 
-  printf("Initialized khan\n");
-
+  BOOST_LOG_TRIVIAL(info) << "Initialized Khan";
+  
+  //boost::thread fuse_thread(fuse_main, args.argc, args.argv, &khan_ops, khan_data);
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
 
-  printf("Started Fuse\n"); 
-
+  BOOST_LOG_TRIVIAL(info) << "Fuse Running";
+  
   CMrun_network(cm);
 
-  printf("Started network\n");
+  BOOST_LOG_TRIVIAL(info) << "EVPath Running";
+
 
   return 0;
 }

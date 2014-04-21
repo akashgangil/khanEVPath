@@ -1,14 +1,8 @@
 #include "utils.h"
 #include "database.h"
 
-#include <pthread.h>
-
-extern char msg[4096];
-
 struct timespec start, stop;
 double time_spent;
-
-pthread_mutex_t mymutex = PTHREAD_MUTEX_INITIALIZER;
 
 int vold_calls=0;
 int readdir_calls=0;
@@ -71,9 +65,7 @@ std::string database_setval(std::string file_id, std::string col, std::string va
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
     std::string retstring="fail";
-    pthread_mutex_lock(&mymutex);
     retstring=redis_setval(file_id,col,val);
-    pthread_mutex_unlock(&mymutex);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;
@@ -109,10 +101,7 @@ std::string database_getval(std::string col, std::string val){
   if(DATABASE==REDIS){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    pthread_mutex_lock(&mymutex);
     std::string retstring=redis_getval(col,val);
-    pthread_mutex_unlock(&mymutex);
-    //cout<<"just got a "<<retstd::string<<endl;
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;
@@ -144,9 +133,7 @@ std::string database_getvals(std::string col){
   if(DATABASE==REDIS){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    pthread_mutex_lock(&mymutex);
     std::string retstr=redis_getkey_cols(col);
-    pthread_mutex_unlock(&mymutex);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;
@@ -180,9 +167,7 @@ void database_remove_val(std::string file, std::string col, std::string val){
   if(DATABASE==REDIS){
     redis_calls++;
     clock_gettime(CLOCK_REALTIME,&start);
-    pthread_mutex_lock(&mymutex);
     redis_remove_val(file,col,val);
-    pthread_mutex_unlock(&mymutex);
     clock_gettime(CLOCK_REALTIME,&stop);
     time_spent = (stop.tv_sec-start.tv_sec)+(stop.tv_nsec-start.tv_nsec)/BILLION; tot_time += time_spent;
     redis_avg_time=(redis_avg_time*(redis_calls-1)+time_spent)/redis_calls;

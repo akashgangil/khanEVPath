@@ -65,21 +65,24 @@ FUSE_LIBS = `pkg-config fuse --cflags --libs`
 SERVER = net_recv
 CLIENT = net_send
 
-all: builddir $(SERVER) $(CLIENT)
+all: builddir bindir $(SERVER) $(CLIENT)
   
 builddir:
 	mkdir -p $(OBJDIR)
 
+bindir:
+	mkdir -p $(BINDIR)
+
 $(SERVER): $(SERVER_OBJS)
 	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) $(BOOST_LIB_DIRS) \
-  -o $@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS) $(BOOST_LIBS) $(CURL_LIBS)
+  -o $(BINDIR)/$@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS) $(BOOST_LIBS) $(CURL_LIBS)
 
 $(CLIENT): $(CLIENT_OBJS)
-	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $@ $(EVPATH_LIBS)
+	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) $(BOOST_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS) $(BOOST_LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CCX) $(CCXFLAGS) $(EVPATH_INCLUDE_DIRS) $(PYTHON_INCLUDE_DIRS) $(REDIS_INCLUDE_DIRS) $(BOOST_INCLUDE_DIR) $(OPTS) -c $< -o $@
 
 clean:
-	rm $(SERVER) $(CLIENT) $(OBJDIR) -Rf
+	rm $(SERVER) $(CLIENT) $(OBJDIR) $(BINDIR) -Rf
 

@@ -170,16 +170,17 @@ int main(int argc, char **argv)
     }
   }
 
+  /* Setting fuse options */
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "allow_other");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "default_permissions");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "umask=022"); 
-  //set signal handler
+
+  /* Set signal handler */
   signal(SIGTERM, khan_terminate);
   signal(SIGKILL, khan_terminate);
-
 
   BOOST_LOG_TRIVIAL(debug) << "Store filename: " << store_filename;
 

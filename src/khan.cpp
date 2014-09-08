@@ -81,62 +81,12 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   
   BOOST_LOG_TRIVIAL(info) << "Types to look for" << types;
 
-  for (int i = 0; i < servers.size (); i++)
-  {
-    /* std::string command = "find -type d | awk -F'/' '{print NF-1}' | sort -n | tail -1"; */
-    /* std::string command = "find /net/hp100/ihpcae -type d | awk -F'/' '{print NF-1}' | sort -n | tail -1"; */
-
-    glob_t files;
-    std::string pattern = servers.at (0) + "/*";
-    static int experiment_id = 0;
-
-    for (int count = 18; count > 0; count--)
-    {
-      BOOST_LOG_TRIVIAL(info) << "Globbing with pattern " << pattern << ".im7"; 
-      
-      glob ((pattern + ".im7").c_str (), 0, NULL, &files);
-
-      BOOST_LOG_TRIVIAL(info) << "Glob Buffer: " << files.gl_pathc;
-
-      for (int j = 0; j < files.gl_pathc; j++)
-      {			
-        /* for each file */
-        std::string file_path = files.gl_pathv[j];
-        
-        BOOST_LOG_TRIVIAL(info) << "File Path: " << file_path; 
-        
-        std::string ext = strrchr (file_path.c_str (), '.') + 1;
-        std::string filename = strrchr (file_path.c_str (), '/') + 1;
-        if (database_getval ("name", filename) == "null" || 1)
-        {
-          std::string fileid = database_setval ("null", "name", filename);
-          database_setval (fileid, "ext", ext);
-          database_setval (fileid, "server", servers.at (i));
-          database_setval (fileid, "location", server_ids.at (i));
-          database_setval (fileid, "file_path", file_path);
-          for (int k = 0; k < server_ids.size (); k++)
-          {
-            database_setval (fileid, server_ids.at (k), "0");
-          }
-          process_file (servers.at (i), fileid, file_path);
-        }
-        else
-        {
-          std::string fileid = database_getval ("name", filename);
-          database_setval (fileid, "server", servers.at (i));
-          database_setval (fileid, "location", server_ids.at (i));
-        }
-      }
-      pattern += "/*";
-    }
-
-    analytics ();
+  analytics ();
     
-    BOOST_LOG_TRIVIAL(info) << "Khan Initialized";
+  BOOST_LOG_TRIVIAL(info) << "Khan Initialized";
     
-    return 0;
-  }
-  }
+  return 0;
+}
 
 
   int

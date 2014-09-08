@@ -28,6 +28,8 @@ std::vector < std::string > server_ids;
 std::string this_server;
 std::string this_server_id;
 
+char* mount_point;
+
 threadpool_t* t_p;
 CManager cm;
 
@@ -54,7 +56,7 @@ static FMStructDescRec simple_format_list[] =
 void file_receive(void *vevent){
 
   simple_rec_ptr event = (_simple_rec*)vevent;
-  if(event) printf("[THREADING ]I  got %s\n", event->file_path);
+  if(event) BOOST_LOG_TRIVIAL(info) << "[THREADING ]I  got " << event->file_path;
 
   std::string filepath (event->file_path);
   //24 is the length of the server name
@@ -62,7 +64,9 @@ void file_receive(void *vevent){
   std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
   std::string file_name = filepath.substr(24, strlen(event->file_path) - 24);
 
-  FILE* stream=popen(("mkdir -p \"" + dir_name + "\"").c_str(),"r");
+  std::string command = "mkdir -p \"" + dir_name + "\"";
+  FILE* stream=popen(command.c_str(),"r");
+  BOOST_LOG_TRIVIAL(debug) << "Executed Command: " << command;
   fclose(stream);
 
   if(event->file_buf != NULL) {
@@ -72,17 +76,17 @@ void file_receive(void *vevent){
     if (pFile){
       size_t w = write(pFile, event->file_buf, event->file_buf_len);
       fsync(pFile);
-      printf("Wrote to file! %zu\n", w);
+      BOOST_LOG_TRIVIAL(debug) << "Wrote to file! " << w;
     }
     else{
-      printf("Something wrong writing to File.");
+      BOOST_LOG_TRIVIAL(error) <<  "Something wrong writing to File.";
     }
     close(pFile);
   }
 
   extract_attr_init(filepath);
 
-  printf("Return event buffer\n");
+  BOOST_LOG_TRIVIAL(debug) << "Return event buffer";
   EVreturn_event_buffer(cm, vevent);
 }
 
@@ -95,6 +99,14 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 
 static void cleanupHandler(int dummy=0){
   BOOST_LOG_TRIVIAL(info) << "Cleanup Called";
+  
+  std::string command = "fusermount -u " + std::string(mount_point);
+  FILE* stream=popen(command.c_str(),"r");
+  fclose(stream);
+
+  free(mount_point);
+  BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
+
   threadpool_destroy(t_p, 0);
   exit(0);
 }
@@ -122,9 +134,9 @@ int main(int argc, char **argv)
   forked = CMfork_comm_thread(cm);
   assert(forked == 1);
   if (forked) {
-    printf("Forked a communication thread\n");
+    BOOST_LOG_TRIVIAL(info) << "Forked a communication thread";
   } else {
-    printf("Doing non-threaded communication handling\n");
+    BOOST_LOG_TRIVIAL(info) << "Doing non-threaded communication handling";
   }
   CMlisten(cm);
   
@@ -192,7 +204,9 @@ int main(int argc, char **argv)
     abort();
   }
 
-  boost::thread khan_init_thread(initializing_khan, argv[1], servers, server_ids);
+  mount_point = (char*) malloc(strlen(argv[1]) + 1);
+  strcpy(mount_point, argv[1]);
+  boost::thread khan_init_thread(initializing_khan, mount_point, servers, server_ids);
 
   BOOST_LOG_TRIVIAL(info) << "Initialized Khan";
   

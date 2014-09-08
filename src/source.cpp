@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <boost/log/trivial.hpp>
+
 #include <fcntl.h>
 #include <glob.h>
 
@@ -43,7 +45,7 @@ int main(int argc, char **argv)
     attr_list contact_list;
     EVstone remote_stone;
     if (sscanf(argv[1], "%d:%s", &remote_stone, &string_list[0]) != 2) {
-        printf("Bad arguments \"%s\"\n", argv[1]);
+        BOOST_LOG_TRIVIAL(error) << "Bad arguments " << argv[1];
         exit(0);
     }
 
@@ -69,11 +71,11 @@ int main(int argc, char **argv)
       
         glob((pattern +".im7").c_str(), 0, NULL, &files);        
 
-        printf("Globbing with pattern: %s .im7\n", pattern.c_str());
+        BOOST_LOG_TRIVIAL(info) << "Globbing with pattern: " << pattern << ".im7";
 
         for(int j=0; j<files.gl_pathc; j++) {
               std::string filepath = files.gl_pathv[j];
-              printf("*** FILE Path *** %s\n", filepath.c_str());
+              BOOST_LOG_TRIVIAL(debug) << "FILE Path: " <<  filepath;
               
               data.file_path = strdup(filepath.c_str());
 
@@ -85,7 +87,7 @@ int main(int argc, char **argv)
 
               data.file_buf_len = statbuf.st_size;
               
-              printf("Size: %ld\n", data.file_buf_len);
+              BOOST_LOG_TRIVIAL(debug) << "Size: " <<  data.file_buf_len;
 
               if ((data.file_buf = (char*)mmap (0, statbuf.st_size, PROT_READ, MAP_PRIVATE, fdin, 0))
                          == (caddr_t) -1)

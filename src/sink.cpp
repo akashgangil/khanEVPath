@@ -173,6 +173,8 @@ int main(int argc, char **argv)
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "allow_other");
   fuse_opt_add_arg(&args, "-o");
+  fuse_opt_add_arg(&args, "default_permissions");
+  fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "umask=022"); 
   //set signal handler
   signal(SIGTERM, khan_terminate);
@@ -199,8 +201,6 @@ int main(int argc, char **argv)
     }
   }
   fclose(stores);
-
-  umask(0);
 
   khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
   if (khan_data == NULL)  {

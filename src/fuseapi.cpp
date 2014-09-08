@@ -778,7 +778,7 @@ xmp_setxattr (const char *path, const char *name, const char *value,
             return size;
           }
           errno = 1;
-          return -1;
+          return ENODATA;
         }
 
       static int

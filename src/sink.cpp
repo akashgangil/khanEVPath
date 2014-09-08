@@ -100,7 +100,7 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 static void cleanupHandler(int dummy=0){
   BOOST_LOG_TRIVIAL(info) << "Cleanup Called";
   
-  std::string command = "fusermount -u " + std::string(mount_point);
+  std::string command = "fusermount -zu " + std::string(mount_point);
   FILE* stream=popen(command.c_str(),"r");
   fclose(stream);
 
@@ -170,6 +170,10 @@ int main(int argc, char **argv)
     }
   }
 
+  fuse_opt_add_arg(&args, "-o");
+  fuse_opt_add_arg(&args, "allow_other");
+  fuse_opt_add_arg(&args, "-o");
+  fuse_opt_add_arg(&args, "umask=022"); 
   //set signal handler
   signal(SIGTERM, khan_terminate);
   signal(SIGKILL, khan_terminate);

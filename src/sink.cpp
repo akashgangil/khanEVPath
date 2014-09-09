@@ -111,6 +111,15 @@ static void cleanupHandler(int dummy=0){
   exit(0);
 }
 
+void my_handler(int signum)
+{
+    if (signum == SIGUSR1)
+    {
+        printf("Received SIGUSR1!\n");
+    }
+}
+
+
 void log_init() {
     boost::log::add_file_log("sample.log");
 
@@ -147,7 +156,7 @@ int main(int argc, char **argv)
   BOOST_LOG_TRIVIAL(info) << "Contact List: " << stone << ":" << string_list;
 
   signal(SIGINT, cleanupHandler);
-
+  signal(SIGUSR1, my_handler);
   t_p = threadpool_create( 1, 1000, 0);    
 
   Py_SetProgramName(argv[0]);  /* optional but recommended */

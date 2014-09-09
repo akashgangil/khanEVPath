@@ -57,8 +57,6 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
     return result;
 }
 
-/*processes files: issues the mp3info command for the file
- *   and fills in the values of the attributes*/
 void process_file(std::string server, std::string fileid, std::string file_path) {
     printf("inside process_file\n");
     std::string file = database_getval(fileid, "name");
@@ -77,25 +75,16 @@ void process_file(std::string server, std::string fileid, std::string file_path)
                         token == "experiment_id" || token == "file_path" || token == "tags") {
                     continue;
                 }
-                //printf("Token: %s %s\n", token.c_str(), file_path.c_str()); 
-                //fflush(stdout);
-                std::string res =  call_pyfunc("Khan",token, file_path);
-                //printf("token:response  =  %s:%s\n", token.c_str(), res.c_str());
+                std::string res =  call_pyfunc("Khan", token, file_path);
                 database_setval(fileid, token , res.c_str());
             }
         }
     }
 }
 
-
-
 void extract_attr_init(std::string file_path) {
-    printf("here1\n %s\n", file_path.c_str());
-
     std::string ext = strrchr(file_path.c_str(),'.')+1;
     std::string filename=strrchr(file_path.c_str(),'/')+1;
-
-    printf("here2\n");
 
     if(database_getval("name", filename) == "null" || 1) { 
         std::string fileid = database_setval("null","name",filename);
@@ -103,11 +92,7 @@ void extract_attr_init(std::string file_path) {
         database_setval(fileid,"server","test1");
         database_setval(fileid,"location","test2");
         database_setval(fileid,"file_path", file_path);
-        //for(int k=0; k<server_ids.size(); k++) {
-        //   database_setval(fileid, server_ids.at(k), "0");
-        //}    
         process_file("test1", fileid, file_path);
-    
     } else {
         std::string fileid = database_getval("name",filename);
         database_setval(fileid,"server","test1");
@@ -117,8 +102,6 @@ void extract_attr_init(std::string file_path) {
 
 void process_transducers(std::string server) {
 
-    //log_msg("Process Transducers\n");
-
     if(server == "cloud") {
         return;
     }
@@ -126,7 +109,6 @@ void process_transducers(std::string server) {
     std::ifstream transducers_file(("/net/hu21/agangil3/KhanScripts/transducers.txt"));
     getline(transducers_file, line);
     while(transducers_file.good()){
-      //  log_msg("=============== got type =   \n");
         database_setval("allfiles","types",line);
         database_setval(line,"attrs","name");
         database_setval(line,"attrs","tags");
@@ -138,7 +120,6 @@ void process_transducers(std::string server) {
 
         std::string ext=line;
 
-      //  log_msg("===Unique Attribute!=== ");
         getline(transducers_file, line);
         std::stringstream s_uniq(line.c_str());
         std::string uniq_attr = "";
@@ -156,8 +137,6 @@ void process_transducers(std::string server) {
             getline(ss,attr,':');
             std::string command;
             getline(ss,command,':');
-            //log_msg("============ checking attr = \n");
-            //log_msg("============ checking command = \n");
             attr=trim(attr);
             database_setval(ext,"attrs",attr);
             database_setval(attr+"gen","command",command);

@@ -17,6 +17,8 @@ extern std::string primary_attribute;
 extern char msg[4096];
 
 void analytics(void) {
+
+  BOOST_LOG_TRIVIAL(info) << "Analytics Called" << "\n";
   std::string experiments =  database_getvals(primary_attribute); 
   
   BOOST_LOG_TRIVIAL(info) << "Experiment Id's " << experiments;

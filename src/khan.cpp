@@ -55,7 +55,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   /* check if we've loaded metadata before */
   std::string output = database_getval ("setup", "value");
   
-  std::cout << "OUtPut  " << output << std::endl;
+  std::cout << "OutPut  " << output << std::endl;
   
   if (output.compare ("true") == 0)
   {

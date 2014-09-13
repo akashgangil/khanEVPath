@@ -19,6 +19,7 @@
 #include "evpath.h"
 #include "fuseapi.h"
 #include "khan.h" 
+#include "data_analytics.h"
 
 extern struct fuse_operations khan_ops;
 
@@ -37,6 +38,7 @@ typedef struct _simple_rec {
   char* file_path;
   long file_buf_len;
   char* file_buf;
+  int exp_id;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
@@ -44,6 +46,7 @@ static FMField simple_field_list[] =
   {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
   {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
   {"file_buf", "char[file_buf_len]", sizeof(char), FMOffset(simple_rec_ptr, file_buf)},
+  {"exp_id", "integer", sizeof(int), FMOffset(simple_rec_ptr, exp_id)},
   {NULL, NULL, 0, 0}
 };
 
@@ -84,7 +87,7 @@ void file_receive(void *vevent){
     close(pFile);
   }
 
-  extract_attr_init(filepath);
+  extract_attr_init(filepath, event->exp_id);
 
   BOOST_LOG_TRIVIAL(debug) << "Return event buffer";
   EVreturn_event_buffer(cm, vevent);
@@ -116,6 +119,7 @@ void my_handler(int signum)
     if (signum == SIGUSR1)
     {
         printf("Received SIGUSR1!\n");
+        analytics();
     }
 }
 

@@ -4,6 +4,9 @@
 #include <string>
 #include <string.h>
 #include <fstream>
+#include <map>
+
+#include <boost/log/trivial.hpp>
 
 #include "database.h"
 #include "utils.h"
@@ -58,7 +61,7 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
 }
 
 void process_file(std::string server, std::string fileid, std::string file_path) {
-    printf("inside process_file\n");
+    BOOST_LOG_TRIVIAL(info) << "Inside process file" << "\n"; 
     std::string file = database_getval(fileid, "name");
     std::string ext = database_getval(fileid, "ext");
     file = server + "/" + file;
@@ -76,28 +79,29 @@ void process_file(std::string server, std::string fileid, std::string file_path)
                     continue;
                 }
                 std::string res =  call_pyfunc("Khan", token, file_path);
+                BOOST_LOG_TRIVIAL(debug) << "Token: " << token << "Result: " << res;
                 database_setval(fileid, token , res.c_str());
             }
         }
     }
 }
 
-void extract_attr_init(std::string file_path) {
+void extract_attr_init(std::string file_path, int exp_id) {
+
+    char exp_id_str[10];
+    sprintf(exp_id_str, "%d", exp_id);
+
+    BOOST_LOG_TRIVIAL(info) << "Extract attributes for " << file_path; 
     std::string ext = strrchr(file_path.c_str(),'.')+1;
     std::string filename=strrchr(file_path.c_str(),'/')+1;
 
-    if(database_getval("name", filename) == "null" || 1) { 
-        std::string fileid = database_setval("null","name",filename);
-        database_setval(fileid,"ext",ext);
-        database_setval(fileid,"server","test1");
-        database_setval(fileid,"location","test2");
-        database_setval(fileid,"file_path", file_path);
-        process_file("test1", fileid, file_path);
-    } else {
-        std::string fileid = database_getval("name",filename);
-        database_setval(fileid,"server","test1");
-        database_setval(fileid,"location","test1");
-    }   
+    std::string fileid = database_setval("null","name",filename);
+    database_setval(fileid,"ext",ext);
+    database_setval(fileid,"server","test1");
+    database_setval(fileid,"location","test2");
+    database_setval(fileid,"file_path", file_path);
+    database_setval(fileid,"experiment_id", exp_id_str);
+    process_file("test1", fileid, file_path);
 }
 
 void process_transducers(std::string server) {

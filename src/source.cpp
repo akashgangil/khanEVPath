@@ -10,6 +10,8 @@
 
 #include <boost/log/trivial.hpp>
 
+#include <set>
+
 #include <fcntl.h>
 #include <glob.h>
 
@@ -19,6 +21,7 @@ typedef struct _simple_rec {
     char* file_path;
     long file_buf_len;
     char* file_buf;
+    int exp_id;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
@@ -26,6 +29,7 @@ static FMField simple_field_list[] =
     {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
     {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
     {"file_buf", "char[file_buf_len]", sizeof(char), FMOffset(simple_rec_ptr, file_buf)},
+    {"exp_id", "integer", sizeof(int), FMOffset(simple_rec_ptr, exp_id)},
     {NULL, NULL, 0, 0}
 };
 
@@ -66,6 +70,7 @@ int main(int argc, char **argv)
     int fdin;
     char *src;
     struct stat statbuf;
+    std::set<std::string> experiments;
 
     for(int count = 18; count > 0; count--) {
       
@@ -76,7 +81,11 @@ int main(int argc, char **argv)
         for(int j=0; j<files.gl_pathc; j++) {
               std::string filepath = files.gl_pathv[j];
               BOOST_LOG_TRIVIAL(debug) << "FILE Path: " <<  filepath;
-              
+
+              std::string exp_dir = filepath.substr(0, filepath.size() - 10);
+              experiments.insert(exp_dir);
+              data.exp_id = (int)experiments.size();
+
               data.file_path = strdup(filepath.c_str());
 
               if ((fdin = open (filepath.c_str(), O_RDONLY)) < 0)

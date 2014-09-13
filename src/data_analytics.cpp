@@ -12,14 +12,13 @@
 
 extern std::vector < std::string > server_ids;
 extern std::vector < std::string > servers;
-extern std::string primary_attribute;
 
 extern char msg[4096];
 
 void analytics(void) {
 
   BOOST_LOG_TRIVIAL(info) << "Analytics Called" << "\n";
-  std::string experiments =  database_getvals(primary_attribute); 
+  std::string experiments =  database_getvals("experiment_id"); 
   
   BOOST_LOG_TRIVIAL(info) << "Experiment Id's " << experiments;
 
@@ -31,7 +30,7 @@ void analytics(void) {
 
       BOOST_LOG_TRIVIAL(info) << "Experiment Number: " << experiment_list[i];
       
-      std::string vals = database_getval("Time", experiment_list[i]);
+      std::string vals = database_getval("experiment_id", experiment_list[i]);
       
       BOOST_LOG_TRIVIAL(info) << "File Ids: " << vals;
       
@@ -76,7 +75,7 @@ void analytics(void) {
         database_setval(fileid,"server",servers.at(0));
         database_setval(fileid,"file_path",exp_dir + filename);
         database_setval(fileid,"location",server_ids.at(0));
-        database_setval(fileid, primary_attribute, experiment_list[i]);
+        database_setval(fileid,"experiment_id", experiment_list[i]);
       }
 
       filename = "experiment_" + experiment_list[i] + "_stats.txt"; 
@@ -86,7 +85,7 @@ void analytics(void) {
         database_setval(fileid,"server",servers.at(0));
         database_setval(fileid,"file_path",exp_dir + filename);
         database_setval(fileid,"location",server_ids.at(0));
-        database_setval(fileid, primary_attribute, experiment_list[i]);
+        database_setval(fileid,"experiment_id", experiment_list[i]);
       }
 
     }

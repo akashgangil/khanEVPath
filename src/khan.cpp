@@ -29,8 +29,6 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
 
   BOOST_LOG_TRIVIAL(info) << "Initializing Khan";
   
-  /* unmounting((char *)mnt_dir); */
-
   /* Opening root directory and creating if not present */
   BOOST_LOG_TRIVIAL(debug) << "Khan Root 0 is " << servers[0];
   
@@ -290,20 +288,6 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
               filler (buf, contents[i].c_str (), NULL, 0);
             }
           }
-        }
-
-      void
-        khan_terminate (int param)
-        {
-
-          BOOST_LOG_TRIVIAL(info) << "Unmounting " << mountpoint;
-          
-          unmounting (mountpoint);
-          chdir ("/net/hu21/agangil3/Mediakhan/");
-          
-          BOOST_LOG_TRIVIAL(info) << "Killing";
-
-          exit (1);
         }
 
       /*unmount the fuse file system */

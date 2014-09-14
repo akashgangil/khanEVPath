@@ -59,8 +59,6 @@ void dir_pop_buf(void* buf, fuse_fill_dir_t filler, std::string content, bool co
       
 void populate_readdir_buffer(void* buf, fuse_fill_dir_t filler, std::stringstream &path);
 
-void khan_terminate(int);
-
 void unmounting(std::string);
 
 #endif

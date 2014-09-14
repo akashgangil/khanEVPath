@@ -174,7 +174,7 @@ int main(int argc, char **argv)
 
   struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
   int j;
-  const char* store_filename="/net/hu21/agangil3/MediaKhan/stores.txt";
+  const char* store_filename="stores.txt";
 
   for(j = 0; j < argc; j++) {
     if((j == 2) && (argv[j][0]!='-')) {

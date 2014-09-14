@@ -5,6 +5,13 @@ Hiredis (Redis C++ library)
   * cd hiredis
   * make
 
+Boost (C++ Library)
+* wget ://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.tar.gz/download
+* tar -xvf boost_1_56_0.tar.gz
+* cd boost_1_56_0/
+* ./booststrap.sh
+* ./b2
+
 To build:
 make
 

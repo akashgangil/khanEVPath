@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 
   PyRun_SimpleString("import sys");
   PyRun_SimpleString("import os");
-  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"KhanScripts\"))");
+  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"PyScripts\"))");
 
   xmp_initialize();
 
@@ -193,8 +193,8 @@ int main(int argc, char **argv)
   fuse_opt_add_arg(&args, "umask=022"); 
 
   /* Set signal handler */
-  signal(SIGTERM, khan_terminate);
-  signal(SIGKILL, khan_terminate);
+  signal(SIGTERM, cleanupHandler);
+  signal(SIGKILL, cleanupHandler);
 
   BOOST_LOG_TRIVIAL(debug) << "Store filename: " << store_filename;
 

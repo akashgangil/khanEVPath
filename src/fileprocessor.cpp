@@ -110,7 +110,7 @@ void process_transducers(std::string server) {
         return;
     }
     std::string line;
-    std::ifstream transducers_file(("/net/hu21/agangil3/KhanScripts/transducers.txt"));
+    std::ifstream transducers_file(("transducers.txt"));
     getline(transducers_file, line);
     while(transducers_file.good()){
         database_setval("allfiles","types",line);

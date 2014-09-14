@@ -1,8 +1,9 @@
 Dependencies:
-  Hiredis (Redis C++ library)
-    git clone https://github.com/redis/hiredis
-    cd hiredis
-    make
+
+Hiredis (Redis C++ library)
+  * git clone https://github.com/redis/hiredis
+  * cd hiredis
+  * make
 
 To build:
 make

@@ -9,6 +9,14 @@ src/tags
 tags
 src/cscope.out
 
+#PyScripts
+PyScripts/*.pyc
+
+#Misc
+cscope.out
+sample.log
+a.out
+
 #Executatbles
 net_recv
 net_send

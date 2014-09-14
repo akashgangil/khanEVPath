@@ -167,7 +167,8 @@ int main(int argc, char **argv)
   Py_Initialize();
 
   PyRun_SimpleString("import sys");
-  PyRun_SimpleString("sys.path.append(\"/net/hu21/agangil3/KhanScripts\")");
+  PyRun_SimpleString("import os");
+  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"KhanScripts\"))");
 
   xmp_initialize();
 

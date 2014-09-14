@@ -43,11 +43,24 @@ void analytics(void) {
         intensityframe1 += database_getval(exp_vec[k], "IntensityFrame1") + " ";
         intensityframe2 += database_getval(exp_vec[k], "IntensityFrame2") + " ";
       }
-      std::string exp_dir = "/net/hu21/agangil3/experiments/";
+  //    std::string exp_dir = "/net/hu21/agangil3/experiments/";
+   char exp_dir[1024];
+   if (getcwd(exp_dir, sizeof(exp_dir)) != NULL)
+       fprintf(stdout, "Current working dir: %s\n", strcat(exp_dir, "/experiments"));
+   else
+       perror("getcwd() error");
+
+   char command[1024];
+   sprintf(command, "mkdir %s", exp_dir);
+
+   printf("%s\n", command);
+
+   FILE* stream=popen(command, "r");
+   fclose(stream);
 
       std::string intensity_vals = intensityframe1 + "i " + intensityframe2; 
 
-      PyObject *pName, *pModule, *pDict, *pValue, *pArgs, *pClass, *pInstance, *pIntensity, *pExperimentId;
+      PyObject *pName, *pModule, *pDict, *pValue, *pArgs, *pClass, *pInstance, *pIntensity, *pExperimentId, *pBasepath;
 
       pName = PyString_FromString(strdup("Graph"));
       pModule = PyImport_Import(pName);
@@ -59,9 +72,11 @@ void analytics(void) {
       {
         pExperimentId = PyString_FromString(experiment_list[i].c_str());
         pIntensity = PyString_FromString(strdup(intensity_vals.c_str()));
-        pArgs = PyTuple_New(2);
+        pBasepath = PyString_FromString(strcat(exp_dir, "/"));
+        pArgs = PyTuple_New(3);
         PyTuple_SetItem(pArgs, 0, pExperimentId);
         PyTuple_SetItem(pArgs, 1, pIntensity);
+        PyTuple_SetItem(pArgs, 2, pBasepath);
         pInstance = PyObject_CallObject(pClass, pArgs);
       }
 

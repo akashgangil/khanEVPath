@@ -1,0 +1,12 @@
+im7
+Time*
+- S : python PyScripts/Khan.py
+- Pressure : python PyScripts/Khan.py
+- Angle : python PyScripts/Khan.py 
+- Velocity :  python PyScripts/Khan.py 
+- Composition :  python PyScripts/Khan.py
+- Phi :  python PyScripts/Khan.py
+- Temperature :  python PyScripts/Khan.py
+- Time :  python PyScripts/Khan.py
+- IntensityFrame1 :  python PyScripts/Khan.py
+- IntensityFrame2 :  python PyScripts/Khan.py

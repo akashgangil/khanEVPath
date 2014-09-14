@@ -42,21 +42,19 @@ void analytics(void) {
       for(int k=0; k<exp_vec.size(); k++) {
         intensityframe1 += database_getval(exp_vec[k], "IntensityFrame1") + " ";
         intensityframe2 += database_getval(exp_vec[k], "IntensityFrame2") + " ";
-      }
-  //    std::string exp_dir = "/net/hu21/agangil3/experiments/";
-   char exp_dir[1024];
-   if (getcwd(exp_dir, sizeof(exp_dir)) != NULL)
-       fprintf(stdout, "Current working dir: %s\n", strcat(exp_dir, "/experiments"));
-   else
+        }
+
+      char exp_dir[1024];
+      if (getcwd(exp_dir, sizeof(exp_dir)) != NULL)
+          fprintf(stdout, "Current working dir: %s\n", strcat(exp_dir, "/experiments"));
+      else
        perror("getcwd() error");
 
-   char command[1024];
-   sprintf(command, "mkdir %s", exp_dir);
+      char command[1024];
+      sprintf(command, "mkdir %s", exp_dir);
 
-   printf("%s\n", command);
-
-   FILE* stream=popen(command, "r");
-   fclose(stream);
+      FILE* stream=popen(command, "r");
+      fclose(stream);
 
       std::string intensity_vals = intensityframe1 + "i " + intensityframe2; 
 

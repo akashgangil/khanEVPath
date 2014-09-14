@@ -12,11 +12,22 @@ Boost (C++ Library)
 * ./booststrap.sh
 * ./b2
 
+Redis
+* wget http://download.redis.io/releases/redis-2.8.15.tar.gz
+* tar -xvf redis-2.8.15.tar.gz
+* cd redis-2.8.15/
+* make
+* make (test to check if the installation went correctly)
+
+
 To build:
 make
 
 * Generates two executables `net_send` and `net_recv` in the bin folder 
 and all object files in build folder
+
+* Start the redis server cd ~/redis/src ./redis-server & (starts the redis server)
+
 * Run `net_recv`  which gives the `stone-id` ./net_recv "arg:mount_dir" -d
 Ex: bin/net_recv <mount_dir> -d ==> bin/net_recv /net/hu21/agangil3/temp -d
 

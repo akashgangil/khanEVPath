@@ -10,12 +10,20 @@
 
 #include <boost/log/trivial.hpp>
 
+#include <vector>
+
 #include <set>
 
 #include <fcntl.h>
 #include <glob.h>
 
 #include "evpath.h"
+
+std::vector < std::string > servers;
+std::vector < std::string > server_ids;
+
+std::string this_server;
+std::string this_server_id;
 
 typedef struct _simple_rec {
     char* file_path;
@@ -61,10 +69,27 @@ int main(int argc, char **argv)
 
     source = EVcreate_submit_handle(cm, stone, simple_format_list);
 
-    //MAGIC STRING
-    std::string server = "/net/hu21/agangil3/data";
+    const char* store_filename="stores.txt";
+    FILE* stores = fopen(store_filename, "r");
+    char buffer[100];
+    char buffer2[100];
+    fscanf(stores, "%s\n", buffer);
+    this_server_id = buffer;
+    while(fscanf(stores, "%s %s\n", buffer, buffer2)!=EOF) {
+      if(strcmp(buffer,"cloud")==0) {
+        std::string module = buffer2;
+        module = "cloud." + module;
+        //cloud_interface = PyImport_ImportModule(module.c_str());
+      }   
+      servers.push_back(buffer);
+      server_ids.push_back(buffer2);
+      if(this_server_id == buffer2) {
+        this_server = buffer;
+      }   
+    }
+    fclose(stores);
 
-    std::string pattern = server + "/*";
+    std::string pattern = servers[0] + "/*";
     glob_t files;
 
     int fdin;

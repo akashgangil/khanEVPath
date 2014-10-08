@@ -20,7 +20,7 @@ static
 elapsed (struct timeval start, struct timeval stop)
 {
     return (long double)(stop.tv_sec - start.tv_sec)
-        + (long double)(stop.tv_usec - start.tv_usec)*1e-6;
+        + (long double)(stop.tv_usec - start.tv_usec)*0.000001;
 }
 
     long double
@@ -42,8 +42,8 @@ stopwatch_elapsed (struct stopwatch_t* T)
     void
 stopwatch_init (void)
 {
-    fprintf (stderr, "Timer: %s\n", TIMER_DESC);
-    fprintf (stderr, "Timer resolution: ~ 1 us (?)\n");
+//    fprintf (stderr, "Timer: %s\n", TIMER_DESC);
+//    fprintf (stderr, "Timer resolution: ~ 1 us (?)\n");
     fflush (stderr);
 }
 

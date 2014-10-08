@@ -24,7 +24,9 @@ SERVER_SRCS  = $(SRCDIR)/khan.cpp \
                $(SRCDIR)/threadpool.c \
                $(SRCDIR)/sink.cpp \
 							 $(SRCDIR)/cloudupload_v1.c \
-							 $(SRCDIR)/cloudupload_supplement.c
+							 $(SRCDIR)/cloudupload_supplement.c \
+							 $(SRCDIR)/stopwatch.cpp \
+							 $(SRCDIR)/measurements.cpp
 
 SERVER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SERVER_SRCS))
 

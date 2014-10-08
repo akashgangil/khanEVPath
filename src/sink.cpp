@@ -20,8 +20,10 @@
 #include "fuseapi.h"
 #include "khan.h" 
 #include "data_analytics.h"
-
+#include "stopwatch.h"
+#include "measurements.h"
 extern struct fuse_operations khan_ops;
+extern struct stopwatch_t* sw;
 
 std::vector < std::string > servers;
 std::vector < std::string > server_ids;
@@ -111,6 +113,7 @@ static void cleanupHandler(int dummy=0){
   BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
 
   threadpool_destroy(t_p, 0);
+  measurements_cleanup();
   exit(0);
 }
 
@@ -137,6 +140,7 @@ void log_init() {
 int main(int argc, char **argv)
 {
 
+  measurements_init();
   //log_init();
 
   EVstone stone;
@@ -185,8 +189,8 @@ int main(int argc, char **argv)
   }
 
   /* Setting fuse options */
-  fuse_opt_add_arg(&args, "-o");
-  fuse_opt_add_arg(&args, "allow_other");
+  //fuse_opt_add_arg(&args, "-o");
+  //fuse_opt_add_arg(&args, "allow_other");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "default_permissions");
   fuse_opt_add_arg(&args, "-o");
@@ -233,5 +237,7 @@ int main(int argc, char **argv)
 
   BOOST_LOG_TRIVIAL(info) << "Fuse Running";
   
+  measurements_cleanup();
+
   return 0;
 }

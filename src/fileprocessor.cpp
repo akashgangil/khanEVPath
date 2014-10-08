@@ -5,13 +5,18 @@
 #include <string.h>
 #include <fstream>
 #include <map>
+#include <unistd.h>
 
 #include <boost/log/trivial.hpp>
 
 #include "database.h"
 #include "utils.h"
 
+#include "measurements.h"
 #include "fileprocessor.h"
+
+extern struct stopwatch_t* sw;
+extern FILE* mts_file;
 
 static std::string primary_attribute = "";
 
@@ -78,9 +83,18 @@ void process_file(std::string server, std::string fileid, std::string file_path)
                         token == "experiment_id" || token == "file_path" || token == "tags") {
                     continue;
                 }
+               
+                stopwatch_start(sw);
                 std::string res =  call_pyfunc("Khan", token, file_path);
+                stopwatch_stop(sw);
+                fprintf(mts_file, "ProcessFilePython,%Lf,secs\n",stopwatch_elapsed(sw));
+                
                 BOOST_LOG_TRIVIAL(debug) << "Token: " << token << "Result: " << res;
+                
+                stopwatch_start(sw);
                 database_setval(fileid, token , res.c_str());
+                stopwatch_stop(sw);
+                fprintf(mts_file, "ProcessFileDatabase,%Lf,secs\n", stopwatch_elapsed(sw));
             }
         }
     }
@@ -106,6 +120,7 @@ void extract_attr_init(std::string file_path, int exp_id) {
 
 void process_transducers(std::string server) {
 
+    stopwatch_start(sw);
     if(server == "cloud") {
         return;
     }
@@ -148,5 +163,9 @@ void process_transducers(std::string server) {
             firstchar=line.c_str();
         }
     }
+
+    stopwatch_stop(sw);
+    fprintf(mts_file, "ProcessTransducers,%Lg,secs\n", stopwatch_elapsed(sw));
+    fsync(fileno(mts_file));
 }
 

@@ -11,8 +11,6 @@ struct stopwatch_t
 };
 
 
-static long double elapsed(struct timeval, struct timeval);
-
 long double stopwatch_elapsed(struct stopwatch_t*);
 
 void stopwatch_init(void);

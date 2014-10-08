@@ -93,7 +93,6 @@ int main(int argc, char **argv)
     glob_t files;
 
     int fdin;
-    char *src;
     struct stat statbuf;
     std::set<std::string> experiments;
 

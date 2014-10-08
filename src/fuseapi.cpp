@@ -106,8 +106,6 @@ khan_open (const char *path, struct fuse_file_info *fi)
 
   BOOST_LOG_TRIVIAL(info) << "Khan Open Directory";
   
-  int retstat = 0;
-  int fd;
   path = basename (strdup (path));
   std::string fileid = database_getval ("name", path);
   
@@ -146,12 +144,11 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
   return 0;
 }
 
-  static int
+  int
 xmp_access (const char *path, int mask)
 {
 
   BOOST_LOG_TRIVIAL(info) << "Khan Access " << path;
-  char *path_copy = strdup (path);
   if (strcmp (path, "/") == 0)
   {
     
@@ -304,7 +301,7 @@ xmp_access (const char *path, int mask)
 }
 
 
-  static int
+  int
 xmp_mknod (const char *path, mode_t mode, dev_t rdev)
 {
   path = append_path2 (basename (strdup (path)));
@@ -324,11 +321,9 @@ xmp_mknod (const char *path, mode_t mode, dev_t rdev)
   return 0;
 }
 
-  static int
+  int
 xmp_mkdir (const char *path, mode_t mode)
 {
-  struct timespec mkdir_start, mkdir_stop;
-  
   BOOST_LOG_TRIVIAL(info) << "Khan mkdir " << path;
   
   std::string strpath = path;
@@ -401,7 +396,7 @@ xmp_mkdir (const char *path, mode_t mode)
   }
 
   BOOST_LOG_TRIVIAL(info) << "xmp_mkdir for path = " << path;
-  struct stat *st;
+  struct stat* st;
   if (khan_getattr (path, st) < 0)
   {
     /*add path */
@@ -416,7 +411,7 @@ xmp_mkdir (const char *path, mode_t mode)
 }
 
 
-  static int
+  int
 xmp_readlink (const char *path, char *buf, size_t size)
 {
   
@@ -432,7 +427,7 @@ xmp_readlink (const char *path, char *buf, size_t size)
   return 0;
 }
 
-  static int
+  int
 xmp_unlink (const char *path)
 {
 
@@ -471,7 +466,7 @@ xmp_unlink (const char *path)
 }
 
 
-  static int
+  int
 xmp_rmdir (const char *path)
 {
   BOOST_LOG_TRIVIAL(info) << "xmp_rmdir PATH = " << path;
@@ -487,7 +482,7 @@ xmp_rmdir (const char *path)
   return 0;
 }
 
-  static int
+  int
 xmp_symlink (const char *from, const char *to)
 {
   /*TODO: handle in vold somehow */
@@ -502,7 +497,7 @@ xmp_symlink (const char *from, const char *to)
   return 0;
 }
 
-  static int
+  int
 xmp_link (const char *from, const char *to)
 {
   /*TODO:handle in vold somehow... */
@@ -514,7 +509,7 @@ xmp_link (const char *from, const char *to)
   return retstat;
 }
 
-  static int
+  int
 xmp_chmod (const char *path, mode_t mode)
 {
   int res;
@@ -533,7 +528,7 @@ xmp_chmod (const char *path, mode_t mode)
   return 0;
 }
 
-  static int
+  int
 xmp_chown (const char *path, uid_t uid, gid_t gid)
 {
   int res;
@@ -547,7 +542,7 @@ xmp_chown (const char *path, uid_t uid, gid_t gid)
   return 0;
 }
 
-  static int
+  int
 xmp_truncate (const char *path, off_t size)
 {
   /*update for vold? */
@@ -560,7 +555,7 @@ xmp_truncate (const char *path, off_t size)
   return 0;
 }
 
-  static int
+  int
 xmp_utimens (const char *path, const struct timespec ts[2])
 {
   int res;
@@ -579,7 +574,7 @@ xmp_utimens (const char *path, const struct timespec ts[2])
   return 0;
 }
 
-  static int
+  int
 xmp_read (const char *path, char *buf, size_t size, off_t offset,
     struct fuse_file_info *fi)
 {
@@ -604,7 +599,7 @@ xmp_read (const char *path, char *buf, size_t size, off_t offset,
   return res;
 }
 
-  static int
+  int
 xmp_write (const char *path, const char *buf, size_t size, off_t offset,
     struct fuse_file_info *fi)
 {
@@ -626,7 +621,7 @@ xmp_write (const char *path, const char *buf, size_t size, off_t offset,
   return res;
 }
 
-  static int
+int
 xmp_statfs (const char *path, struct statvfs *stbuf)
 {
   /* Pass the call through to the underlying system which has the media. */
@@ -641,7 +636,7 @@ xmp_statfs (const char *path, struct statvfs *stbuf)
   return 0;
 }
 
-  static int
+int
 xmp_release (const char *path, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
@@ -649,7 +644,7 @@ xmp_release (const char *path, struct fuse_file_info *fi)
   return 0;
 }
 
-  static int
+int
 xmp_fsync (const char *path, int isdatasync, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
@@ -657,7 +652,7 @@ xmp_fsync (const char *path, int isdatasync, struct fuse_file_info *fi)
   return 0;
 }
 
-  static int
+int
 xmp_rename (const char *from, const char *to)
 {
   
@@ -703,7 +698,7 @@ xmp_rename (const char *from, const char *to)
   return 0;
 }
 
-  static int
+int
 xmp_readdir (const char *c_path, void *buf, fuse_fill_dir_t filler,
     off_t offset, struct fuse_file_info *fi)
 {
@@ -720,12 +715,12 @@ xmp_readdir (const char *c_path, void *buf, fuse_fill_dir_t filler,
 
 
 #ifdef APPLE
-  static int
+int
 xmp_setxattr (const char *path, const char *name, const char *value,
     size_t size, int flags, uint32_t param)
 {
 #else
-  static int
+    int
     xmp_setxattr (const char *path, const char *name, const char *value,
         size_t size, int flags)
     {
@@ -744,12 +739,12 @@ xmp_setxattr (const char *path, const char *name, const char *value,
     }
 
 #ifdef APPLE
-  static int
+    int
     xmp_getxattr (const char *path, const char *name, char *value, size_t size,
         uint32_t param)
     {
 #else
-      static int
+        int
         xmp_getxattr (const char *path, const char *name, char *value, size_t size)
         {
 #endif
@@ -781,7 +776,7 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           return ENODATA;
         }
 
-      static int
+        int
         xmp_listxattr (const char *path, char *list, size_t size)
         {
 
@@ -812,7 +807,7 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           return count;
         }
 
-      static int
+        int
         xmp_removexattr (const char *path, const char *name)
         {
           fprintf (stderr, "removexattr call\n %s, %s\n\n", path, name);
@@ -821,21 +816,21 @@ xmp_setxattr (const char *path, const char *name, const char *value,
 
 #ifdef APPLE
 
-      static int
+        int
         xmp_setvolname (const char *param)
         {
           fprintf (stderr, "apple function called setvolname\n");
           return 0;
         }
 
-      static int
+        int
         xmp_exchange (const char *param1, const char *param2, unsigned long param3)
         {
           fprintf (stderr, "apple function called exchange\n");
           return 0;
         }
 
-      static int
+        int
         xmp_getxtimes (const char *param1, struct timespec *param2,
             struct timespec *param3)
         {
@@ -843,42 +838,42 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           return 0;
         }
 
-      static int
+        int
         xmp_setbkuptime (const char *param1, const struct timespec *param2)
         {
           fprintf (stderr, "apple function called setbkuptimes\n");
           return 0;
         }
 
-      static int
+        int
         xmp_setchgtime (const char *param1, const struct timespec *param2)
         {
           fprintf (stderr, "apple function called setchgtimes\n");
           return 0;
         }
 
-      static int
+        int
         xmp_setcrtime (const char *param1, const struct timespec *param2)
         {
           fprintf (stderr, "apple function called setcrtimes\n");
           return 0;
         }
 
-      static int
+        int
         xmp_chflags (const char *param1, uint32_t param2)
         {
           fprintf (stderr, "apple function called chflags\n");
           return 0;
         }
 
-      static int
+        int
         xmp_setattr_x (const char *param1, struct setattr_x *param2)
         {
           fprintf (stderr, "apple function called setattr_x\n");
           return 0;
         }
 
-      static int
+        int
         xmp_fsetattr_x (const char *param1, struct setattr_x *param2,
             struct fuse_file_info *param3)
         {

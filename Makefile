@@ -34,7 +34,7 @@ CLIENT_SRCS  = source.cpp
 CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCDIR)/$(CLIENT_SRCS))
 
 CCX = g++
-CCXFLAGS = -D_FILE_OFFSET_BITS=64
+CCXFLAGS = -Wall -D_FILE_OFFSET_BITS=64
 
 EVPATH_LIB_DIRS = -L/net/hp41/chaos/rhe6-64-icc/atl/lib \
                   -L/net/hp41/chaos/rhe6-64-icc/evpath/lib \

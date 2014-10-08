@@ -69,11 +69,6 @@ void file_receive(void *vevent){
   std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
   std::string file_name = filepath.substr(24, strlen(event->file_path) - 24);
 
-  std::string command = "mkdir -p \"" + dir_name + "\"";
-  FILE* stream=popen(command.c_str(),"r");
-  BOOST_LOG_TRIVIAL(debug) << "Executed Command: " << command;
-  fclose(stream);
-
   if(event->file_buf != NULL) {
 
     int pFile = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0776);

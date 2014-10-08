@@ -22,17 +22,6 @@
 #include <vector>
 #include "fuse.h"
 
-static char command[MAX_PATH_LENGTH];
-static struct khan_state *khan_data=NULL;
-
-static time_t time_now;
-static char * fpath=NULL;
-static mode_t khan_mode=S_ISUID | S_ISGID | S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH;
-static char * temp=NULL;
-static char * temp2=NULL;
-static char *args=NULL;
-static int timestamp;
-
 #define PACKAGE_VERSION 2.6
 
 void* initializing_khan(void * mnt_dir, std::vector < std::string > servers, std::vector < std::string > server_ids);

@@ -23,7 +23,6 @@ int get_file_size(std::string path){
 }
 
 std::vector<std::string> split(std::string istr, std::string delim) {
-    int start=0, end; 
     std::vector<std::string> vec; 
     char *saveptr;
     char *token;
@@ -122,7 +121,6 @@ int count_string(std::string tobesplit){
 
 char* append_path(const char * newp) {
     std::string servers[] = {"test1"};
-    char msg[100];
     
     BOOST_LOG_TRIVIAL(debug) << "append_path " << servers[0] << " " << newp;
     
@@ -143,8 +141,7 @@ char* append_path2(std::string newp) {
 std::string bin2hex(const char* input, size_t size)
 {
     std::string res;
-    const char hex[] = "0123456789ABCDEF";
-    for(int i=0; i<size; i++)
+    for(unsigned i=0; i<size; i++)
     {
         unsigned char c = input[i];
         res += (char)(c+10);
@@ -154,7 +151,7 @@ std::string bin2hex(const char* input, size_t size)
 }
 
 std::string hex2bin(std::string in) {
-    for(int i=0; i<in.length(); i++) {
+    for(unsigned i=0; i<in.length(); i++) {
         in[i]-=10;
     }
     return in;

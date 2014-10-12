@@ -47,20 +47,21 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
     if(pValue != NULL)
     {
         result = PyString_AsString(pValue);
-        Py_DECREF(pValue);
+        Py_XDECREF(pValue);
     }
     else {
         PyErr_Print();
     }
 
+
     // Clean up
-    /*Py_DECREF(pModule);
-      Py_DECREF(pValue);
-      Py_DECREF(pFile);
-      Py_DECREF(pArgs);
-      Py_DECREF(pClass);
-      Py_DECREF(pInstance);
-    */
+    Py_XDECREF(pModule);
+    Py_XDECREF(pName);
+    Py_XDECREF(pFile);
+    Py_XDECREF(pArgs);
+    Py_XDECREF(pClass);
+    //Py_XDECREF(pInstance);
+    
     
     return result;
 }

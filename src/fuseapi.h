@@ -44,14 +44,14 @@ int xmp_write(const char *path, const char *buf, size_t size, off_t offset, stru
     
 int xmp_statfs(const char *path, struct statvfs *stbuf); 
     
-static int xmp_release(const char *path, struct fuse_file_info *fi); 
-    
-static int xmp_fsync(const char *path, int isdatasync,struct fuse_file_info *fi); 
+int xmp_release(const char *path, struct fuse_file_info *fi); 
 
-static int xmp_rename(const char*, const char*);
+int xmp_fsync(const char *path, int isdatasync,struct fuse_file_info *fi); 
 
-static int xmp_readdir(const char*, void*, fuse_fill_dir_t, off_t, struct fuse_file_info*);
+int xmp_rename(const char*, const char*);
 
-static int xmp_getxattr(const char*, const char*, char*, size_t);
+int xmp_readdir(const char*, void*, fuse_fill_dir_t, off_t, struct fuse_file_info*);
+
+int xmp_getxattr(const char*, const char*, char*, size_t);
 
 #endif

@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
         BOOST_LOG_TRIVIAL(info) << "Globbing with pattern: " << pattern << ".im7";
 
-        for(int j=0; j<files.gl_pathc; j++) {
+        for(unsigned j=0; j<files.gl_pathc; j++) {
               std::string filepath = files.gl_pathv[j];
               BOOST_LOG_TRIVIAL(debug) << "FILE Path: " <<  filepath;
 

@@ -69,7 +69,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   database_setval ("setup", "value", "true");
 
   /* load metadata associatons */
-  for (int i = 0; i < servers.size (); i++)
+  for (unsigned i = 0; i < servers.size (); i++)
   {
     process_transducers (servers.at (i));
   }
@@ -96,7 +96,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   bool
     find (std::string str, std::vector < std::string > arr)
     {
-      for (int i = 0; i < arr.size (); i++)
+      for (unsigned i = 0; i < arr.size (); i++)
       {
         if (str == arr[i])
           return true;
@@ -110,9 +110,9 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
       std::vector < std::string > vec_1 = split (str1, ":");
       std::vector < std::string > vec_2 = split (str2, ":");
       std::vector < std::string > ret;
-      for (int i = 0; i < vec_1.size (); i++)
+      for (unsigned i = 0; i < vec_1.size (); i++)
       {
-        for (int j = 0; j < vec_2.size (); j++)
+        for (unsigned j = 0; j < vec_2.size (); j++)
         {
           if ((vec_1[i] == vec_2[j]) && (!find (vec_1[i], ret)))
           {
@@ -141,7 +141,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
         last_vector = checks;
       }
 
-      for (int i = 0; i < checks.size (); i++)
+      for (unsigned i = 0; i < checks.size (); i++)
       {
         if (checks[i] == val)
         {
@@ -276,7 +276,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
           BOOST_LOG_TRIVIAL(info) << "Inside dir_pop_buf " << content;
 
           std::vector < std::string > contents = split (content, ":");
-          for (int i = 0; i < contents.size (); i++)
+          for (unsigned i = 0; i < contents.size (); i++)
           {
             if (convert)
             {
@@ -356,7 +356,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
                   non_empty_content = "";
 
                   std::vector < std::string > vec_1 = split (content, ":");
-                  for (int i = 0; i < vec_1.size (); ++i)
+                  for (unsigned i = 0; i < vec_1.size (); ++i)
                   {
                     std::cout << "Attr " << attr << "  Val " << vec_1[i] << std::endl;
                     std::string dir_content = database_getval (attr, vec_1[i]);

@@ -33,7 +33,7 @@ std::string this_server_id;
 
 char* mount_point;
 
-threadpool_t* t_p;
+//threadpool_t* t_p;
 CManager cm;
 
 typedef struct _simple_rec {
@@ -93,7 +93,8 @@ void file_receive(void *vevent){
 static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
   EVtake_event_buffer(cm , vevent);
-  threadpool_add(t_p, &file_receive, vevent, 0);    
+//  threadpool_add(t_p, &file_receive, vevent, 0);   
+  file_receive(vevent);
   return 1;
 }
 
@@ -107,7 +108,7 @@ static void cleanupHandler(int dummy=0){
   free(mount_point);
   BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
 
-  threadpool_destroy(t_p, 0);
+  //threadpool_destroy(t_p, 0);
   measurements_cleanup();
   exit(0);
 }
@@ -160,7 +161,7 @@ int main(int argc, char **argv)
 
   signal(SIGINT, cleanupHandler);
   signal(SIGUSR1, my_handler);
-  t_p = threadpool_create( 1, 1000, 0);    
+//  t_p = threadpool_create( 1, 1000, 0);    
 
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
@@ -216,7 +217,7 @@ int main(int argc, char **argv)
   }
   fclose(stores);
 
-  khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
+  struct khan_state* khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
   if (khan_data == NULL)  {
     BOOST_LOG_TRIVIAL(fatal) << "Could not allocate memory to khan_data.. Aborting";
     abort();

@@ -38,7 +38,7 @@ std::vector<std::string> split(std::string istr, std::string delim) {
 
 std::string join(std::vector<std::string> these, std::string delim) {
     std::string ret = "";
-    for(int i=0; i<these.size(); i++) {
+    for(unsigned i=0; i<these.size(); i++) {
         if(i>0) {
             ret+=delim;
         }

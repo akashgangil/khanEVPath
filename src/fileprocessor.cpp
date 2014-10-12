@@ -72,7 +72,6 @@ void process_file(std::string server, std::string fileid, std::string file_path)
     file = server + "/" + file;
     std::string attrs=database_getval(ext,"attrs");
 
-    char msg4[100];
     if(attrs != "null"){
         std::string token="";
         std::stringstream ss2(attrs.c_str());

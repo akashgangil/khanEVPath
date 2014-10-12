@@ -23,8 +23,7 @@ void analytics(void) {
   BOOST_LOG_TRIVIAL(info) << "Experiment Id's " << experiments;
 
   std::vector<std::string> experiment_list = split(experiments, ":");
-  FILE *stream;
-  for(int i=0; i<experiment_list.size(); ++i) {
+  for(unsigned i=0; i<experiment_list.size(); ++i) {
     if(experiment_list[i] != "null") 
     {
 
@@ -39,7 +38,7 @@ void analytics(void) {
       std::string intensityframe1 = "";
       std::string intensityframe2 = "";
 
-      for(int k=0; k<exp_vec.size(); k++) {
+      for(unsigned k=0; k<exp_vec.size(); k++) {
         intensityframe1 += database_getval(exp_vec[k], "IntensityFrame1") + " ";
         intensityframe2 += database_getval(exp_vec[k], "IntensityFrame2") + " ";
         }
@@ -58,7 +57,7 @@ void analytics(void) {
 
       std::string intensity_vals = intensityframe1 + "i " + intensityframe2; 
 
-      PyObject *pName, *pModule, *pDict, *pValue, *pArgs, *pClass, *pInstance, *pIntensity, *pExperimentId, *pBasepath;
+      PyObject *pName, *pModule, *pDict, *pArgs, *pClass, *pInstance, *pIntensity, *pExperimentId, *pBasepath;
 
       pName = PyString_FromString(strdup("Graph"));
       pModule = PyImport_Import(pName);

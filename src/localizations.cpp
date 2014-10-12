@@ -38,7 +38,7 @@ std::string genre_location(std::string fileid) {
   std::vector<int> server_counts(servers.size());
   //for each file
   std::vector<std::string> files = get_all_files("mp3");
-  for(int i=0; i<files.size(); i++) {
+  for(unsigned i=0; i<files.size(); i++) {
     //if genre = file genre
     if(fileid.compare(files.at(i))) {
       std::string file_genre = database_getval(files.at(i), "genre");
@@ -46,7 +46,7 @@ std::string genre_location(std::string fileid) {
       if(file_genre.compare(genre)==0) {
         std::cout << "match "<<std::endl;
         std::string server = database_getval(files.at(i), "server");
-        for(int j=0; j<servers.size(); j++) {
+        for(unsigned j=0; j<servers.size(); j++) {
           if(servers.at(j).compare(server)==0) {
             server_counts.at(j) = server_counts.at(j) + 1;
             std::cout << "new count "<<server_counts.at(j) << std::endl;
@@ -58,7 +58,7 @@ std::string genre_location(std::string fileid) {
   //place on highest count server
   int max_num = 0;
   std::string max ="";
-  for(int j=0; j<servers.size(); j++) {
+  for(unsigned j=0; j<servers.size(); j++) {
     std::cout << "looking at server " << j << " with count " << server_counts.at(j) << std::endl;
     if(server_counts.at(j)>max_num) {
       max_num = server_counts.at(j);
@@ -89,7 +89,7 @@ int get_attr_numeric_val(std::string attr, std::string val) {
   //sort(vals.begin(), vals.end());
   //return index of val
   int index = 0;
-  for(int i =0; i<vals.size(); i++) {
+  for(unsigned i =0; i<vals.size(); i++) {
     if(vals.at(i).compare(val)==0) {
       index = i;
     }
@@ -104,12 +104,12 @@ std::string knn_location(std::string fileid) {
   //for each file
   std::string ext = database_getval(fileid, "ext");
   std::vector<std::string> files = get_all_files(ext);
-  for(int i=0; i<files.size(); i++) {
+  for(unsigned i=0; i<files.size(); i++) {
     if(files.at(i).compare(fileid)!=0) {
       std::vector<std::string> attrs = get_all_attr_vals(fileid);
       int sum = 0;
       //for each file attr
-      for(int j =0; j<attrs.size(); j++) {
+      for(unsigned j =0; j<attrs.size(); j++) {
         // get files attr numeric vals
         std::string val = database_getval(files.at(i), attrs.at(j));
         int fv = get_attr_numeric_val(attrs.at(j), val);
@@ -155,12 +155,12 @@ std::string get_location(std::string fileid) {
 void usage_localize() {
   //for all files
   std::vector<std::string> files = get_all_files("mp3");
-  for(int i=0; i<files.size(); i++) {
+  for(unsigned i=0; i<files.size(); i++) {
     //for each server
     int max_usage=0;
     int max_server=0;
     std::cout << "looking at file " << i << std::endl;
-    for(int j=0; j<server_ids.size(); j++) {
+    for(unsigned j=0; j<server_ids.size(); j++) {
       std::cout << "looking at server " << j << std::endl; 
       //track max usage count server
       std::string res=database_getval(files.at(i), server_ids.at(j));

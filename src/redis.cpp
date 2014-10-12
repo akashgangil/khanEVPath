@@ -26,7 +26,7 @@ std::string de_dup(std::string val) {
   // cout << "dedup " << val << " into ";
   std::vector<std::string> vals = split(val, ":");
   std::vector<std::string> uniques;
-  for(int i=0; i<vals.size(); i++) {
+  for(unsigned i=0; i<vals.size(); i++) {
     // cout << "looking at " << vals[i] << endl;
     std::string ret = join(uniques,":");
     size_t found = ret.find(vals[i]);
@@ -70,7 +70,7 @@ std::string redis_getkey_cols(std::string col) {
   if(reply->elements!=0) {
     //cout << "nonzero" << endl << flush;
     output = "";
-    for(int i=0; i<reply->elements; i++) {
+    for(unsigned i=0; i<reply->elements; i++) {
       if(reply->element[i]) {
         //cout << i << endl << flush;
         output = output + reply->element[i]->str + ":";

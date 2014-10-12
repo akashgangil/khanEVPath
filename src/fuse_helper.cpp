@@ -28,7 +28,7 @@ map_path (std::string path, std::string fileid)
         database_setval (fileid, attr, token);
         if (attr == "location")
         {
-          int pos =
+          unsigned pos =
             std::find (server_ids.begin (), server_ids.end (),
                 token) - server_ids.begin ();
           if (pos < server_ids.size ())
@@ -61,7 +61,7 @@ unmap_path (std::string path, std::string fileid)
         database_remove_val (fileid, attr, token);
         if (attr == "location")
         {
-          int pos =
+          unsigned pos =
             std::find (server_ids.begin(), server_ids.end(),
                 token) - server_ids.begin ();
           if (pos < server_ids.size ())
@@ -111,19 +111,19 @@ file_pop_stbuf (struct stat *stbuf, std::string filename)
 resolve_selectors (std::string path)
 {
   std::vector < std::string > pieces = split (path, "/");
-  for (int i = 0; i < pieces.size (); i++)
+  for (unsigned i = 0; i < pieces.size (); i++)
   {
     if (pieces[i].at (0) == SELECTOR_C)
     {
       std::vector < std::string > selectores = split (pieces[i], SELECTOR_S);
       pieces[i] = "";
-      for (int j = 0; j < selectores.size (); j++)
+      for (unsigned j = 0; j < selectores.size (); j++)
       {
         bool matched = false;
         std::string content = database_getvals ("attrs");
         std::vector < std::string > attr_vec = split (content, ":");
         /* for all attrs */
-        for (int k = 0; k < attr_vec.size (); k++)
+        for (unsigned k = 0; k < attr_vec.size (); k++)
         {
           std::string vals = database_getvals (attr_vec[k]);
           /* see if piece is in vals */

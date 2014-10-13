@@ -47,7 +47,6 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
     if(pValue != NULL)
     {
         result = PyString_AsString(pValue);
-        Py_XDECREF(pValue);
     }
     else {
         PyErr_Print();
@@ -55,6 +54,7 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
 
 
     // Clean up
+    Py_XDECREF(pValue);
     Py_XDECREF(pModule);
     Py_XDECREF(pName);
     Py_XDECREF(pFile);

@@ -32,6 +32,8 @@ std::string this_server;
 std::string this_server_id;
 
 char* mount_point;
+  
+struct khan_state* khan_data;
 
 //threadpool_t* t_p;
 CManager cm;
@@ -88,9 +90,6 @@ void file_receive(void *vevent){
   }
 
   extract_attr_init(filepath, event->exp_id);
-
-  BOOST_LOG_TRIVIAL(debug) << "Return event buffer";
-  EVreturn_event_buffer(cm, vevent);
 }
 
 static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
@@ -98,6 +97,8 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
   EVtake_event_buffer(cm , vevent);
 //  threadpool_add(t_p, &file_receive, vevent, 0);   
   file_receive(vevent);
+  BOOST_LOG_TRIVIAL(debug) << "Return event buffer";
+  EVreturn_event_buffer(cm, vevent);
   return 1;
 }
 
@@ -111,6 +112,8 @@ static void cleanupHandler(int dummy=0){
   free(mount_point);
   BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
 
+  free(khan_data);
+  
   EVfree_stone(cm, stone);
 
   //threadpool_destroy(t_p, 0);
@@ -221,7 +224,7 @@ int main(int argc, char **argv)
   }
   fclose(stores);
 
-  struct khan_state* khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
+  khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
   if (khan_data == NULL)  {
     BOOST_LOG_TRIVIAL(fatal) << "Could not allocate memory to khan_data.. Aborting";
     abort();

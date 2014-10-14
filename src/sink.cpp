@@ -62,8 +62,10 @@ static FMStructDescRec simple_format_list[] =
 void file_receive(void *vevent){
 
   simple_rec_ptr event = (_simple_rec*)vevent;
-  if(event) BOOST_LOG_TRIVIAL(info) << "[THREADING ]I  got " << event->file_path;
-
+  if(event) {
+    BOOST_LOG_TRIVIAL(info) << "[THREADING ]file_path " << event->file_path;
+    BOOST_LOG_TRIVIAL(info) << "[THREADING ]file_buf_len " << event->file_buf_len;
+  }
   std::string filepath (event->file_path);
   //24 is the length of the server name
   //10 is the length of the im7 file name

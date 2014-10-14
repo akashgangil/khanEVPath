@@ -59,16 +59,22 @@ void analytics(void) {
 
       PyObject *pName, *pModule, *pDict, *pArgs, *pClass, *pInstance, *pIntensity, *pExperimentId, *pBasepath;
 
-      pName = PyString_FromString(strdup("Graph"));
+      char* graph = strdup("Graph");
+
+      pName = PyString_FromString(graph);
       pModule = PyImport_Import(pName);
 
       pDict = PyModule_GetDict(pModule);
-      pClass = PyDict_GetItemString(pDict, strdup("Graph"));
+      pClass = PyDict_GetItemString(pDict, graph); 
 
       if (PyCallable_Check(pClass))
       {
         pExperimentId = PyString_FromString(experiment_list[i].c_str());
+
+        char *intensity_val_c = strdup(intensity_vals.c_str());
         pIntensity = PyString_FromString(strdup(intensity_vals.c_str()));
+        free(intensity_val_c);
+
         pBasepath = PyString_FromString(strcat(exp_dir, "/"));
         pArgs = PyTuple_New(3);
         PyTuple_SetItem(pArgs, 0, pExperimentId);
@@ -77,8 +83,11 @@ void analytics(void) {
         pInstance = PyObject_CallObject(pClass, pArgs);
       }
 
-      PyObject_CallMethod(pInstance, strdup("Plot"), NULL);
-      PyObject_CallMethod(pInstance, strdup("Stats"),NULL);
+      char* plot = strdup("Plot");
+      char* stat = strdup("Stats");
+      
+      PyObject_CallMethod(pInstance, plot, NULL);
+      PyObject_CallMethod(pInstance, stat,NULL);
 
       std::string filename = "experiment_" + experiment_list[i] + "_graph.png"; 
       if(database_getval("name", filename) == "null" || 1) {
@@ -100,6 +109,9 @@ void analytics(void) {
         database_setval(fileid,"experiment_id", experiment_list[i]);
       }
 
+      free(graph);
+      free(plot);
+      free(stat);
     }
   }           
 }

@@ -90,13 +90,14 @@ khan_flush (const char *path, struct fuse_file_info *info)
 {
   
   BOOST_LOG_TRIVIAL(info) << "Khan Flush";
-  
-  std::string filename = basename (strdup (path));
+  char *path_c = strdup(path); 
+  std::string filename = basename (path_c);
   std::string fileid = database_getval ("name", filename);
   std::string server = database_getval (fileid, "server");
   std::string file_path = database_getval (fileid, "file_path");
 
   process_file (server, fileid, file_path);
+  free(path_c);
   return 0;
 }
 
@@ -106,7 +107,8 @@ khan_open (const char *path, struct fuse_file_info *fi)
 
   BOOST_LOG_TRIVIAL(info) << "Khan Open Directory";
   
-  path = basename (strdup (path));
+  char *path_c = strdup(path); 
+  path = basename (path_c);
   std::string fileid = database_getval ("name", path);
   
   /* Get server  */
@@ -117,6 +119,7 @@ khan_open (const char *path, struct fuse_file_info *fi)
     std::string long_path = "/tmp/";
     long_path += path;
   }
+  free(path_c);
   return 0;
 }
 
@@ -127,12 +130,14 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
 
   BOOST_LOG_TRIVIAL(info) << "Khan xmp_create";
   
-  std::string fileid = database_getval ("name", basename (strdup (path)));
+  char *path_c = strdup(path); 
+  
+  std::string fileid = database_getval ("name", basename (path_c));
   if (strcmp (fileid.c_str (), "null") == 0)
   {
-    fileid = database_setval ("null", "name", basename (strdup (path)));
+    fileid = database_setval ("null", "name", basename (path_c));
     database_setval (fileid, "server", servers.at (0));
-    std::string ext = strrchr (basename (strdup (path)), '.') + 1;
+    std::string ext = strrchr (basename (path_c), '.') + 1;
     database_setval (fileid, "ext", ext);
   }
   std::string server = database_getval (fileid, "server");
@@ -140,7 +145,7 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
   process_file (server, fileid, "");
 
   map_path (resolve_selectors (path), fileid);
-
+  free(path_c);
   return 0;
 }
 
@@ -304,7 +309,8 @@ xmp_access (const char *path, int mask)
   int
 xmp_mknod (const char *path, mode_t mode, dev_t rdev)
 {
-  path = append_path2 (basename (strdup (path)));
+  char *path_c = strdup(path); 
+  path = append_path2 (basename (path_c));
 
   BOOST_LOG_TRIVIAL(info) << "In xmp_mknod Path = " << path  ;
   
@@ -318,6 +324,7 @@ xmp_mknod (const char *path, mode_t mode, dev_t rdev)
     fprintf (stderr, "\nmknod error \n");
     return -errno;
   }
+  free(path_c);
   return 0;
 }
 
@@ -419,11 +426,13 @@ xmp_readlink (const char *path, char *buf, size_t size)
   
   /* TODO: handle in vold somehow */
   int res = -1;
-  path = append_path2 (basename (strdup (path)));
+  char *path_c = strdup(path); 
+  path = append_path2 (basename (path_c));
   /* res = readlink(path, buf, size - 1); */
   if (res == -1)
     return -errno;
   buf[res] = '\0';
+  free(path_c);
   return 0;
 }
 
@@ -434,10 +443,11 @@ xmp_unlink (const char *path)
   BOOST_LOG_TRIVIAL(info) << "xmp_unlink, PATH = " << path;
   /* TODO: handle in vold somehow */
   int res;
-  std::string fileid = database_getval ("name", basename (strdup (path)));
+  char *path_c = strdup(path); 
+  std::string fileid = database_getval ("name", basename (path_c));
 
   std::string fromext = database_getval (fileid, "ext");
-  std::string file = append_path2 (basename (strdup (path)));
+  std::string file = append_path2 (basename (path_c));
   std::string attrs = database_getval (fromext, "attrs");
   database_remove_val (fileid, "attrs", "all_" + fromext + "s");
   std::string token = "";
@@ -458,10 +468,13 @@ xmp_unlink (const char *path)
     }
   }
 
-  path = append_path2 (basename (strdup (path)));
+  path = append_path2 (basename (path_c));
   res = unlink (path);
-  if (res == -1)
+  if (res == -1){
+    free(path_c);
     return -errno;
+  }
+  free(path_c);
   return 0;
 }
 
@@ -487,25 +500,39 @@ xmp_symlink (const char *from, const char *to)
 {
   /*TODO: handle in vold somehow */
   int res = -1;
-  from = append_path2 (basename (strdup (from)));
-  to = append_path2 (basename (strdup (to)));
+  
+  char* from_c = strdup(from);
+  char* to_c = strdup(to);
+  
+  from = append_path2 (basename (from_c));
+  to = append_path2 (basename (to_c));
   
   BOOST_LOG_TRIVIAL(info) << "xmp_symlink From " << from << " to " << to;
   
-  if (res == -1)
+  if (res == -1){
+    free(from_c);
+    free(to_c);
     return -errno;
+  }
+  
+  free(from_c);
+  free(to_c);
   return 0;
 }
 
   int
 xmp_link (const char *from, const char *to)
 {
+  char* from_c = strdup(from);
+  char* to_c = strdup(to);
   /*TODO:handle in vold somehow... */
   int retstat = 0;
   from = append_path2 (basename (strdup (from)));
   to = append_path2 (basename (strdup (to)));
   BOOST_LOG_TRIVIAL(info) << "xmp_link. From " << from << " To: " << to;
   retstat = link (from, to);
+  free(from_c);
+  free(to_c);
   return retstat;
 }
 
@@ -513,7 +540,8 @@ xmp_link (const char *from, const char *to)
 xmp_chmod (const char *path, mode_t mode)
 {
   int res;
-  path = append_path2 (basename (strdup (path)));
+  char* path_c = strdup(path);
+  path = append_path2 (basename (path_c));
   
   BOOST_LOG_TRIVIAL(info) << "xmp_chmod Path = " << path;
   
@@ -523,6 +551,7 @@ xmp_chmod (const char *path, mode_t mode)
 #else
   res = chmod (path, mode);
 #endif
+  free(path_c);
   if (res == -1)
     return -errno;
   return 0;
@@ -532,11 +561,13 @@ xmp_chmod (const char *path, mode_t mode)
 xmp_chown (const char *path, uid_t uid, gid_t gid)
 {
   int res;
-  path = append_path2 (basename (strdup (path)));
+  char* path_c = strdup(path);
+  path = append_path2 (basename (path_c));
   
   BOOST_LOG_TRIVIAL(info) << "xmp_chown, PATH = " << path;
   
   res = lchown (path, uid, gid);
+  free(path_c);
   if (res == -1)
     return -errno;
   return 0;
@@ -560,7 +591,8 @@ xmp_utimens (const char *path, const struct timespec ts[2])
 {
   int res;
   struct timeval tv[2];
-  path = append_path2 (basename (strdup (path)));
+  char* path_c = strdup(path);
+  path = append_path2 (basename (path_c));
   
   BOOST_LOG_TRIVIAL(info) << "xmp_utimens, PATH = " << path;
 
@@ -569,6 +601,7 @@ xmp_utimens (const char *path, const struct timespec ts[2])
   tv[1].tv_sec = ts[1].tv_sec;
   tv[1].tv_usec = ts[1].tv_nsec / 1000;
   res = utimes (path, tv);
+  free(path_c);
   if (res == -1)
     return -errno;
   return 0;
@@ -579,8 +612,10 @@ xmp_read (const char *path, char *buf, size_t size, off_t offset,
     struct fuse_file_info *fi)
 {
   int res = 0;
+  
+  char* path_c = strdup(path);
 
-  path = append_path2 (basename (strdup (path)));
+  path = append_path2 (basename (path_c));
   BOOST_LOG_TRIVIAL(info) << "xmp_read , PATH = " << path;
 
   FILE *thefile = fopen (path, "r");
@@ -596,6 +631,7 @@ xmp_read (const char *path, char *buf, size_t size, off_t offset,
   {
     res = -errno;
   }
+  free(path_c);
   return res;
 }
 
@@ -605,8 +641,9 @@ xmp_write (const char *path, const char *buf, size_t size, off_t offset,
 {
   int fd;
   int res;
-
-  path = append_path2 (basename (strdup (path)));
+  
+  char* path_c = strdup(path);
+  path = append_path2 (basename (path_c));
   BOOST_LOG_TRIVIAL(info) << "xmp_write, PATH = " << path;
   (void) fi;
   fd = open (path, O_WRONLY);
@@ -618,6 +655,7 @@ xmp_write (const char *path, const char *buf, size_t size, off_t offset,
   if (res == -1)
     res = errno;
   close (fd);
+  free(path_c);
   return res;
 }
 
@@ -662,8 +700,10 @@ xmp_rename (const char *from, const char *to)
   gettimeofday (&start_tv, NULL);
   start_time = start_tv.tv_sec;
   start_time += (start_tv.tv_usec / 1000000.0);
-  std::string src = basename (strdup (from));
-  std::string dst = basename (strdup (to));
+  char* from_c = strdup(from);
+  char* to_c = strdup(to);
+  std::string src = basename (from_c);
+  std::string dst = basename (to_c);
   std::string fileid = database_getval ("name", src);
   database_remove_val (fileid, "name", src);
   database_setval (fileid, "name", dst);
@@ -695,6 +735,8 @@ xmp_rename (const char *from, const char *to)
   gettimeofday (&end_tv, NULL);
   rename_time = end_tv.tv_sec - start_tv.tv_sec;
   rename_time += (end_tv.tv_usec - start_tv.tv_usec) / 1000000.0;
+  free(from_c);
+  free(to_c);
   return 0;
 }
 
@@ -803,7 +845,7 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           snprintf (list, size, "%s", attrs.c_str ());
           
           BOOST_LOG_TRIVIAL(debug) << "Returning " << list << count;
-          
+          free(mal); 
           return count;
         }
 

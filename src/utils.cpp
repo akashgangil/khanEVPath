@@ -33,6 +33,7 @@ std::vector<std::string> split(std::string istr, std::string delim) {
             token = strtok_r(NULL, delimiters, &saveptr)) {
         vec.push_back(std::string(token));
     }
+    free(str);
     return vec; 
 }
 

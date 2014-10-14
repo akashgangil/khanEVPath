@@ -138,6 +138,7 @@ int main(int argc, char **argv)
         }
         pattern += "/*";
     }
+    EVfree_source(source);
 }
 
 

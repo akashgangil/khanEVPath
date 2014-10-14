@@ -68,7 +68,9 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
     PyTuple_SetItem(pArgs, 0, pFile);
     pInstance = PyObject_CallObject(pClass, pArgs);
     Py_DECREF(pArgs);
-    pValue = PyObject_CallMethod(pInstance, strdup(func_name.c_str()), NULL);
+    
+    char *func = strdup(func_name.c_str());
+    pValue = PyObject_CallMethod(pInstance, func, NULL);
 
     if(pValue != NULL)
     {
@@ -76,12 +78,13 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       Py_DECREF(pValue);
     }
     else {
-      Py_DECREF(pInstance);
       Py_DECREF(pFile);
+      Py_DECREF(pInstance);
       if(PyErr_Occurred())
         PyErr_Print();
     }
     PyRun_SimpleString("gc.collect()\n");
+    free(func);
   }
 
   return result;

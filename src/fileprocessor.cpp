@@ -78,7 +78,6 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       Py_DECREF(pValue);
     }
     else {
-      Py_DECREF(pFile);
       Py_DECREF(pInstance);
       if(PyErr_Occurred())
         PyErr_Print();

@@ -32,6 +32,9 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
   PyObject *pFile;
 
   if(!execute_once){
+    
+    BOOST_LOG_TRIVIAL(info) << "*****EXECUTED!!*****" << "\n"; 
+    
     pName = PyString_FromString(script_name.c_str());
     if(pName != NULL){
       pModule = PyImport_Import(pName);
@@ -50,6 +53,10 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       if(PyErr_Occurred())
         PyErr_Print();
     }
+
+    
+   PyRun_SimpleString("import gc\n");
+
     execute_once = 1;
   }
 
@@ -74,6 +81,7 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       if(PyErr_Occurred())
         PyErr_Print();
     }
+    PyRun_SimpleString("gc.collect()\n");
   }
 
   return result;

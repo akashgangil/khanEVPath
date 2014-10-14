@@ -82,13 +82,12 @@ void file_receive(void *vevent){
       size_t w = write(pFile, event->file_buf, event->file_buf_len);
       fsync(pFile);
       BOOST_LOG_TRIVIAL(debug) << "Wrote to file! " << w;
+      close(pFile);
     }
     else{
       BOOST_LOG_TRIVIAL(error) <<  "Something wrong writing to File.";
     }
-    close(pFile);
   }
-
   extract_attr_init(filepath, event->exp_id);
 }
 

@@ -50,6 +50,7 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       if(PyErr_Occurred())
         PyErr_Print();
     }
+    execute_once = 1;
   }
 
 

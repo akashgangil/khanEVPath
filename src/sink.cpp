@@ -35,6 +35,7 @@ char* mount_point;
 
 //threadpool_t* t_p;
 CManager cm;
+EVstone stone;
 
 typedef struct _simple_rec {
   char* file_path;
@@ -67,7 +68,7 @@ void file_receive(void *vevent){
   //24 is the length of the server name
   //10 is the length of the im7 file name
   std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
-  std::string file_name = filepath.substr(24, strlen(event->file_path) - 24);
+  std::string file_name = "/tmp/" + filepath.substr(24, strlen(event->file_path) - 24);
 
   if(event->file_buf != NULL) {
 
@@ -108,6 +109,8 @@ static void cleanupHandler(int dummy=0){
   free(mount_point);
   BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
 
+  EVfree_stone(cm, stone);
+
   //threadpool_destroy(t_p, 0);
   measurements_cleanup();
   exit(0);
@@ -139,7 +142,6 @@ int main(int argc, char **argv)
   measurements_init();
   //log_init();
 
-  EVstone stone;
   char *string_list;
   int forked = 0;
 

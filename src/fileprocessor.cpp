@@ -21,7 +21,6 @@ extern FILE* mts_file;
 static std::string primary_attribute = "";
 
 std::string call_pyfunc(std::string script_name, std::string func_name, std::string file_path){
-
     std::string result;
 
     PyObject *pName, *pModule, *pDict, *pValue, *pArgs, *pClass, *pInstance;
@@ -29,37 +28,62 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
     PyObject *pFile;
 
     pName = PyString_FromString(script_name.c_str());
-    pModule = PyImport_Import(pName);
-
-    pDict = PyModule_GetDict(pModule);
-    pClass = PyDict_GetItemString(pDict, script_name.c_str());
-
-    if (PyCallable_Check(pClass))
-    {
-        pFile = PyString_FromString(file_path.c_str());
-        pArgs = PyTuple_New(1);
-        PyTuple_SetItem(pArgs, 0, pFile);
-        pInstance = PyObject_CallObject(pClass, pArgs);
+    if(pName != NULL){
+      pModule = PyImport_Import(pName);
     }
+    if(pModule != NULL){
+      pDict = PyModule_GetDict(pModule);
+      if(pDict != NULL){
+        pClass = PyDict_GetItemString(pDict, script_name.c_str());
+        if (PyCallable_Check(pClass))
+        {
+            pFile = PyString_FromString(file_path.c_str());
+            pArgs = PyTuple_New(1);
+            PyTuple_SetItem(pArgs, 0, pFile);
+            pInstance = PyObject_CallObject(pClass, pArgs);
+            Py_DECREF(pArgs);
+            pValue = PyObject_CallMethod(pInstance, strdup(func_name.c_str()), NULL);
 
-    pValue = PyObject_CallMethod(pInstance, strdup(func_name.c_str()), NULL);
-
-    if(pValue != NULL)
-    {
-        result = PyString_AsString(pValue);
-        Py_XDECREF(pValue);
+            if(pValue != NULL)
+            {
+                result = PyString_AsString(pValue);
+                Py_DECREF(pValue);
+            }
+            else {
+              Py_DECREF(pModule);
+              Py_DECREF(pDict);
+              Py_DECREF(pClass);
+              Py_DECREF(pInstance);
+              Py_DECREF(pFile);
+              Py_DECREF(pName);
+              if(PyErr_Occurred())
+                PyErr_Print();
+            }
+        }
+        else{
+          if(PyErr_Occurred())
+            PyErr_Print();
+        }
+      
+     }
+     else{
+        if(PyErr_Occurred())
+          PyErr_Print();
+     }
     }
-    else {
-        PyErr_Print();
+    else{
+        if(PyErr_Occurred())
+          PyErr_Print();
     }
+    
+    //Py_Finalize();
 
 
     // Clean up
-    Py_XDECREF(pModule);
-    Py_XDECREF(pName);
-    Py_XDECREF(pFile);
-    Py_XDECREF(pArgs);
-    Py_XDECREF(pClass);
+//    Py_XDECREF(pModule);
+  //  Py_XDECREF(pFile);
+    //Py_XDECREF(pArgs);
+    //Py_XDECREF(pClass);
     //Py_XDECREF(pInstance);
     
     

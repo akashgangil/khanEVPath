@@ -7,12 +7,12 @@
 redisContext* c;
 redisReply* reply;
 
-bool redis_init() {
+bool redis_init(int port) {
  
   BOOST_LOG_TRIVIAL(info) << "Redis initialized";
   
   struct timeval timeout = { 3600, 0};
-  c=redisConnectWithTimeout((char*)"localhost",6379, timeout);
+  c=redisConnectWithTimeout((char*)"localhost", port, timeout);
     
   if(c->err) {
     fprintf(stderr, "Connection error: %s\n", c->errstr);

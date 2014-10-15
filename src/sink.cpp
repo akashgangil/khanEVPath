@@ -209,8 +209,6 @@ int main(int argc, char **argv)
     }
   }
 
-
-
   /* Setting fuse options */
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "allow_other");
@@ -250,7 +248,7 @@ int main(int argc, char **argv)
     abort();
   }
 
-  boost::thread khan_init_thread(initializing_khan, (void*)mount_point.c_str(), servers, server_ids);
+  boost::thread khan_init_thread(initializing_khan, (void*)mount_point.c_str(), servers, server_ids, port);
 
   BOOST_LOG_TRIVIAL(info) << "Initialized Khan";
   

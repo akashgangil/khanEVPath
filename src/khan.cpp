@@ -24,7 +24,7 @@ std::string primary_attribute = "";
 std::string mountpoint;
 
   void *
-initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vector < std::string > server_ids)
+initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vector < std::string > server_ids, int port)
 {
 
   BOOST_LOG_TRIVIAL(info) << "Initializing Khan";
@@ -48,7 +48,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
     BOOST_LOG_TRIVIAL(info) << "Directory opened successfully";
   }
 
-  init_database ();
+  init_database(port);
 
   /* check if we've loaded metadata before */
   std::string output = database_getval ("setup", "value");

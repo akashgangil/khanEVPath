@@ -57,7 +57,7 @@ extern double redis_avg_time;
 extern int bdb_calls;
 extern double bdb_avg_time;
 
-bool init_database();
+bool init_database(int port);
 std::string database_setval(std::string file_id, std::string col, std::string val);
 std::string database_getval(std::string col, std::string val);
 std::string database_getvals(std::string col);

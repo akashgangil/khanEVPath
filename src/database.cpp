@@ -25,7 +25,7 @@ double localize_time=0;
 int redis_calls=0;
 double redis_avg_time=0;
 
-bool init_database(){
+bool init_database(int port){
   #ifdef VOLDEMORT_FOUND
   if(DATABASE==VOLDEMORT) {
     return voldemort_init();
@@ -33,7 +33,7 @@ bool init_database(){
   #endif
   #ifdef REDIS_FOUND
   if(DATABASE==REDIS){
-    return redis_init();
+    return redis_init(port);
   }
   #endif
   #ifdef BDB_FOUND

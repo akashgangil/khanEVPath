@@ -31,7 +31,7 @@ std::vector < std::string > server_ids;
 std::string this_server;
 std::string this_server_id;
 
-char* mount_point;
+std::string mount_point;
   
 struct khan_state* khan_data;
 
@@ -104,11 +104,10 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 static void cleanupHandler(int dummy=0){
   BOOST_LOG_TRIVIAL(info) << "Cleanup Called";
   
-  std::string command = "fusermount -zu " + std::string(mount_point);
+  std::string command = "fusermount -zu " + mount_point;
   FILE* stream=popen(command.c_str(),"r");
   fclose(stream);
 
-  free(mount_point);
   BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
 
   free(khan_data);
@@ -192,7 +191,7 @@ int main(int argc, char **argv)
     switch (opt)
     {
       case 'm':
-  //              mount_point = optarg;
+                mount_point = optarg;
                 fuse_opt_add_arg(&args, optarg);
                 break;
 
@@ -251,9 +250,7 @@ int main(int argc, char **argv)
     abort();
   }
 
-  mount_point = (char*) malloc(strlen(argv[2]) + 1);
-  strcpy(mount_point, argv[2]);
-  boost::thread khan_init_thread(initializing_khan, mount_point, servers, server_ids);
+  boost::thread khan_init_thread(initializing_khan, (void*)mount_point.c_str(), servers, server_ids);
 
   BOOST_LOG_TRIVIAL(info) << "Initialized Khan";
   

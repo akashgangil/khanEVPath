@@ -179,20 +179,42 @@ int main(int argc, char **argv)
   xmp_initialize();
 
   struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
-  int j;
   const char* store_filename="stores.txt";
 
-  for(j = 0; j < argc; j++) {
-    if((j == 2) && (argv[j][0]!='-')) {
-      store_filename = argv[j];
-    } else {
-      fuse_opt_add_arg(&args, argv[j]);
+  int port = -1;
+  int opt;
+
+  /*Add the program name to fuse*/
+  fuse_opt_add_arg(&args, argv[0]);
+
+  while ((opt = getopt (argc, argv, "dm:p:s:")) != -1)
+  {
+    switch (opt)
+    {
+      case 'm':
+  //              mount_point = optarg;
+                fuse_opt_add_arg(&args, optarg);
+                break;
+
+      case 'd':
+                fuse_opt_add_arg(&args, "-d");
+                break;
+
+      case 'p':
+                port = atoi(optarg);
+                break;
+
+      case 's':
+                store_filename = optarg;
+                break;
     }
   }
 
+
+
   /* Setting fuse options */
-  //fuse_opt_add_arg(&args, "-o");
-  //fuse_opt_add_arg(&args, "allow_other");
+  fuse_opt_add_arg(&args, "-o");
+  fuse_opt_add_arg(&args, "allow_other");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "default_permissions");
   fuse_opt_add_arg(&args, "-o");
@@ -229,8 +251,8 @@ int main(int argc, char **argv)
     abort();
   }
 
-  mount_point = (char*) malloc(strlen(argv[1]) + 1);
-  strcpy(mount_point, argv[1]);
+  mount_point = (char*) malloc(strlen(argv[2]) + 1);
+  strcpy(mount_point, argv[2]);
   boost::thread khan_init_thread(initializing_khan, mount_point, servers, server_ids);
 
   BOOST_LOG_TRIVIAL(info) << "Initialized Khan";

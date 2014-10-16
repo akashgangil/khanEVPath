@@ -35,7 +35,6 @@ std::string mount_point;
   
 struct khan_state* khan_data;
 
-//threadpool_t* t_p;
 CManager cm;
 EVstone stone;
 
@@ -94,7 +93,6 @@ void file_receive(void *vevent){
 static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
   EVtake_event_buffer(cm , vevent);
-//  threadpool_add(t_p, &file_receive, vevent, 0);   
   file_receive(vevent);
   BOOST_LOG_TRIVIAL(debug) << "Return event buffer";
   EVreturn_event_buffer(cm, vevent);
@@ -114,7 +112,6 @@ static void cleanupHandler(int dummy=0){
   
   EVfree_stone(cm, stone);
 
-  //threadpool_destroy(t_p, 0);
   measurements_cleanup();
   exit(0);
 }
@@ -143,7 +140,7 @@ int main(int argc, char **argv)
 {
 
   measurements_init();
-  //log_init();
+ // log_init();
 
   char *string_list;
   int forked = 0;
@@ -166,7 +163,6 @@ int main(int argc, char **argv)
 
   signal(SIGINT, cleanupHandler);
   signal(SIGUSR1, my_handler);
-//  t_p = threadpool_create( 1, 1000, 0);    
 
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
@@ -229,11 +225,6 @@ int main(int argc, char **argv)
   fscanf(stores, "%s\n", buffer);
   this_server_id = buffer;
   while(fscanf(stores, "%s %s\n", buffer, buffer2)!=EOF) {
-    if(strcmp(buffer,"cloud")==0) {
-      std::string module = buffer2;
-      module = "cloud." + module;
-      //cloud_interface = PyImport_ImportModule(module.c_str());
-    }
     servers.push_back(buffer);
     server_ids.push_back(buffer2);
     if(this_server_id == buffer2) {

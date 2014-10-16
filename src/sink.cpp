@@ -10,7 +10,6 @@
 
 #include <boost/log/trivial.hpp>
 #include <boost/thread.hpp>
-#include <boost/log/utility/setup/file.hpp>
 
 #include "fileprocessor.h"
 #include "database.h"
@@ -125,22 +124,10 @@ void my_handler(int signum)
     }
 }
 
-
-void log_init() {
-    boost::log::add_file_log("sample.log");
-
-    boost::log::core::get()->set_filter
-    (
-        boost::log::trivial::severity >= boost::log::trivial::info
-    );
-    boost::log::keywords::auto_flush = true; 
-}
-
 int main(int argc, char **argv)
 {
 
   measurements_init();
- // log_init();
 
   char *string_list;
   int forked = 0;
@@ -174,7 +161,7 @@ int main(int argc, char **argv)
   xmp_initialize();
 
   struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
-  const char* store_filename="stores.txt";
+  std::string store_filename="stores.txt";
 
   int port = -1;
   int opt;
@@ -219,7 +206,7 @@ int main(int argc, char **argv)
 
   BOOST_LOG_TRIVIAL(debug) << "Store filename: " << store_filename;
 
-  FILE* stores = fopen(store_filename, "r");
+  FILE* stores = fopen(store_filename.c_str(), "r");
   char buffer[100];
   char buffer2[100];
   fscanf(stores, "%s\n", buffer);

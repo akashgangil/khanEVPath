@@ -59,6 +59,25 @@ static FMStructDescRec simple_format_list[] =
   {NULL, NULL}
 };
 
+static void _mkdir(const char *dir) {
+        char tmp[1000];
+        char *p = NULL;
+        size_t len;
+
+        snprintf(tmp, sizeof(tmp),"%s",dir);
+        len = strlen(tmp);
+        if(tmp[len - 1] == '/')
+                tmp[len - 1] = 0;
+        for(p = tmp + 1; *p; p++)
+                if(*p == '/') {
+                        *p = 0;
+                        mkdir(tmp, S_IRWXU);
+                        *p = '/';
+                }
+        mkdir(tmp, S_IRWXU);
+}
+
+
 void file_receive(void *vevent){
 
   simple_rec_ptr event = (_simple_rec*)vevent;
@@ -70,23 +89,28 @@ void file_receive(void *vevent){
   //24 is the length of the server name
   //10 is the length of the im7 file name
   std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
-  std::string file_name = "/tmp/" + filepath.substr(24, strlen(event->file_path) - 24);
+  std::string file_name = "/dev/shm/" + filepath.substr(24, strlen(event->file_path) - 24);
+    
+  BOOST_LOG_TRIVIAL(info) << "DIR_NAME " << dir_name;
+
+  _mkdir(("/dev/shm/" + dir_name).c_str());
 
   if(event->file_buf != NULL) {
 
-    int pFile = open(file_name.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0776);
+    FILE* pFile = fopen(file_name.c_str(), "wb");
 
     if (pFile){
-      size_t w = write(pFile, event->file_buf, event->file_buf_len);
-      fsync(pFile);
+      size_t w = fwrite(event->file_buf, 1, event->file_buf_len, pFile);
       BOOST_LOG_TRIVIAL(debug) << "Wrote to file! " << w;
-      close(pFile);
+      fsync(fileno(pFile));
+      fclose(pFile);
     }
     else{
       BOOST_LOG_TRIVIAL(error) <<  "Something wrong writing to File.";
     }
   }
-  extract_attr_init(filepath, event->exp_id);
+  extract_attr_init(file_name.c_str(), event->exp_id);
+  unlink(file_name.c_str());
 }
 
 static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
@@ -126,7 +150,6 @@ void my_handler(int signum)
 
 int main(int argc, char **argv)
 {
-
   measurements_init();
 
   char *string_list;

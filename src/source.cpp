@@ -69,8 +69,19 @@ int main(int argc, char **argv)
 
     source = EVcreate_submit_handle(cm, stone, simple_format_list);
 
-    const char* store_filename="stores.txt";
-    FILE* stores = fopen(store_filename, "r");
+    std::string store_filename="stores.txt";
+    
+    int opt;
+    while((opt = getopt(argc, argv, "s:")) != -1){
+     switch(opt){ 
+      case 's':
+                store_filename = optarg;
+                break;
+
+     }
+    }
+    
+    FILE* stores = fopen(store_filename.c_str(), "r");
     char buffer[100];
     char buffer2[100];
     fscanf(stores, "%s\n", buffer);

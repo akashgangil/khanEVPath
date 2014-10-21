@@ -11,7 +11,6 @@
 #include <boost/log/trivial.hpp>
 
 #include <vector>
-
 #include <set>
 
 #include <fcntl.h>
@@ -142,14 +141,20 @@ int main(int argc, char **argv)
               if (munmap(data.file_buf, statbuf.st_size) == -1) {
                   perror("Error un-mmapping the file");
               }
-
+      
+              /*Free Memory*/
               close(fdin);
-
               free(data.file_path);
         }
         pattern += "/*";
     }
+
+    /* Cleanup */
     EVfree_source(source);
+    if(EVdestroy_stone(cm, stone)) 
+      BOOST_LOG_TRIVIAL(debug) << "Drained the stone and freed it";
+    globfree(&files);
+    CMsleep(cm, 600);
 }
 
 

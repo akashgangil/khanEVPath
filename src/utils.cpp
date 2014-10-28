@@ -8,11 +8,12 @@ int clock_gettime(int i, struct timespec* b) {
     return 0;
 }
 
-char* strdup(const char* str) {
+/*char* strdup(const char* str) {
     char* newstr = (char*)malloc(strlen(str)+1);
     strcpy(newstr, str);
     return newstr;
 }
+*/
 #endif
 
 int get_file_size(std::string path){

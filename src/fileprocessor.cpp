@@ -25,6 +25,7 @@ static std::string primary_attribute = "";
 PyObject *pName, *pModule, *pDict, *pClass;
 
 std::string call_pyfunc(std::string script_name, std::string func_name, std::string file_path){
+
   std::string result;
 
   PyObject *pValue, *pArgs, *pInstance;
@@ -54,8 +55,7 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
         PyErr_Print();
     }
 
-    
-   PyRun_SimpleString("import gc\n");
+    PyRun_SimpleString("import gc\n");
 
     execute_once = 1;
   }
@@ -78,10 +78,10 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       Py_DECREF(pValue);
     }
     else {
-      Py_DECREF(pInstance);
       if(PyErr_Occurred())
         PyErr_Print();
     }
+    Py_DECREF(pInstance);
     PyRun_SimpleString("gc.collect()\n");
     free(func);
   }
@@ -123,20 +123,20 @@ void process_file(std::string server, std::string fileid, std::string file_path)
   }
 }
 
-void extract_attr_init(std::string file_path, int exp_id) {
+void extract_attr_init(std::string file_path, int exp_id, std::string filepath) {
 
   char exp_id_str[10];
   sprintf(exp_id_str, "%d", exp_id);
 
   BOOST_LOG_TRIVIAL(info) << "Extract attributes for " << file_path; 
-  std::string ext = strrchr(file_path.c_str(),'.')+1;
-  std::string filename=strrchr(file_path.c_str(),'/')+1;
+  std::string ext = strrchr(filepath.c_str(),'.')+1;
+  std::string filename=strrchr(filepath.c_str(),'/')+1;
 
   std::string fileid = database_setval("null","name",filename);
   database_setval(fileid,"ext",ext);
   database_setval(fileid,"server","test1");
   database_setval(fileid,"location","test2");
-  database_setval(fileid,"file_path", file_path);
+  database_setval(fileid,"file_path", filepath);
   database_setval(fileid,"experiment_id", exp_id_str);
   process_file("test1", fileid, file_path);
 }

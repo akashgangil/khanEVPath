@@ -31,25 +31,25 @@ std::string this_server;
 std::string this_server_id;
 
 std::string mount_point;
-  
+
 struct khan_state* khan_data;
 
 CManager cm;
 EVstone stone;
 
 typedef struct _simple_rec {
+  int exp_id;
   char* file_path;
   long file_buf_len;
   char* file_buf;
-  int exp_id;
 } simple_rec, *simple_rec_ptr;
 
 static FMField simple_field_list[] =
 {
+  {"exp_id", "integer", sizeof(int), FMOffset(simple_rec_ptr, exp_id)},
   {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
   {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
   {"file_buf", "char[file_buf_len]", sizeof(char), FMOffset(simple_rec_ptr, file_buf)},
-  {"exp_id", "integer", sizeof(int), FMOffset(simple_rec_ptr, exp_id)},
   {NULL, NULL, 0, 0}
 };
 
@@ -60,27 +60,27 @@ static FMStructDescRec simple_format_list[] =
 };
 
 static void _mkdir(const char *dir) {
-        char tmp[1000];
-        char *p = NULL;
-        size_t len;
+  char tmp[1000];
+  char *p = NULL;
+  size_t len;
 
-        snprintf(tmp, sizeof(tmp),"%s",dir);
-        len = strlen(tmp);
-        if(tmp[len - 1] == '/')
-                tmp[len - 1] = 0;
-        for(p = tmp + 1; *p; p++)
-                if(*p == '/') {
-                        *p = 0;
-                        mkdir(tmp, S_IRWXU);
-                        *p = '/';
-                }
-        mkdir(tmp, S_IRWXU);
+  snprintf(tmp, sizeof(tmp),"%s",dir);
+  len = strlen(tmp);
+  if(tmp[len - 1] == '/')
+    tmp[len - 1] = 0;
+  for(p = tmp + 1; *p; p++)
+    if(*p == '/') {
+      *p = 0;
+      mkdir(tmp, S_IRWXU);
+      *p = '/';
+    }
+  mkdir(tmp, S_IRWXU);
 }
 
 
-void file_receive(void *vevent){
-
-  simple_rec_ptr event = (_simple_rec*)vevent;
+//void file_receive(void *vevent){
+void file_receive(simple_rec_ptr event){
+  //simple_rec_ptr event = (_simple_rec*)vevent;
   if(event) {
     BOOST_LOG_TRIVIAL(info) << "[THREADING ]file_path " << event->file_path;
     BOOST_LOG_TRIVIAL(info) << "[THREADING ]file_buf_len " << event->file_buf_len;
@@ -90,7 +90,7 @@ void file_receive(void *vevent){
   //10 is the length of the im7 file name
   std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
   std::string file_name = "/dev/shm/" + filepath.substr(24, strlen(event->file_path) - 24);
-    
+
   BOOST_LOG_TRIVIAL(info) << "DIR_NAME " << dir_name;
 
   _mkdir(("/dev/shm/" + dir_name).c_str());
@@ -109,43 +109,42 @@ void file_receive(void *vevent){
       BOOST_LOG_TRIVIAL(error) <<  "Something wrong writing to File.";
     }
   }
-  extract_attr_init(file_name.c_str(), event->exp_id);
+  extract_attr_init(file_name.c_str(), event->exp_id, filepath);
   unlink(file_name.c_str());
 }
 
 static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
-  EVtake_event_buffer(cm , vevent);
-  file_receive(vevent);
-  BOOST_LOG_TRIVIAL(debug) << "Return event buffer";
-  EVreturn_event_buffer(cm, vevent);
+  BOOST_LOG_TRIVIAL(debug) << "Simple Handler";
+  simple_rec_ptr event = (_simple_rec*)vevent;
+  file_receive(event);
+  //free(event->file_buf);
+  //free(event->file_path);
   return 1;
 }
 
-static void cleanupHandler(int dummy=0){
+static void cleanup_handler(int dummy=0){
   BOOST_LOG_TRIVIAL(info) << "Cleanup Called";
-  
+
   std::string command = "fusermount -zu " + mount_point;
   FILE* stream=popen(command.c_str(),"r");
-  fclose(stream);
+  if(!stream) fclose(stream);
 
   BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
 
-  free(khan_data);
-  
+  if(!khan_data) free(khan_data);
   EVfree_stone(cm, stone);
-
   measurements_cleanup();
   exit(0);
 }
 
-void my_handler(int signum)
+void create_graphs(int signum)
 {
-    if (signum == SIGUSR1)
-    {
-        printf("Received SIGUSR1!\n");
-        analytics();
-    }
+  if (signum == SIGUSR1)
+  {
+    printf("Received SIGUSR1!\n");
+    analytics();
+  }
 }
 
 int main(int argc, char **argv)
@@ -164,15 +163,15 @@ int main(int argc, char **argv)
     BOOST_LOG_TRIVIAL(info) << "Doing non-threaded communication handling";
   }
   CMlisten(cm);
-  
+
   stone = EValloc_stone(cm);
   EVassoc_terminal_action(cm, stone, simple_format_list, simple_handler, NULL);
   string_list = attr_list_to_string(CMget_contact_list(cm));
-  
+
   BOOST_LOG_TRIVIAL(info) << "Contact List: " << stone << ":" << string_list;
 
-  signal(SIGINT, cleanupHandler);
-  signal(SIGUSR1, my_handler);
+  signal(SIGINT, cleanup_handler);
+  signal(SIGUSR1, create_graphs);
 
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
@@ -184,7 +183,7 @@ int main(int argc, char **argv)
   xmp_initialize();
 
   struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
-  std::string store_filename="stores.txt";
+  std::string store_filename="stores.txt"; /* Default */
 
   int port = -1;
   int opt;
@@ -197,21 +196,21 @@ int main(int argc, char **argv)
     switch (opt)
     {
       case 'm':
-                mount_point = optarg;
-                fuse_opt_add_arg(&args, optarg);
-                break;
+        mount_point = optarg;
+        fuse_opt_add_arg(&args, optarg);
+        break;
 
       case 'd':
-                fuse_opt_add_arg(&args, "-d");
-                break;
+        fuse_opt_add_arg(&args, "-d");
+        break;
 
       case 'p':
-                port = atoi(optarg);
-                break;
+        port = atoi(optarg);
+        break;
 
       case 's':
-                store_filename = optarg;
-                break;
+        store_filename = optarg;
+        break;
     }
   }
 
@@ -224,8 +223,9 @@ int main(int argc, char **argv)
   fuse_opt_add_arg(&args, "umask=022"); 
 
   /* Set signal handler */
-  signal(SIGTERM, cleanupHandler);
-  signal(SIGKILL, cleanupHandler);
+  signal(SIGTERM, cleanup_handler);
+  signal(SIGKILL, cleanup_handler);
+  signal(SIGSEGV, cleanup_handler);
 
   BOOST_LOG_TRIVIAL(debug) << "Store filename: " << store_filename;
 
@@ -252,11 +252,11 @@ int main(int argc, char **argv)
   boost::thread khan_init_thread(initializing_khan, (void*)mount_point.c_str(), servers, server_ids, port);
 
   BOOST_LOG_TRIVIAL(info) << "Initialized Khan";
-  
+
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
 
   BOOST_LOG_TRIVIAL(info) << "Fuse Running";
-  
+
   measurements_cleanup();
 
   return 0;

@@ -53,8 +53,6 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   /* check if we've loaded metadata before */
   std::string output = database_getval ("setup", "value");
   
-  std::cout << "OutPut  " << output << std::endl;
-  
   if (output.compare ("true") == 0)
   {
     BOOST_LOG_TRIVIAL(info) << "Database was previously initialized";
@@ -79,7 +77,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   
   BOOST_LOG_TRIVIAL(info) << "Types to look for" << types;
 
-  analytics ();
+  //analytics ();
     
   BOOST_LOG_TRIVIAL(info) << "Khan Initialized";
     

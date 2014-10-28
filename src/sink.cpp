@@ -37,6 +37,11 @@ struct khan_state* khan_data;
 CManager cm;
 EVstone stone;
 
+char* string_list;
+attr_list contact_list;
+  
+struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+
 typedef struct _simple_rec {
   int exp_id;
   char* file_path;
@@ -134,6 +139,9 @@ static void cleanup_handler(int dummy=0){
 
   if(!khan_data) free(khan_data);
   EVfree_stone(cm, stone);
+  free(string_list);
+  free_attr_list(contact_list);
+  fuse_opt_free_args(&args);
   measurements_cleanup();
   exit(0);
 }
@@ -150,10 +158,8 @@ void create_graphs(int signum)
 int main(int argc, char **argv)
 {
   measurements_init();
-
-  char *string_list;
+  
   int forked = 0;
-
   cm = CManager_create();
   forked = CMfork_comm_thread(cm);
   assert(forked == 1);
@@ -166,7 +172,8 @@ int main(int argc, char **argv)
 
   stone = EValloc_stone(cm);
   EVassoc_terminal_action(cm, stone, simple_format_list, simple_handler, NULL);
-  string_list = attr_list_to_string(CMget_contact_list(cm));
+  contact_list = CMget_contact_list(cm);
+  string_list = attr_list_to_string(contact_list);
 
   BOOST_LOG_TRIVIAL(info) << "Contact List: " << stone << ":" << string_list;
 
@@ -182,7 +189,6 @@ int main(int argc, char **argv)
 
   xmp_initialize();
 
-  struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
   std::string store_filename="stores.txt"; /* Default */
 
   int port = -1;

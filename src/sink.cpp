@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <boost/thread.hpp>
+#include <pthread.h>
 #include "fileprocessor.h"
 #include "database.h"
 #include "params.h"
@@ -141,7 +141,6 @@ static void cleanup_handler(int dummy=0){
   
   EVfree_stone(cm, stone);
 
-
   if(!khan_data) free(khan_data);
   free(string_list);
   free_attr_list(contact_list);
@@ -152,7 +151,10 @@ static void cleanup_handler(int dummy=0){
 
   //CMsleep(cm, 10); /* service network for 600 seconds */
   CManager_close(cm);
+  log_info("Closed the CManager");
   
+  pthread_exit(NULL); 
+  log_info("Exit pthreads");
   exit(0);
 }
 
@@ -265,7 +267,14 @@ int main(int argc, char **argv)
     abort();
   }
 
-  boost::thread khan_init_thread(initializing_khan, (void*)mount_point.c_str(), servers, server_ids, port);
+  arg_struct khan_args;
+  khan_args.mnt_dir = argv[1];
+  khan_args.servers = servers;
+  khan_args.server_ids = server_ids;
+  khan_args.port = port;
+
+  pthread_t khan_init_thread;
+  pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
 
   log_info("Initialized Khan");
 

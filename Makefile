@@ -2,16 +2,6 @@ OBJDIR = build
 SRCDIR = src
 BINDIR = bin
 
-BOOST_INCLUDE_DIR = -I/net/hu21/agangil3/boost_1_55_0
-
-BOOST_LIB_DIRS = -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/log/build/gcc-4.4.7/release/build-no/link-static/log-api-unix/threading-multi \
-								 -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/system/build/gcc-4.4.7/release/link-static/threading-multi \
-								 -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/thread/build/gcc-4.4.7/release/link-static/threading-multi \
-								 -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/date_time/build/gcc-4.4.7/release/link-static/threading-multi \
-								 -L/net/hu21/agangil3/boost_1_55_0/bin.v2/libs/filesystem/build/gcc-4.4.7/release/link-static/threading-multi	
-
-BOOST_LIBS = -lboost_log -lboost_system -lboost_thread -lboost_date_time -lboost_filesystem
-
 SERVER_SRCS  = $(SRCDIR)/khan.cpp \
 							 $(SRCDIR)/data_analytics.cpp \
 							 $(SRCDIR)/localizations.cpp \

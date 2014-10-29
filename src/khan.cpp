@@ -22,18 +22,19 @@ std::string primary_attribute = "";
 std::string mountpoint;
 
   void *
-initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vector < std::string > server_ids, int port)
+initializing_khan (void* khan_args)
 {
+  arg_struct* args = (arg_struct*)khan_args;
   log_info("Initializing khan");
   
   /* Opening root directory and creating if not present */
-  log_info("Khan Root 0 is %s", servers[0].c_str());
+  log_info("Khan Root 0 is %s", args->servers[0].c_str());
   
-  if (NULL == opendir (servers.at (0).c_str ()))
+  if (NULL == opendir (args->servers.at (0).c_str ()))
   {
     log_err("Error message on opening directory");
     log_err("Root directory might not exist.. Creating");
-    std::string command = "mkdir " + servers.at (0);
+    std::string command = "mkdir " + args->servers.at (0);
     if (system (command.c_str ()) < 0)
     {
       log_err("Unable to create storage directory.. Aborting");
@@ -45,7 +46,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
     log_info("Directory opened successfully");
   }
 
-  init_database(port);
+  init_database(args->port);
 
   /* check if we've loaded metadata before */
   std::string output = database_getval ("setup", "value");
@@ -64,9 +65,9 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   database_setval ("setup", "value", "true");
 
   /* load metadata associatons */
-  for (unsigned i = 0; i < servers.size (); i++)
+  for (unsigned i = 0; i < args->servers.size (); i++)
   {
-    process_transducers (servers.at (i));
+    process_transducers (args->servers.at (i));
   }
 
   /* load metadata for each file on each server */

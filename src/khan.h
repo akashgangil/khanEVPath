@@ -24,7 +24,14 @@
 
 #define PACKAGE_VERSION 2.6
 
-void* initializing_khan(void * mnt_dir, std::vector < std::string > servers, std::vector < std::string > server_ids, int port);
+typedef struct{
+  void *mnt_dir;
+  std::vector < std::string > servers;
+  std::vector < std::string > server_ids;
+  int port;
+} arg_struct;
+
+void* initializing_khan(void* args);
       
 int khan_opendir(const char *c_path, struct fuse_file_info *fi);
     

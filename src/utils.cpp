@@ -1,7 +1,6 @@
 #include "database.h"
 #include "utils.h"
-
-#include <boost/log/trivial.hpp>
+#include "log.h"
 
 #ifdef APPLE
 int clock_gettime(int i, struct timespec* b) { 
@@ -123,8 +122,7 @@ int count_string(std::string tobesplit){
 
 char* append_path(const char * newp) {
     std::string servers[] = {"test1"};
-    
-    BOOST_LOG_TRIVIAL(debug) << "append_path " << servers[0] << " " << newp;
+    log_info("append_path: %s  %s", servers[0].c_str(), newp); 
     
     char* fpath=(char*)malloc(MAX_PATH_LENGTH);
     memset(fpath,0,MAX_PATH_LENGTH);

@@ -8,8 +8,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <boost/log/trivial.hpp>
-
 #include <vector>
 #include <set>
 
@@ -17,6 +15,7 @@
 #include <glob.h>
 
 #include "evpath.h"
+#include "log.h"
 
 std::vector < std::string > servers;
 std::vector < std::string > server_ids;
@@ -56,7 +55,7 @@ int main(int argc, char **argv)
     attr_list contact_list;
     EVstone remote_stone;
     if (sscanf(argv[1], "%d:%s", &remote_stone, &string_list[0]) != 2) {
-        BOOST_LOG_TRIVIAL(error) << "Bad arguments " << argv[1];
+        log_err("Bad arguments %s", argv[1]);
         exit(0);
     }
 
@@ -110,11 +109,11 @@ int main(int argc, char **argv)
       
         glob((pattern +".im7").c_str(), 0, NULL, &files);        
 
-        BOOST_LOG_TRIVIAL(info) << "Globbing with pattern: " << pattern << ".im7";
+        log_info("Globbing with pattern: %s.im7", pattern.c_str());
 
         for(unsigned j=0; j<files.gl_pathc; j++) {
               std::string filepath = files.gl_pathv[j];
-              BOOST_LOG_TRIVIAL(debug) << "FILE Path: " <<  filepath;
+              log_info("File Path: %s", filepath.c_str());
 
               std::string exp_dir = filepath.substr(0, filepath.size() - 10);
               experiments.insert(exp_dir);
@@ -130,7 +129,7 @@ int main(int argc, char **argv)
 
               data.file_buf_len = statbuf.st_size;
               
-              BOOST_LOG_TRIVIAL(debug) << "Size: " <<  data.file_buf_len;
+              log_info("Size: %zu", data.file_buf_len);
 
               if ((data.file_buf = (char*)mmap (0, statbuf.st_size, PROT_READ, MAP_PRIVATE, fdin, 0))
                          == (caddr_t) -1)
@@ -152,7 +151,7 @@ int main(int argc, char **argv)
     /* Cleanup */
     EVfree_source(source);
     if(EVdestroy_stone(cm, stone)) 
-      BOOST_LOG_TRIVIAL(debug) << "Drained the stone and freed it";
+      log_info("Drained the stone and freed it");
     globfree(&files);
     CMsleep(cm, 600);
 }

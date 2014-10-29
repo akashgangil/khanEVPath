@@ -8,9 +8,7 @@
 #include <set>
 #include <sys/types.h>
 #include <dirent.h>
-#include <errno.h>
-
-#include <boost/log/trivial.hpp>
+#include "log.h"
 
 #include "khan.h"
 #include "data_analytics.h"
@@ -26,26 +24,25 @@ std::string mountpoint;
   void *
 initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vector < std::string > server_ids, int port)
 {
-
-  BOOST_LOG_TRIVIAL(info) << "Initializing Khan";
+  log_info("Initializing khan");
   
   /* Opening root directory and creating if not present */
-  BOOST_LOG_TRIVIAL(debug) << "Khan Root 0 is " << servers[0];
+  log_info("Khan Root 0 is %s", servers[0].c_str());
   
   if (NULL == opendir (servers.at (0).c_str ()))
   {
-    BOOST_LOG_TRIVIAL(error) << "Error message on opening directory" << strerror(errno);
-    BOOST_LOG_TRIVIAL(error) << "Root directory might not exist.. Creating";
+    log_err("Error message on opening directory");
+    log_err("Root directory might not exist.. Creating");
     std::string command = "mkdir " + servers.at (0);
     if (system (command.c_str ()) < 0)
     {
-      BOOST_LOG_TRIVIAL(fatal) << "Unable to create storage directory... Aborting";
+      log_err("Unable to create storage directory.. Aborting");
       exit (1);
     }
   }
   else
   {
-    BOOST_LOG_TRIVIAL(info) << "Directory opened successfully";
+    log_info("Directory opened successfully");
   }
 
   init_database(port);
@@ -55,7 +52,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   
   if (output.compare ("true") == 0)
   {
-    BOOST_LOG_TRIVIAL(info) << "Database was previously initialized";
+    log_info("Database was previously initialized");
     tot_time +=
       (stop.tv_sec - start.tv_sec) + (stop.tv_nsec -
           start.tv_nsec) / BILLION;
@@ -63,7 +60,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
   }
 
   /* if we have not setup, do so now */
-  BOOST_LOG_TRIVIAL(info) << "Set database setup value to true and setup the database";
+  log_info("Set database setup value to true and setup the database");
   database_setval ("setup", "value", "true");
 
   /* load metadata associatons */
@@ -74,12 +71,12 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
 
   /* load metadata for each file on each server */
   std::string types = database_getval ("allfiles", "types");
-  
-  BOOST_LOG_TRIVIAL(info) << "Types to look for" << types;
+ 
+  log_info("Type to look for %s", types.c_str());
 
   //analytics ();
-    
-  BOOST_LOG_TRIVIAL(info) << "Khan Initialized";
+  
+  log_info("Khan Initialized");
     
   return 0;
 }
@@ -271,7 +268,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
         dir_pop_buf (void *buf, fuse_fill_dir_t filler, std::string content, bool convert)
         {
 
-          BOOST_LOG_TRIVIAL(info) << "Inside dir_pop_buf " << content;
+          log_info("Inside dir_pop_buf %s", content.c_str());
 
           std::vector < std::string > contents = split (content, ":");
           for (unsigned i = 0; i < contents.size (); i++)
@@ -292,8 +289,8 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
       void
         unmounting (std::string mnt_dir)
         {
-          
-          BOOST_LOG_TRIVIAL(debug) << "In unmounting";
+         
+          log_info("In unmounting");
 #ifdef APPLE
           std::string command = "umount " + mnt_dir + "\n";
 #else
@@ -301,11 +298,11 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
 #endif
           if (system (command.c_str ()) < 0)
           {
-            BOOST_LOG_TRIVIAL(error) << "Could not unmount the specfied directory";
+            log_info("Could not unmount the specified directory");
             return;
           }
           
-          BOOST_LOG_TRIVIAL(info) << "fuserunmount successful";
+          log_info("fuserunmount successful");
         }
 
 
@@ -313,8 +310,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
         populate_readdir_buffer (void *buf, fuse_fill_dir_t filler,
             std::stringstream & path)
         {
-
-          BOOST_LOG_TRIVIAL(info) << "Populate read directory buffer";
+          log_info("Populate read directory buffer");
 
           std::string attr, val, file, more;
           std::string current_content = "none";
@@ -412,8 +408,7 @@ initializing_khan (void *mnt_dir, std::vector < std::string> servers, std::vecto
                     else
                     {
                       /* /attr/val dir */
-      
-                      BOOST_LOG_TRIVIAL(info) << "Else " << attrs_content <<" " << current_attrs;
+                        log_info("Else %s  %s", attrs_content.c_str(), current_attrs.c_str());
                       attrs_content =
                         subtract (attrs_content, current_attrs);
                       std::cout << "Dir Content  " << dir_content << std::endl;

@@ -6,12 +6,9 @@
 #include <fstream>
 #include <map>
 #include <unistd.h>
-
-#include <boost/log/trivial.hpp>
-
 #include "database.h"
 #include "utils.h"
-
+#include "log.h"
 #include "measurements.h"
 #include "fileprocessor.h"
 
@@ -26,6 +23,8 @@ PyObject *pName, *pModule, *pDict, *pClass;
 
 std::string call_pyfunc(std::string script_name, std::string func_name, std::string file_path){
 
+  return "test";
+
   std::string result;
 
   PyObject *pValue, *pArgs, *pInstance;
@@ -34,7 +33,7 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
 
   if(!execute_once){
     
-    BOOST_LOG_TRIVIAL(info) << "*****EXECUTED!!*****" << "\n"; 
+    log_info("**Executed**");
     
     pName = PyString_FromString(script_name.c_str());
     if(pName != NULL){
@@ -90,7 +89,7 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
 }
 
 void process_file(std::string server, std::string fileid, std::string file_path) {
-  BOOST_LOG_TRIVIAL(info) << "Inside process file" << "\n"; 
+  log_info("Inside process file");
   std::string file = database_getval(fileid, "name");
   std::string ext = database_getval(fileid, "ext");
   file = server + "/" + file;
@@ -112,7 +111,7 @@ void process_file(std::string server, std::string fileid, std::string file_path)
         stopwatch_stop(sw);
         fprintf(mts_file, "ProcessFilePython,%Lf,secs\n",stopwatch_elapsed(sw));
 
-        BOOST_LOG_TRIVIAL(debug) << "Token: " << token << "Result: " << res;
+        log_info("Token: %s Result: %s", token.c_str(), res.c_str());
 
         stopwatch_start(sw);
         database_setval(fileid, token , res.c_str());
@@ -128,7 +127,7 @@ void extract_attr_init(std::string file_path, int exp_id, std::string filepath) 
   char exp_id_str[10];
   sprintf(exp_id_str, "%d", exp_id);
 
-  BOOST_LOG_TRIVIAL(info) << "Extract attributes for " << file_path; 
+  log_info("Extract attributed for %s", file_path.c_str());
   std::string ext = strrchr(filepath.c_str(),'.')+1;
   std::string filename=strrchr(filepath.c_str(),'/')+1;
 

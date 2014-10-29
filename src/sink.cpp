@@ -7,10 +7,7 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
-
-#include <boost/log/trivial.hpp>
 #include <boost/thread.hpp>
-
 #include "fileprocessor.h"
 #include "database.h"
 #include "params.h"
@@ -21,6 +18,9 @@
 #include "data_analytics.h"
 #include "stopwatch.h"
 #include "measurements.h"
+#include "log.h"
+
+
 extern struct fuse_operations khan_ops;
 extern struct stopwatch_t* sw;
 
@@ -87,8 +87,8 @@ static void _mkdir(const char *dir) {
 void file_receive(simple_rec_ptr event){
   //simple_rec_ptr event = (_simple_rec*)vevent;
   if(event) {
-    BOOST_LOG_TRIVIAL(info) << "[THREADING ]file_path " << event->file_path;
-    BOOST_LOG_TRIVIAL(info) << "[THREADING ]file_buf_len " << event->file_buf_len;
+    log_info("file_path %s", event->file_path);
+    log_info("file_buf_len %ld", event->file_buf_len);
   }
   std::string filepath (event->file_path);
   //24 is the length of the server name
@@ -96,7 +96,7 @@ void file_receive(simple_rec_ptr event){
   std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
   std::string file_name = "/dev/shm/" + filepath.substr(24, strlen(event->file_path) - 24);
 
-  BOOST_LOG_TRIVIAL(info) << "DIR_NAME " << dir_name;
+  log_info("Dir name %s", dir_name.c_str());
 
   _mkdir(("/dev/shm/" + dir_name).c_str());
 
@@ -106,12 +106,12 @@ void file_receive(simple_rec_ptr event){
 
     if (pFile){
       size_t w = fwrite(event->file_buf, 1, event->file_buf_len, pFile);
-      BOOST_LOG_TRIVIAL(debug) << "Wrote to file! " << w;
+      log_info("Wrote to file %zu", w );
       fsync(fileno(pFile));
       fclose(pFile);
     }
     else{
-      BOOST_LOG_TRIVIAL(error) <<  "Something wrong writing to File.";
+      log_err("Something wrong writing to file");
     }
   }
   extract_attr_init(file_name.c_str(), event->exp_id, filepath);
@@ -120,7 +120,7 @@ void file_receive(simple_rec_ptr event){
 
 static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
-  BOOST_LOG_TRIVIAL(debug) << "Simple Handler";
+  log_info("Simple Handler");
   simple_rec_ptr event = (_simple_rec*)vevent;
   file_receive(event);
   //free(event->file_buf);
@@ -129,20 +129,30 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 }
 
 static void cleanup_handler(int dummy=0){
-  BOOST_LOG_TRIVIAL(info) << "Cleanup Called";
+  log_info("Cleanup Called");
+
+  Py_Finalize();
 
   std::string command = "fusermount -zu " + mount_point;
   FILE* stream=popen(command.c_str(),"r");
   if(!stream) fclose(stream);
 
-  BOOST_LOG_TRIVIAL(info) << "Command executed: " << command;
+  log_info("Command executed %s", command.c_str());
+  
+  EVfree_stone(cm, stone);
+
 
   if(!khan_data) free(khan_data);
-  EVfree_stone(cm, stone);
   free(string_list);
   free_attr_list(contact_list);
   fuse_opt_free_args(&args);
   measurements_cleanup();
+ 
+  log_info("Freed constants and fuse arguments");
+
+  //CMsleep(cm, 10); /* service network for 600 seconds */
+  CManager_close(cm);
+  
   exit(0);
 }
 
@@ -150,7 +160,7 @@ void create_graphs(int signum)
 {
   if (signum == SIGUSR1)
   {
-    printf("Received SIGUSR1!\n");
+    log_info("Received SIGUSR1!");
     analytics();
   }
 }
@@ -164,9 +174,9 @@ int main(int argc, char **argv)
   forked = CMfork_comm_thread(cm);
   assert(forked == 1);
   if (forked) {
-    BOOST_LOG_TRIVIAL(info) << "Forked a communication thread";
+    log_info("Forked a communication thread");
   } else {
-    BOOST_LOG_TRIVIAL(info) << "Doing non-threaded communication handling";
+    log_info("Doing non-threaded communication handling");
   }
   CMlisten(cm);
 
@@ -175,7 +185,7 @@ int main(int argc, char **argv)
   contact_list = CMget_contact_list(cm);
   string_list = attr_list_to_string(contact_list);
 
-  BOOST_LOG_TRIVIAL(info) << "Contact List: " << stone << ":" << string_list;
+  log_info("Contact list %d:%s", stone, string_list);
 
   signal(SIGINT, cleanup_handler);
   signal(SIGUSR1, create_graphs);
@@ -233,7 +243,7 @@ int main(int argc, char **argv)
   signal(SIGKILL, cleanup_handler);
   signal(SIGSEGV, cleanup_handler);
 
-  BOOST_LOG_TRIVIAL(debug) << "Store filename: " << store_filename;
+  log_info("Store filename %s", store_filename.c_str());
 
   FILE* stores = fopen(store_filename.c_str(), "r");
   char buffer[100];
@@ -251,19 +261,19 @@ int main(int argc, char **argv)
 
   khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
   if (khan_data == NULL)  {
-    BOOST_LOG_TRIVIAL(fatal) << "Could not allocate memory to khan_data.. Aborting";
+    log_err("Could not allocate memory to khan_data.. Aborting");
     abort();
   }
 
   boost::thread khan_init_thread(initializing_khan, (void*)mount_point.c_str(), servers, server_ids, port);
 
-  BOOST_LOG_TRIVIAL(info) << "Initialized Khan";
+  log_info("Initialized Khan");
 
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
 
-  BOOST_LOG_TRIVIAL(info) << "Fuse Running";
+  log_info("Fuse Running");
 
-  measurements_cleanup();
+  cleanup_handler();
 
   return 0;
 }

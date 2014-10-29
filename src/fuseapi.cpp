@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 #include <fstream>
@@ -9,10 +8,6 @@
 #include <fuse/fuse_opt.h>
 #include <fuse/fuse_lowlevel.h>
 
-#include <boost/log/trivial.hpp>
-
-#include <errno.h>
-
 #include "khan.h"
 #include "fuseapi.h"
 #include "fuse_helper.h"
@@ -20,10 +15,11 @@
 #include "utils.h"
 #include "localizations.h"
 #include "fileprocessor.h"
+#include "log.h"
 
 struct fuse_operations khan_ops;
 
-void
+  void
 xmp_initialize ()
 {
 
@@ -73,23 +69,23 @@ xmp_initialize ()
 khan_init (struct fuse_conn_info *conn)
 {
 
-  BOOST_LOG_TRIVIAL(info) << "khan_init called";
-  
+  log_info("khan_init called");
+
   if (chdir (servers.at (0).c_str ()) < 0)
   {
-    BOOST_LOG_TRIVIAL(error) << "Could not change directory " << "Errno " << strerror(errno);
+    log_info("Could not change directory");
     perror (servers.at (0).c_str ());
   }
-  
-  BOOST_LOG_TRIVIAL(info) << "khan_int ends";
+
+  log_info("khan_init ends");
   return KHAN_DATA;
 }
 
   int
 khan_flush (const char *path, struct fuse_file_info *info)
 {
-  
-  BOOST_LOG_TRIVIAL(info) << "Khan Flush";
+
+  log_info("Khan Flush");
   char *path_c = strdup(path); 
   std::string filename = basename (path_c);
   std::string fileid = database_getval ("name", filename);
@@ -105,12 +101,12 @@ khan_flush (const char *path, struct fuse_file_info *info)
 khan_open (const char *path, struct fuse_file_info *fi)
 {
 
-  BOOST_LOG_TRIVIAL(info) << "Khan Open Directory";
-  
+  log_info("Khan Open Directory");
+
   char *path_c = strdup(path); 
   path = basename (path_c);
   std::string fileid = database_getval ("name", path);
-  
+
   /* Get server  */
   std::string server = database_getval (fileid, "server");
   if (server == "cloud")
@@ -128,10 +124,10 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
 {
   create_calls++;
 
-  BOOST_LOG_TRIVIAL(info) << "Khan xmp_create";
-  
+  log_info("Khan xmp_create");
+
   char *path_c = strdup(path); 
-  
+
   std::string fileid = database_getval ("name", basename (path_c));
   if (strcmp (fileid.c_str (), "null") == 0)
   {
@@ -153,14 +149,13 @@ khan_create (const char *path, mode_t mode, struct fuse_file_info *fi)
 xmp_access (const char *path, int mask)
 {
 
-  BOOST_LOG_TRIVIAL(info) << "Khan Access " << path;
+  log_info("Khan Access %s", path);
   if (strcmp (path, "/") == 0)
   {
-    
-    BOOST_LOG_TRIVIAL(info) << "At root " ;
+    log_info("At root");
     return 0;
   }
-  BOOST_LOG_TRIVIAL(info) << "At root " ;
+  log_info("At root");
   return 0;
 
   std::string dirs = database_getval ("alldirs", "paths");
@@ -312,8 +307,8 @@ xmp_mknod (const char *path, mode_t mode, dev_t rdev)
   char *path_c = strdup(path); 
   path = append_path2 (basename (path_c));
 
-  BOOST_LOG_TRIVIAL(info) << "In xmp_mknod Path = " << path  ;
-  
+  log_info("In xmp_mknod path = %s", path);
+
   int res;
   if (S_ISFIFO (mode))
     res = mkfifo (path, mode);
@@ -331,8 +326,8 @@ xmp_mknod (const char *path, mode_t mode, dev_t rdev)
   int
 xmp_mkdir (const char *path, mode_t mode)
 {
-  BOOST_LOG_TRIVIAL(info) << "Khan mkdir " << path;
-  
+  log_info("Khan mkdir %s", path);
+
   std::string strpath = path;
   if (strpath.find ("localize") != std::string::npos)
   {
@@ -402,7 +397,7 @@ xmp_mkdir (const char *path, mode_t mode)
     return -1;
   }
 
-  BOOST_LOG_TRIVIAL(info) << "xmp_mkdir for path = " << path;
+  log_info("xmp_mkdir for path= %s", path);
   struct stat* st;
   if (khan_getattr (path, st) < 0)
   {
@@ -412,7 +407,7 @@ xmp_mkdir (const char *path, mode_t mode)
   }
   else
   {
-    BOOST_LOG_TRIVIAL(info) << "Directory exists";
+    log_info("Directory exists");
   }
   return 0;
 }
@@ -421,9 +416,9 @@ xmp_mkdir (const char *path, mode_t mode)
   int
 xmp_readlink (const char *path, char *buf, size_t size)
 {
-  
-  BOOST_LOG_TRIVIAL(info) << "xmp_readlink Path = " << path;
-  
+
+  log_info("xmp_readlink path %s", path);
+
   /* TODO: handle in vold somehow */
   int res = -1;
   char *path_c = strdup(path); 
@@ -439,8 +434,7 @@ xmp_readlink (const char *path, char *buf, size_t size)
   int
 xmp_unlink (const char *path)
 {
-
-  BOOST_LOG_TRIVIAL(info) << "xmp_unlink, PATH = " << path;
+  log_info("xmp_unlink, Path %s", path);
   /* TODO: handle in vold somehow */
   int res;
   char *path_c = strdup(path); 
@@ -482,7 +476,7 @@ xmp_unlink (const char *path)
   int
 xmp_rmdir (const char *path)
 {
-  BOOST_LOG_TRIVIAL(info) << "xmp_rmdir PATH = " << path;
+  log_info("xmp_rmdir Path = %s", path);
   /*if hardcoded, just remove */
   database_remove_val ("alldirs", "paths", path);
 
@@ -500,21 +494,20 @@ xmp_symlink (const char *from, const char *to)
 {
   /*TODO: handle in vold somehow */
   int res = -1;
-  
+
   char* from_c = strdup(from);
   char* to_c = strdup(to);
-  
+
   from = append_path2 (basename (from_c));
   to = append_path2 (basename (to_c));
-  
-  BOOST_LOG_TRIVIAL(info) << "xmp_symlink From " << from << " to " << to;
-  
+  log_info("xmp_symlink from %s to %s", from, to);
+
   if (res == -1){
     free(from_c);
     free(to_c);
     return -errno;
   }
-  
+
   free(from_c);
   free(to_c);
   return 0;
@@ -529,7 +522,7 @@ xmp_link (const char *from, const char *to)
   int retstat = 0;
   from = append_path2 (basename (strdup (from)));
   to = append_path2 (basename (strdup (to)));
-  BOOST_LOG_TRIVIAL(info) << "xmp_link. From " << from << " To: " << to;
+  log_info("xmp_symlink from %s to %s", from, to);
   retstat = link (from, to);
   free(from_c);
   free(to_c);
@@ -542,9 +535,8 @@ xmp_chmod (const char *path, mode_t mode)
   int res;
   char* path_c = strdup(path);
   path = append_path2 (basename (path_c));
-  
-  BOOST_LOG_TRIVIAL(info) << "xmp_chmod Path = " << path;
-  
+  log_info("xmp_chmod path = %s", path); 
+
   res = chmod (path, mode);
 #ifdef APPLE
   res = chmod (path, mode);
@@ -563,9 +555,9 @@ xmp_chown (const char *path, uid_t uid, gid_t gid)
   int res;
   char* path_c = strdup(path);
   path = append_path2 (basename (path_c));
-  
-  BOOST_LOG_TRIVIAL(info) << "xmp_chown, PATH = " << path;
-  
+
+  log_info("xmp_chown path = %s", path); 
+
   res = lchown (path, uid, gid);
   free(path_c);
   if (res == -1)
@@ -579,7 +571,8 @@ xmp_truncate (const char *path, off_t size)
   /*update for vold? */
   int res;
   path++;
-  BOOST_LOG_TRIVIAL(info) << "xmp_truncate, PATH = " << path;
+  log_info("xmp_truncate path = %s", path); 
+
   res = truncate (path, size);
   if (res == -1)
     return -errno;
@@ -593,8 +586,7 @@ xmp_utimens (const char *path, const struct timespec ts[2])
   struct timeval tv[2];
   char* path_c = strdup(path);
   path = append_path2 (basename (path_c));
-  
-  BOOST_LOG_TRIVIAL(info) << "xmp_utimens, PATH = " << path;
+  log_info("xmp_utimens path = %s", path); 
 
   tv[0].tv_sec = ts[0].tv_sec;
   tv[0].tv_usec = ts[0].tv_nsec / 1000;
@@ -612,11 +604,11 @@ xmp_read (const char *path, char *buf, size_t size, off_t offset,
     struct fuse_file_info *fi)
 {
   int res = 0;
-  
+
   char* path_c = strdup(path);
 
   path = append_path2 (basename (path_c));
-  BOOST_LOG_TRIVIAL(info) << "xmp_read , PATH = " << path;
+  log_info("xmp_read path = %s", path); 
 
   FILE *thefile = fopen (path, "r");
   if (thefile != NULL)
@@ -641,10 +633,10 @@ xmp_write (const char *path, const char *buf, size_t size, off_t offset,
 {
   int fd;
   int res;
-  
+
   char* path_c = strdup(path);
   path = append_path2 (basename (path_c));
-  BOOST_LOG_TRIVIAL(info) << "xmp_write, PATH = " << path;
+  log_info("xmp_write path = %s", path); 
   (void) fi;
   fd = open (path, O_WRONLY);
   if (fd == -1)
@@ -659,12 +651,11 @@ xmp_write (const char *path, const char *buf, size_t size, off_t offset,
   return res;
 }
 
-int
+  int
 xmp_statfs (const char *path, struct statvfs *stbuf)
 {
   /* Pass the call through to the underlying system which has the media. */
-
-  BOOST_LOG_TRIVIAL(info) << "xmp_statfs, PATH = " << path;
+  log_info("xmp_statsfs, path = %s", path);
   int res = statvfs (path, stbuf);
   if (res != 0)
   {
@@ -674,27 +665,26 @@ xmp_statfs (const char *path, struct statvfs *stbuf)
   return 0;
 }
 
-int
+  int
 xmp_release (const char *path, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
-  BOOST_LOG_TRIVIAL(debug) << "xmp_release, PATH = " << path;
+  log_info("xmp_release, path = %s", path);
   return 0;
 }
 
-int
+  int
 xmp_fsync (const char *path, int isdatasync, struct fuse_file_info *fi)
 {
   /* Just a stub. This method is optional and can safely be left unimplemented. */
-  BOOST_LOG_TRIVIAL(info) << "xmp_fsync, PATH = " << path;
+  log_info("xmp_fsync, path = %s", path);
   return 0;
 }
 
-int
+  int
 xmp_rename (const char *from, const char *to)
 {
-  
-  BOOST_LOG_TRIVIAL(info) << "xmp_rename, From: " << from << " To: " << to;
+  log_info("xmp_rename from %s to %s", from , to ); 
   double start_time = 0;
   struct timeval start_tv;
   gettimeofday (&start_tv, NULL);
@@ -740,12 +730,11 @@ xmp_rename (const char *from, const char *to)
   return 0;
 }
 
-int
+  int
 xmp_readdir (const char *c_path, void *buf, fuse_fill_dir_t filler,
     off_t offset, struct fuse_file_info *fi)
 {
-
-  BOOST_LOG_TRIVIAL(info) << "xmp_readdir PATH = " << c_path;
+  log_info("xmp_readdir path = %s", c_path);
   filler (buf, ".", NULL, 0);
   filler (buf, "..", NULL, 0);
   std::string pre_processed = c_path + 1;
@@ -757,36 +746,34 @@ xmp_readdir (const char *c_path, void *buf, fuse_fill_dir_t filler,
 
 
 #ifdef APPLE
-int
+  int
 xmp_setxattr (const char *path, const char *name, const char *value,
     size_t size, int flags, uint32_t param)
 {
 #else
-    int
+  int
     xmp_setxattr (const char *path, const char *name, const char *value,
         size_t size, int flags)
     {
 #endif
       std::string attr = bin2hex (value, size);
 
-      BOOST_LOG_TRIVIAL(info) << "setxattr call Path: " << path << " Name: " << name << " Value: " << value;
-      
+      log_info("setxattr call Path: %s, Name: %s, Value %s", path, name, value);
       std::string xpath = "xattr:";
       xpath += path;
       redis_setval (xpath, name, attr.c_str ());
-      
-      BOOST_LOG_TRIVIAL(info) << "setxattr call " << xpath << name << attr;
-      
+      log_info("setxattr call %s %s %s", xpath.c_str(), name, attr.c_str()); 
+
       return 0;
     }
 
 #ifdef APPLE
-    int
+  int
     xmp_getxattr (const char *path, const char *name, char *value, size_t size,
         uint32_t param)
     {
 #else
-        int
+      int
         xmp_getxattr (const char *path, const char *name, char *value, size_t size)
         {
 #endif
@@ -794,10 +781,8 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           std::string xpath = "xattr:";
           xpath += path;
           std::string db_val = redis_getval (xpath, name);
-      
-          BOOST_LOG_TRIVIAL(info) << "getxattr call " << "Path: " << xpath << "Name: " << name
-                      << "Value: " << db_val << "Size: " << size;
-          
+          //log_info("getxattr call Path: %s Name: %s Value: %s Size %zu", xpath.c_str(), name, db_val.c_str(), size); 
+
           if (db_val != "null")
           {
             db_val = hex2bin (db_val);
@@ -807,22 +792,19 @@ xmp_setxattr (const char *path, const char *name, const char *value,
               return db_val.length ();
             }
             memcpy (value, db_val.c_str (), size);
-            size_t num = snprintf (value, size, "%s", db_val.c_str ());
-          
-            BOOST_LOG_TRIVIAL(debug) << "Returned String: " << value << "Count: " << num;
-            
-            errno = 0;
+             snprintf (value, size, "%s", db_val.c_str ());
+        //    log_info("Returned String: %s Count: %zu ", value, num) 
+              errno = 0;
             return size;
           }
           errno = 1;
           return ENODATA;
         }
 
-        int
+      int
         xmp_listxattr (const char *path, char *list, size_t size)
         {
-
-          BOOST_LOG_TRIVIAL(debug) << "listxattr call " << path << list;
+          log_info("listxattr call %s %s", path, list);
           std::string xpath = "xattr:";
           xpath += path;
           std::string attrs = database_getvals (xpath);
@@ -839,17 +821,16 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           }
           if (list == NULL)
           {
-            BOOST_LOG_TRIVIAL(debug) << "returning " << str_size;
+            log_info("returning %d", str_size);
             return str_size;
           }
-          snprintf (list, size, "%s", attrs.c_str ());
-          
-          BOOST_LOG_TRIVIAL(debug) << "Returning " << list << count;
+          snprintf (list, size, "%s", attrs.c_str());
+          log_info("Returning %s %d", list, count); 
           free(mal); 
           return count;
         }
 
-        int
+      int
         xmp_removexattr (const char *path, const char *name)
         {
           fprintf (stderr, "removexattr call\n %s, %s\n\n", path, name);
@@ -858,21 +839,21 @@ xmp_setxattr (const char *path, const char *name, const char *value,
 
 #ifdef APPLE
 
-        int
+      int
         xmp_setvolname (const char *param)
         {
           fprintf (stderr, "apple function called setvolname\n");
           return 0;
         }
 
-        int
+      int
         xmp_exchange (const char *param1, const char *param2, unsigned long param3)
         {
           fprintf (stderr, "apple function called exchange\n");
           return 0;
         }
 
-        int
+      int
         xmp_getxtimes (const char *param1, struct timespec *param2,
             struct timespec *param3)
         {
@@ -880,42 +861,42 @@ xmp_setxattr (const char *path, const char *name, const char *value,
           return 0;
         }
 
-        int
+      int
         xmp_setbkuptime (const char *param1, const struct timespec *param2)
         {
           fprintf (stderr, "apple function called setbkuptimes\n");
           return 0;
         }
 
-        int
+      int
         xmp_setchgtime (const char *param1, const struct timespec *param2)
         {
           fprintf (stderr, "apple function called setchgtimes\n");
           return 0;
         }
 
-        int
+      int
         xmp_setcrtime (const char *param1, const struct timespec *param2)
         {
           fprintf (stderr, "apple function called setcrtimes\n");
           return 0;
         }
 
-        int
+      int
         xmp_chflags (const char *param1, uint32_t param2)
         {
           fprintf (stderr, "apple function called chflags\n");
           return 0;
         }
 
-        int
+      int
         xmp_setattr_x (const char *param1, struct setattr_x *param2)
         {
           fprintf (stderr, "apple function called setattr_x\n");
           return 0;
         }
 
-        int
+      int
         xmp_fsetattr_x (const char *param1, struct setattr_x *param2,
             struct fuse_file_info *param3)
         {

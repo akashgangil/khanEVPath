@@ -52,8 +52,6 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
         PyErr_Print();
     }
 
-    PyRun_SimpleString("import gc\n");
-
     execute_once = 1;
   }
 
@@ -79,7 +77,6 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
         PyErr_Print();
     }
     Py_DECREF(pInstance);
-    PyRun_SimpleString("gc.collect()");
     free(func);
   }
 

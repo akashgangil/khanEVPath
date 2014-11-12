@@ -21,14 +21,7 @@ static std::string primary_attribute = "";
 
 PyObject *pName, *pModule, *pDict, *pClass;
 
-std::string call_pyfunc(std::string script_name, std::string func_name, std::string file_path){
-
-  std::string result;
-
-  PyObject *pValue, *pArgs, *pInstance;
-
-  PyObject *pFile;
-
+int init_python_processing(std::string script_name){
   if(!execute_once){
     
     log_info("**Executed**");
@@ -51,19 +44,21 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       if(PyErr_Occurred())
         PyErr_Print();
     }
-
     execute_once = 1;
+    return 1;
   }
+  return 0;
 
+}
+
+std::string call_pyfunc(std::string func_name, PyObject *pInstance){
+
+  std::string result;
+
+  PyObject *pValue;
 
   if (PyCallable_Check(pClass))
   {
-    pFile = PyString_FromString(file_path.c_str());
-    pArgs = PyTuple_New(1);
-    PyTuple_SetItem(pArgs, 0, pFile);
-    pInstance = PyObject_CallObject(pClass, pArgs);
-    Py_DECREF(pArgs);
-    
     char *func = strdup(func_name.c_str());
     pValue = PyObject_CallMethod(pInstance, func, NULL);
 
@@ -76,7 +71,6 @@ std::string call_pyfunc(std::string script_name, std::string func_name, std::str
       if(PyErr_Occurred())
         PyErr_Print();
     }
-    Py_DECREF(pInstance);
     free(func);
   }
 
@@ -89,10 +83,21 @@ void process_file(std::string server, std::string fileid, std::string file_path)
   std::string ext = database_getval(fileid, "ext");
   file = server + "/" + file;
   std::string attrs=database_getval(ext,"attrs");
+  
+  init_python_processing("Khan");
+
 
   if(attrs != "null"){
     std::string token="";
     std::stringstream ss2(attrs.c_str());
+  
+    PyObject *pFile, *pArgs, *pInstance;
+    
+    /*Initialize PyObjects Needed per file*/
+    pFile = PyString_FromString(file_path.c_str());
+    pArgs = PyTuple_New(1);
+    PyTuple_SetItem(pArgs, 0, pFile);
+    pInstance = PyObject_CallObject(pClass, pArgs);
 
     while(getline(ss2,token,':')){
       if(strcmp(token.c_str(),"null")!=0){
@@ -102,7 +107,7 @@ void process_file(std::string server, std::string fileid, std::string file_path)
         }
 
         stopwatch_start(sw);
-        std::string res =  call_pyfunc("Khan", token, file_path);
+        std::string res =  call_pyfunc(token, pInstance);
         stopwatch_stop(sw);
         fprintf(mts_file, "ProcessFilePython,%Lf,secs\n",stopwatch_elapsed(sw));
 
@@ -114,6 +119,8 @@ void process_file(std::string server, std::string fileid, std::string file_path)
         fprintf(mts_file, "ProcessFileDatabase,%Lf,secs\n", stopwatch_elapsed(sw));
       }
     }
+    Py_DECREF(pArgs);
+    Py_DECREF(pInstance);
   }
 }
 

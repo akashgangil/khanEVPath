@@ -131,7 +131,6 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 static void cleanup_handler(int dummy=0){
   log_info("Cleanup Called");
 
-  Py_Finalize();
 
   std::string command = "fusermount -zu " + mount_point;
   FILE* stream=popen(command.c_str(),"r");
@@ -153,7 +152,9 @@ static void cleanup_handler(int dummy=0){
   CManager_close(cm);
   log_info("Closed the CManager");
   
-  pthread_exit(NULL); 
+  Py_Finalize();
+  
+  //pthread_exit(NULL); 
   log_info("Exit pthreads");
   exit(0);
 }
@@ -233,17 +234,17 @@ int main(int argc, char **argv)
   }
 
   /* Setting fuse options */
-  fuse_opt_add_arg(&args, "-o");
-  fuse_opt_add_arg(&args, "allow_other");
+//  fuse_opt_add_arg(&args, "-o");
+//  fuse_opt_add_arg(&args, "allow_other");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "default_permissions");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "umask=022"); 
 
   /* Set signal handler */
-  signal(SIGTERM, cleanup_handler);
-  signal(SIGKILL, cleanup_handler);
-  signal(SIGSEGV, cleanup_handler);
+  //signal(SIGTERM, cleanup_handler);
+  //signal(SIGKILL, cleanup_handler);
+  //signal(SIGSEGV, cleanup_handler);
 
   log_info("Store filename %s", store_filename.c_str());
 

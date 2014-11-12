@@ -152,10 +152,15 @@ static void cleanup_handler(int dummy=0){
   CManager_close(cm);
   log_info("Closed the CManager");
   
+  cleanup_python();
+  
+  log_info("Stop Python");
   Py_Finalize();
   
   //pthread_exit(NULL); 
   log_info("Exit pthreads");
+  redis_destroy();
+  log_info("Shut down redis");
   exit(0);
 }
 

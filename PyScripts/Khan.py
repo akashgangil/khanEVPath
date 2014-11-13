@@ -7,7 +7,6 @@ sys.path.append('/net/hu21/agangil3/libim7/libim7')
 
 import numpy as np
 import mahotas
-import scipy
 import libim7 as im7
 import glob
 

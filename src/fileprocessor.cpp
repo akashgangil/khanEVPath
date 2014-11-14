@@ -51,6 +51,13 @@ int init_python_processing(std::string script_name){
 
 }
 
+void cleanup_python(){
+  Py_DECREF(pName);
+  Py_DECREF(pDict);
+  Py_DECREF(pModule);
+  Py_DECREF(pClass);
+}
+
 std::string call_pyfunc(std::string func_name, PyObject *pInstance){
 
   std::string result;

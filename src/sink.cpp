@@ -41,6 +41,8 @@ char* string_list;
 attr_list contact_list;
   
 struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+  
+pthread_t khan_init_thread;
 
 typedef struct _simple_rec {
   int exp_id;
@@ -156,7 +158,9 @@ static void cleanup_handler(int dummy=0){
   
   log_info("Stop Python");
   Py_Finalize();
-  
+
+  pthread_cancel(khan_init_thread);
+  pthread_join(khan_init_thread, NULL);
   //pthread_exit(NULL); 
   log_info("Exit pthreads");
   redis_destroy();
@@ -279,7 +283,6 @@ int main(int argc, char **argv)
   khan_args.server_ids = server_ids;
   khan_args.port = port;
 
-  pthread_t khan_init_thread;
   pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
 
   log_info("Initialized Khan");

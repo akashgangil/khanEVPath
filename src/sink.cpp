@@ -226,9 +226,14 @@ int main(int argc, char **argv)
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
 
-  PyRun_SimpleString("import sys");
-  PyRun_SimpleString("import os");
-  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"PyScripts\"))");
+//  PyRun_SimpleString("import sys");
+//  PyRun_SimpleString("import os");
+//  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"PyScripts\"))");
+
+  PyObject *sys = PyImport_ImportModule("sys");
+  PyObject *path = PyObject_GetAttrString(sys, "path");
+  PyList_Append(path, PyString_FromString("/net/hu21/agangil3/khanEVPath/PyScripts"));
+  PySys_SetObject("path", path);
 
   xmp_initialize();
 

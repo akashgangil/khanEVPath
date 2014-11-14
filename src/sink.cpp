@@ -130,10 +130,12 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
   return 1;
 }
 
-static void cleanup_handler(int dummy=0){
+static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Cleanup Called");
 
-
+  log_info("Sending PID: %ld, UID: %ld\n",
+          (long)siginfo->si_pid, (long)siginfo->si_uid);
+  
   std::string command = "fusermount -zu " + mount_point;
   FILE* stream=popen(command.c_str(),"r");
   if(!stream) fclose(stream);
@@ -179,6 +181,11 @@ void create_graphs(int signum)
 
 int main(int argc, char **argv)
 {
+  struct sigaction act;
+  memset (&act, '\0', sizeof(act));
+  act.sa_sigaction = &cleanup_handler;
+  act.sa_flags = 0;
+
   measurements_init();
   
   int forked = 0;
@@ -199,8 +206,12 @@ int main(int argc, char **argv)
 
   log_info("Contact list %d:%s", stone, string_list);
 
-  signal(SIGINT, cleanup_handler);
-  signal(SIGUSR1, create_graphs);
+  if (sigaction(SIGINT, &act, NULL) < 0) {
+    perror ("sigaction");
+    return 1;
+  }
+
+  //signal(SIGUSR1, create_graphs);
 
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
@@ -290,8 +301,6 @@ int main(int argc, char **argv)
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
 
   log_info("Fuse Running");
-
-  cleanup_handler();
 
   return 0;
 }

@@ -20,9 +20,10 @@
 #include "measurements.h"
 #include "log.h"
 
-
 extern struct fuse_operations khan_ops;
 extern struct stopwatch_t* sw;
+
+struct fuse_context* f_context;
 
 std::vector < std::string > servers;
 std::vector < std::string > server_ids;
@@ -136,18 +137,10 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Sending PID: %ld, UID: %ld\n",
           (long)siginfo->si_pid, (long)siginfo->si_uid);
   
-  std::string command = "fusermount -zu " + mount_point;
-  FILE* stream=popen(command.c_str(),"r");
-  if(!stream) fclose(stream);
-
-  log_info("Command executed %s", command.c_str());
-  
   EVfree_stone(cm, stone);
-
-  if(!khan_data) free(khan_data);
   free(string_list);
   free_attr_list(contact_list);
-  fuse_opt_free_args(&args);
+  
   measurements_cleanup();
  
   log_info("Freed constants and fuse arguments");
@@ -157,6 +150,8 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Closed the CManager");
   
   cleanup_python();
+  PyRun_SimpleString("import gc");
+  PyRun_SimpleString("gc.collect()");
   
   log_info("Stop Python");
   Py_Finalize();
@@ -167,6 +162,21 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Exit pthreads");
   redis_destroy();
   log_info("Shut down redis");
+  
+  log_info("Get fuse context");
+  f_context = fuse_get_context();
+
+  log_info("Unmount fuse");
+ 
+  std::string command = "fusermount -zu " + mount_point;
+  FILE* stream=popen(command.c_str(),"r");
+  if(!stream) fclose(stream);
+  
+  log_info("Free fuse args");
+  fuse_opt_free_args(&args);
+  log_info("Free khan_data");
+  if(!khan_data) free(khan_data);
+  
   exit(0);
 }
 

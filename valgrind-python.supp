@@ -259,32 +259,32 @@
    fun:rl_initialize
 }
 
-###
+
 ### These occur from somewhere within the SSL, when running
 ###  test_socket_sll.  They are too general to leave on by default.
 ###
-###{
-###   somewhere in SSL stuff
-###   Memcheck:Cond
-###   fun:memset
-###}
-###{
-###   somewhere in SSL stuff
-###   Memcheck:Value4
-###   fun:memset
-###}
-###
-###{
-###   somewhere in SSL stuff
-###   Memcheck:Cond
-###   fun:MD5_Update
-###}
-###
-###{
-###   somewhere in SSL stuff
-###   Memcheck:Value4
-###   fun:MD5_Update
-###}
+{
+   somewhere in SSL stuff
+   Memcheck:Cond
+   fun:memset
+}
+{
+   somewhere in SSL stuff
+   Memcheck:Value4
+   fun:memset
+}
+
+{
+   somewhere in SSL stuff
+   Memcheck:Cond
+   fun:MD5_Update
+}
+
+{
+   somewhere in SSL stuff
+   Memcheck:Value4
+   fun:MD5_Update
+}
 
 #
 # All of these problems come from using test_socket_ssl

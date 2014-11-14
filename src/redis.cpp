@@ -20,6 +20,10 @@ bool redis_init(int port) {
   return 1;
 }
 
+void  redis_destroy(){
+  redisFree(c);  
+}
+
 std::string de_dup(std::string val) {
   // cout << "dedup " << val << " into ";
   std::vector<std::string> vals = split(val, ":");

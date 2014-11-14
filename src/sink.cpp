@@ -20,9 +20,10 @@
 #include "measurements.h"
 #include "log.h"
 
-
 extern struct fuse_operations khan_ops;
 extern struct stopwatch_t* sw;
+
+struct fuse_context* f_context;
 
 std::vector < std::string > servers;
 std::vector < std::string > server_ids;
@@ -41,6 +42,8 @@ char* string_list;
 attr_list contact_list;
   
 struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+  
+pthread_t khan_init_thread;
 
 typedef struct _simple_rec {
   int exp_id;
@@ -128,23 +131,16 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
   return 1;
 }
 
-static void cleanup_handler(int dummy=0){
+static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Cleanup Called");
 
-  Py_Finalize();
-
-  std::string command = "fusermount -zu " + mount_point;
-  FILE* stream=popen(command.c_str(),"r");
-  if(!stream) fclose(stream);
-
-  log_info("Command executed %s", command.c_str());
+  log_info("Sending PID: %ld, UID: %ld\n",
+          (long)siginfo->si_pid, (long)siginfo->si_uid);
   
   EVfree_stone(cm, stone);
-
-  if(!khan_data) free(khan_data);
   free(string_list);
   free_attr_list(contact_list);
-  fuse_opt_free_args(&args);
+  
   measurements_cleanup();
  
   log_info("Freed constants and fuse arguments");
@@ -153,8 +149,34 @@ static void cleanup_handler(int dummy=0){
   CManager_close(cm);
   log_info("Closed the CManager");
   
-  pthread_exit(NULL); 
+  cleanup_python();
+  PyRun_SimpleString("import gc");
+  PyRun_SimpleString("gc.collect()");
+  
+  log_info("Stop Python");
+  Py_Finalize();
+
+  pthread_cancel(khan_init_thread);
+  pthread_join(khan_init_thread, NULL);
+  //pthread_exit(NULL); 
   log_info("Exit pthreads");
+  redis_destroy();
+  log_info("Shut down redis");
+  
+  log_info("Get fuse context");
+  f_context = fuse_get_context();
+
+  log_info("Unmount fuse");
+ 
+  std::string command = "fusermount -zu " + mount_point;
+  FILE* stream=popen(command.c_str(),"r");
+  if(!stream) fclose(stream);
+  
+  log_info("Free fuse args");
+  fuse_opt_free_args(&args);
+  log_info("Free khan_data");
+  if(!khan_data) free(khan_data);
+  
   exit(0);
 }
 
@@ -169,6 +191,11 @@ void create_graphs(int signum)
 
 int main(int argc, char **argv)
 {
+  struct sigaction act;
+  memset (&act, '\0', sizeof(act));
+  act.sa_sigaction = &cleanup_handler;
+  act.sa_flags = 0;
+
   measurements_init();
   
   int forked = 0;
@@ -189,15 +216,24 @@ int main(int argc, char **argv)
 
   log_info("Contact list %d:%s", stone, string_list);
 
-  signal(SIGINT, cleanup_handler);
-  signal(SIGUSR1, create_graphs);
+  if (sigaction(SIGINT, &act, NULL) < 0) {
+    perror ("sigaction");
+    return 1;
+  }
+
+  //signal(SIGUSR1, create_graphs);
 
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
 
-  PyRun_SimpleString("import sys");
-  PyRun_SimpleString("import os");
-  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"PyScripts\"))");
+//  PyRun_SimpleString("import sys");
+//  PyRun_SimpleString("import os");
+//  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"PyScripts\"))");
+
+  PyObject *sys = PyImport_ImportModule("sys");
+  PyObject *path = PyObject_GetAttrString(sys, "path");
+  PyList_Append(path, PyString_FromString("/net/hu21/agangil3/khanEVPath/PyScripts"));
+  PySys_SetObject("path", path);
 
   xmp_initialize();
 
@@ -233,17 +269,17 @@ int main(int argc, char **argv)
   }
 
   /* Setting fuse options */
-  fuse_opt_add_arg(&args, "-o");
-  fuse_opt_add_arg(&args, "allow_other");
+//  fuse_opt_add_arg(&args, "-o");
+//  fuse_opt_add_arg(&args, "allow_other");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "default_permissions");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "umask=022"); 
 
   /* Set signal handler */
-  signal(SIGTERM, cleanup_handler);
-  signal(SIGKILL, cleanup_handler);
-  signal(SIGSEGV, cleanup_handler);
+  //signal(SIGTERM, cleanup_handler);
+  //signal(SIGKILL, cleanup_handler);
+  //signal(SIGSEGV, cleanup_handler);
 
   log_info("Store filename %s", store_filename.c_str());
 
@@ -273,7 +309,6 @@ int main(int argc, char **argv)
   khan_args.server_ids = server_ids;
   khan_args.port = port;
 
-  pthread_t khan_init_thread;
   pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
 
   log_info("Initialized Khan");
@@ -281,8 +316,6 @@ int main(int argc, char **argv)
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
 
   log_info("Fuse Running");
-
-  cleanup_handler();
 
   return 0;
 }

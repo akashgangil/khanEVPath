@@ -165,7 +165,7 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   
   log_info("Get fuse context");
   f_context = fuse_get_context();
-
+  printf("UID: %d GID: %d", f_context->uid, f_context->gid);
   log_info("Unmount fuse");
  
   std::string command = "fusermount -zu " + mount_point;

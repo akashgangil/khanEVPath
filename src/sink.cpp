@@ -13,6 +13,7 @@
 #include "params.h"
 #include "threadpool.h"
 #include "evpath.h"
+#include "ev_dfg.h"
 #include "fuseapi.h"
 #include "khan.h" 
 #include "data_analytics.h"
@@ -36,13 +37,9 @@ std::string mount_point;
 struct khan_state* khan_data;
 
 CManager cm;
-EVstone stone;
 
-char* string_list;
-attr_list contact_list;
-  
 struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
-  
+
 pthread_t khan_init_thread;
 
 typedef struct _simple_rec {
@@ -135,24 +132,20 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Cleanup Called");
 
   log_info("Sending PID: %ld, UID: %ld\n",
-          (long)siginfo->si_pid, (long)siginfo->si_uid);
-  
-  EVfree_stone(cm, stone);
-  free(string_list);
-  free_attr_list(contact_list);
-  
+      (long)siginfo->si_pid, (long)siginfo->si_uid);
+
   measurements_cleanup();
- 
+
   log_info("Freed constants and fuse arguments");
 
   //CMsleep(cm, 10); /* service network for 600 seconds */
   CManager_close(cm);
   log_info("Closed the CManager");
-  
+
   cleanup_python();
   PyRun_SimpleString("import gc");
   PyRun_SimpleString("gc.collect()");
-  
+
   log_info("Stop Python");
   Py_Finalize();
 
@@ -162,21 +155,21 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Exit pthreads");
   redis_destroy();
   log_info("Shut down redis");
-  
+
   log_info("Get fuse context");
   f_context = fuse_get_context();
   printf("UID: %d GID: %d", f_context->uid, f_context->gid);
   log_info("Unmount fuse");
- 
+
   std::string command = "fusermount -zu " + mount_point;
   FILE* stream=popen(command.c_str(),"r");
   if(!stream) fclose(stream);
-  
+
   log_info("Free fuse args");
   fuse_opt_free_args(&args);
   log_info("Free khan_data");
   if(!khan_data) free(khan_data);
-  
+
   exit(0);
 }
 
@@ -197,9 +190,52 @@ int main(int argc, char **argv)
   act.sa_flags = 0;
 
   measurements_init();
-  
-  int forked = 0;
+
+  char *nodes[] = {"a", "b", NULL};
+  char *str_contact;
+  EVmaster test_master;
+  EVdfg test_dfg;
+  EVclient test_client;
+  EVdfg_stone src, sink;
+  EVclient_sinks sink_capabilities;
+
+  (void)argc; (void)argv;
   cm = CManager_create();
+  CMlisten(cm);
+
+  test_master = EVmaster_create(cm);
+  str_contact = EVmaster_get_contact_list(test_master);
+  EVmaster_register_node_list(test_master, &nodes[0]);
+
+  sink_capabilities = EVclient_register_sink_handler(cm, "simple_handler", simple_format_list,
+      (EVSimpleHandlerFunc) simple_handler, NULL);
+
+  /*
+   **  DFG CREATION
+   */
+  test_dfg = EVdfg_create(test_master);
+
+  src = EVdfg_create_source_stone(test_dfg, "event source");
+  EVdfg_assign_node(src, "b");
+  sink = EVdfg_create_sink_stone(test_dfg, "simple_handler");
+  EVdfg_assign_node(sink, "a");
+  EVdfg_link_port(src, 0, sink);
+
+  EVdfg_realize(test_dfg);
+
+  /* We're node "a" in the DFG */
+  test_client = EVclient_assoc_local(cm, "a", test_master, NULL, sink_capabilities);
+
+  printf("Contact list is \"%s\"\n", str_contact);
+  if (EVclient_ready_wait(test_client) != 1) {
+    /* dfg initialization failed! */
+    exit(1);
+  }
+
+  /**************************/
+
+
+  int forked = 0;
   forked = CMfork_comm_thread(cm);
   assert(forked == 1);
   if (forked) {
@@ -207,14 +243,6 @@ int main(int argc, char **argv)
   } else {
     log_info("Doing non-threaded communication handling");
   }
-  CMlisten(cm);
-
-  stone = EValloc_stone(cm);
-  EVassoc_terminal_action(cm, stone, simple_format_list, simple_handler, NULL);
-  contact_list = CMget_contact_list(cm);
-  string_list = attr_list_to_string(contact_list);
-
-  log_info("Contact list %d:%s", stone, string_list);
 
   if (sigaction(SIGINT, &act, NULL) < 0) {
     perror ("sigaction");
@@ -226,9 +254,9 @@ int main(int argc, char **argv)
   Py_SetProgramName(argv[0]);  /* optional but recommended */
   Py_Initialize();
 
-//  PyRun_SimpleString("import sys");
-//  PyRun_SimpleString("import os");
-//  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"PyScripts\"))");
+  //  PyRun_SimpleString("import sys");
+  //  PyRun_SimpleString("import os");
+  //  PyRun_SimpleString("sys.path.append(os.path.join(os.getcwd(), \"PyScripts\"))");
 
   PyObject *sys = PyImport_ImportModule("sys");
   PyObject *path = PyObject_GetAttrString(sys, "path");
@@ -269,8 +297,8 @@ int main(int argc, char **argv)
   }
 
   /* Setting fuse options */
-//  fuse_opt_add_arg(&args, "-o");
-//  fuse_opt_add_arg(&args, "allow_other");
+  //  fuse_opt_add_arg(&args, "-o");
+  //  fuse_opt_add_arg(&args, "allow_other");
   fuse_opt_add_arg(&args, "-o");
   fuse_opt_add_arg(&args, "default_permissions");
   fuse_opt_add_arg(&args, "-o");
@@ -316,6 +344,7 @@ int main(int argc, char **argv)
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
 
   log_info("Fuse Running");
+  CMrun_network(cm);
 
   return 0;
 }

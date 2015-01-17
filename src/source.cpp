@@ -152,10 +152,26 @@ int main(int argc, char **argv)
     pattern += "/*";
   }
 
+  log_info("Cleanup data structures");
   /* Cleanup */
   globfree(&files);
 
-  CMrun_network(cm);
+  log_info("Shutdown evdfg");
+  /*! [Shutdown code] */
+  if (EVclient_active_sink_count(test_client) > 0) {
+    /* if there are active sinks, the handler will call EVclient_shutdown() */
+  } else {
+    if (EVclient_source_active(source_handle)) {
+      /* we had a source and have already submitted, indicate success */
+      EVclient_shutdown(test_client, 0 /* success */);
+    } else {
+      /* we had neither a source or sink, ready to shutdown, no opinion */
+      EVclient_ready_for_shutdown(test_client);
+    }
+  }
+
+  return(EVclient_wait_for_shutdown(test_client));
+  /*! [Shutdown code] */
 }
 
 

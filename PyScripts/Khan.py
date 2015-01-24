@@ -16,10 +16,13 @@ class Khan:
   def __init__(self, path):
     self.path = path.split("/")
     self.s = path 
+    self.buffer, self.attr = im7.readim7(self.s)
 
-  def __del__(self):
+  def destroy(self):
     self.path = None
     self.s = None
+    self.buffer.delete()
+    self.attr.delete()
 
   def S(self):
       res = ""
@@ -114,19 +117,13 @@ class Khan:
         return res
 
   def IntensityFrame1(self):
-      buf, att = im7.readim7(self.s)
-      frame0 = buf.get_frame(0)
+      frame0 = self.buffer.get_frame(0)
       bfunc = np.vectorize(lambda a, b: a if a>=b else 0)
       binarize_frame0 = bfunc(frame0, mahotas.thresholding.otsu(frame0)) 
-      buf.delete()
-      att.delete()
       return str(np.mean(binarize_frame0))
 
   def IntensityFrame2(self):
-      buf, att = im7.readim7(self.s)
-      frame1 = buf.get_frame(1)
+      frame1 = self.buffer.get_frame(1)
       bfunc = np.vectorize(lambda a, b: a if a>=b else 0)
       binarize_frame1 = bfunc(frame1, mahotas.thresholding.otsu(frame1))
-      buf.delete()
-      att.delete()
       return str(np.mean(binarize_frame1)) 

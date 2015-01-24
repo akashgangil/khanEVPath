@@ -116,16 +116,18 @@ void process_file(std::string server, std::string fileid, std::string file_path)
         stopwatch_start(sw);
         std::string res =  call_pyfunc(token, pInstance);
         stopwatch_stop(sw);
-        fprintf(mts_file, "ProcessFilePython,%Lf,secs\n",stopwatch_elapsed(sw));
+        fprintf(mts_file, "ProcessFilePython:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
 
         log_info("Token: %s Result: %s", token.c_str(), res.c_str());
 
         stopwatch_start(sw);
         database_setval(fileid, token , res.c_str());
         stopwatch_stop(sw);
-        fprintf(mts_file, "ProcessFileDatabase,%Lf,secs\n", stopwatch_elapsed(sw));
+        fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
       }
     }
+  //  call_pyfunc("destroy", pInstance);
+    log_info("Delete called");
     Py_DECREF(pArgs);
     Py_DECREF(pInstance);
   }
@@ -163,7 +165,6 @@ void process_transducers(std::string server) {
     database_setval(line,"attrs","name");
     database_setval(line,"attrs","tags");
     database_setval(line,"attrs","location");
-    database_setval("namegen","command","basename");
     database_setval(line,"attrs","ext");
     database_setval(line, "attrs", "experiment_id");
     database_setval(line, "attrs", "file_path");
@@ -183,13 +184,11 @@ void process_transducers(std::string server) {
     while(firstchar[0]=='-') {
       std::stringstream ss(line.c_str());
       std::string attr;
-      getline(ss,attr,'-');
-      getline(ss,attr,':');
-      std::string command;
-      getline(ss,command,':');
+      std::string temp;
+      ss >> temp;
+      ss >> attr;
       attr=trim(attr);
       database_setval(ext,"attrs",attr);
-      database_setval(attr+"gen","command",command);
       getline(transducers_file,line);
       firstchar=line.c_str();
     }

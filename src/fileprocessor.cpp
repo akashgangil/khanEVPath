@@ -23,9 +23,9 @@ PyObject *pName, *pModule, *pDict, *pClass;
 
 int init_python_processing(std::string script_name){
   if(!execute_once){
-    
+
     log_info("**Executed**");
-    
+
     pName = PyString_FromString(script_name.c_str());
     if(pName != NULL){
       pModule = PyImport_Import(pName);
@@ -89,48 +89,62 @@ void process_file(std::string server, std::string fileid, std::string file_path)
   std::string file = database_getval(fileid, "name");
   std::string ext = database_getval(fileid, "ext");
   file = server + "/" + file;
-  std::string attrs=database_getval(ext,"attrs");
-  
-  init_python_processing("Khan");
 
+  std::string scripts = database_getvals("plugins");
 
-  if(attrs != "null"){
-    std::string token="";
-    std::stringstream ss2(attrs.c_str());
-  
-    PyObject *pFile, *pArgs, *pInstance;
-    
-    /*Initialize PyObjects Needed per file*/
-    pFile = PyString_FromString(file_path.c_str());
-    pArgs = PyTuple_New(1);
-    PyTuple_SetItem(pArgs, 0, pFile);
-    pInstance = PyObject_CallObject(pClass, pArgs);
+  std::stringstream ss1 (scripts.c_str());
+  std::string script_token = "";
 
-    while(getline(ss2,token,':')){
-      if(strcmp(token.c_str(),"null")!=0){
-        if(token == "name" || token == "ext" || token == "location" ||
-            token == "experiment_id" || token == "file_path" || token == "tags") {
-          continue;
+  while(getline(ss1, script_token, ':')){
+    if(strcmp(script_token.c_str(), "null")!=0){
+      if(script_token == "Graph") continue;
+      else{
+        log_info("Processing %s", script_token.c_str());
+        init_python_processing(script_token);
+        std::string attrs=database_getval("plugins",script_token);
+
+        if(attrs != "null"){
+          std::string token="";
+          std::stringstream ss2(attrs.c_str());
+
+          PyObject *pFile, *pArgs, *pInstance;
+
+          /*Initialize PyObjects Needed per file*/
+          pFile = PyString_FromString(file_path.c_str());
+          pArgs = PyTuple_New(1);
+          PyTuple_SetItem(pArgs, 0, pFile);
+          pInstance = PyObject_CallObject(pClass, pArgs);
+
+          while(getline(ss2,token,':')){
+            if(strcmp(token.c_str(),"null")!=0){
+              if(token == "name" || token == "ext" || token == "location" ||
+                  token == "experiment_id" || token == "file_path" || token == "tags") {
+                continue;
+              }
+
+              stopwatch_start(sw);
+              std::string res =  call_pyfunc(token, pInstance);
+              stopwatch_stop(sw);
+              fprintf(mts_file, "ProcessFilePython:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
+
+              log_info("Token: %s Result: %s", token.c_str(), res.c_str());
+
+              stopwatch_start(sw);
+              database_setval(fileid, token , res.c_str());
+              stopwatch_stop(sw);
+              fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
+            }
+          }
+          //std::string destroy = "destroy";
+          //call_pyfunc(destroy.c_str(), pInstance);
+          //log_info("Delete called");
+          Py_DECREF(pArgs);
+          Py_DECREF(pInstance);
         }
-
-        stopwatch_start(sw);
-        std::string res =  call_pyfunc(token, pInstance);
-        stopwatch_stop(sw);
-        fprintf(mts_file, "ProcessFilePython:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
-
-        log_info("Token: %s Result: %s", token.c_str(), res.c_str());
-
-        stopwatch_start(sw);
-        database_setval(fileid, token , res.c_str());
-        stopwatch_stop(sw);
-        fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
       }
     }
-  //  call_pyfunc("destroy", pInstance);
-    log_info("Delete called");
-    Py_DECREF(pArgs);
-    Py_DECREF(pInstance);
   }
+
 }
 
 void extract_attr_init(std::string file_path, int exp_id, std::string filepath) {
@@ -157,30 +171,35 @@ void process_transducers(std::string server) {
   if(server == "cloud") {
     return;
   }
-  std::string line;
-  std::ifstream transducers_file(("transducers.txt"));
-  getline(transducers_file, line);
+  std::string script_name, file_type, line;
+  std::ifstream transducers_file(("plugins/attributes.txt"));
   while(transducers_file.good()){
-    database_setval("allfiles","types",line);
-    database_setval(line,"attrs","name");
-    database_setval(line,"attrs","tags");
-    database_setval(line,"attrs","location");
-    database_setval(line,"attrs","ext");
-    database_setval(line, "attrs", "experiment_id");
-    database_setval(line, "attrs", "file_path");
+    getline(transducers_file, script_name);
+    log_info("Script Name: %s", script_name.c_str());
+    getline(transducers_file, file_type);
+    log_info("File Type: %s", file_type.c_str());
+    database_setval("allfiles","types",file_type);
+    database_setval(file_type, "attrs", "name");
+    database_setval(file_type, "attrs", "tags");
+    database_setval(file_type, "attrs", "location");
+    database_setval(file_type, "attrs", "ext");
+    database_setval(file_type, "attrs", "experiment_id");
+    database_setval(file_type, "attrs", "file_path");
 
-    std::string ext=line;
-
-    getline(transducers_file, line);
-    std::stringstream s_uniq(line.c_str());
-    std::string uniq_attr = "";
-    getline(s_uniq, uniq_attr, '*');
-    if(uniq_attr != ""){
-      primary_attribute = uniq_attr;
-    }
-
+    std::string ext=file_type;
+    /*  PRIMARY ATTRIBUTE CODE
+        getline(transducers_file, line);
+        std::stringstream s_uniq(line.c_str());
+        std::string uniq_attr = "";
+        getline(s_uniq, uniq_attr, '*');
+        if(uniq_attr != ""){
+        primary_attribute = uniq_attr;
+        }
+        */
     getline(transducers_file,line);
     const char *firstchar=line.c_str();
+    log_info("%s",firstchar);
+    log_info("%c",firstchar[0]);
     while(firstchar[0]=='-') {
       std::stringstream ss(line.c_str());
       std::string attr;
@@ -189,8 +208,11 @@ void process_transducers(std::string server) {
       ss >> attr;
       attr=trim(attr);
       database_setval(ext,"attrs",attr);
+      database_setval("plugins", script_name, attr);
       getline(transducers_file,line);
       firstchar=line.c_str();
+      log_info("%s",firstchar);
+      log_info("%c",firstchar[0]);
     }
   }
 

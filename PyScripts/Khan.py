@@ -18,11 +18,12 @@ class Khan:
     self.s = path 
     self.buffer, self.attr = im7.readim7(self.s)
 
-  def destroy(self):
+  def Destroy(self):
     self.path = None
     self.s = None
     self.buffer.delete()
     self.attr.delete()
+    return ""
 
   def S(self):
       res = ""

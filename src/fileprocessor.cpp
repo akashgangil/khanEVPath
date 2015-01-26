@@ -135,9 +135,9 @@ void process_file(std::string server, std::string fileid, std::string file_path)
               fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
             }
           }
-          //std::string destroy = "destroy";
-          //call_pyfunc(destroy.c_str(), pInstance);
-          //log_info("Delete called");
+          std::string destroy = "Destroy";
+          call_pyfunc(destroy.c_str(), pInstance);
+          log_info("Delete called");
           Py_DECREF(pArgs);
           Py_DECREF(pInstance);
         }
@@ -175,9 +175,7 @@ void process_transducers(std::string server) {
   std::ifstream transducers_file(("plugins/attributes.txt"));
   while(transducers_file.good()){
     getline(transducers_file, script_name);
-    log_info("Script Name: %s", script_name.c_str());
     getline(transducers_file, file_type);
-    log_info("File Type: %s", file_type.c_str());
     database_setval("allfiles","types",file_type);
     database_setval(file_type, "attrs", "name");
     database_setval(file_type, "attrs", "tags");
@@ -198,8 +196,6 @@ void process_transducers(std::string server) {
         */
     getline(transducers_file,line);
     const char *firstchar=line.c_str();
-    log_info("%s",firstchar);
-    log_info("%c",firstchar[0]);
     while(firstchar[0]=='-') {
       std::stringstream ss(line.c_str());
       std::string attr;
@@ -211,8 +207,6 @@ void process_transducers(std::string server) {
       database_setval("plugins", script_name, attr);
       getline(transducers_file,line);
       firstchar=line.c_str();
-      log_info("%s",firstchar);
-      log_info("%c",firstchar[0]);
     }
   }
 

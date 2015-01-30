@@ -1,5 +1,16 @@
 Dependencies:
 
+#### Install Fuse
+```sh
+$ sudo apt-get install libfuse-dev
+```
+
+### Install Python Dev 
+```sh
+$ sudo apt-get install python-dev
+```
+
+
 #### Hiredis (Redis C++ library)
 ```sh
 $ git clone https://github.com/redis/hiredis

@@ -6,16 +6,6 @@ $ git clone https://github.com/redis/hiredis
 $ cd hiredis
 $ make
 ```
-
-#### Boost (C++ Library)
-```sh
-$ wget ://sourceforge.net/projects/boost/files/boost/1.56.0/boost_1_56_0.tar.gz/download
-$ tar -xvf boost_1_56_0.tar.gz
-$ cd boost_1_56_0/
-$ ./booststrap.sh
-$ ./b2
-```
-
 #### Redis
 ```sh
 $ wget http://download.redis.io/releases/redis-2.8.15.tar.gz

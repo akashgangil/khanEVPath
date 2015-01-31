@@ -183,7 +183,7 @@ void process_transducers(std::string server) {
     database_setval(file_type, "attrs", "ext");
     database_setval(file_type, "attrs", "experiment_id");
     database_setval(file_type, "attrs", "file_path");
-
+    
     std::string ext=file_type;
     /*  PRIMARY ATTRIBUTE CODE
         getline(transducers_file, line);

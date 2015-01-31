@@ -117,6 +117,26 @@ class Khan:
       else:
         return res
 
+  def Dbuffer1(self):
+      frame0 = self.buffer.get_frame(0)
+      return np.array_str(frame0)
+ 
+  def Dbuffer2(self):
+      frame1 = self.buffer.get_frame(1)
+      return np.array_str(frame1)
+  
+  def Dmask1(self):
+      frame0 = self.buffer.get_frame(0)
+      bfunc = np.vectorize(lambda a, b: 1 if a>=b else 0)
+      binarize_frame0 = bfunc(frame0, mahotas.thresholding.otsu(frame0))
+      return np.array_str(binarize_frame0)
+
+  def Dmask2(self):
+      frame1 = self.buffer.get_frame(1)
+      bfunc = np.vectorize(lambda a, b: 1 if a>=b else 0)
+      binarize_frame1 = bfunc(frame1, mahotas.thresholding.otsu(frame1))
+      return np.array_str(binarize_frame1)
+
   def IntensityFrame1(self):
       frame0 = self.buffer.get_frame(0)
       bfunc = np.vectorize(lambda a, b: a if a>=b else 0)

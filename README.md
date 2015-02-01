@@ -2,7 +2,7 @@ Dependencies:
 
 #### Install Fuse
 ```sh
-$ sudo apt-get install libfuse-dev
+$ sudo apt-get install fuse libfuse-dev
 ```
 
 #### Install Python Dev 

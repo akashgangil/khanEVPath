@@ -1,0 +1,21 @@
+Khan
+im7
+- S 
+- Pressure 
+- Angle 
+- Velocity  
+- Composition 
+- Phi 
+- Temperature 
+- Time 
+- IntensityFrame1 
+- IntensityFrame2 
+- Dbuffer1
+- Dbuffer2
+- Dmask1
+- Dmask2
+
+Graph
+im7
+- Plot
+- Stats

@@ -39,6 +39,10 @@ and all object files in build folder
 cd ~/redis/src 
 ./redis-server & 
 ```
+
+#### Point khan to the data
+Modify stores.txt to point to the data by replacing the first string on the second line.
+
 #### Run `net_recv`  which gives the `stone-id`
 ```sh
 $ ./bin/net_recv -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt

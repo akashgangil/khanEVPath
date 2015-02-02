@@ -2,15 +2,13 @@
 
 from optparse import OptionParser
 
-import sys
-sys.path.append('/net/hu21/agangil3/libim7/libim7')
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir))+'/libim7/libim7')
 
 import numpy as np
 import mahotas
 import libim7 as im7
 import glob
-
-#s = "/net/hu21/agangil3/data/PIV/LSB/reacting/S = 0.58/1 atm/300 K/30 mps/100 H2/phi = 0.46/0 deg/Cam_Date=121103_Time=112726/B00001.im7" 
 
 class Khan:
   def __init__(self, path):

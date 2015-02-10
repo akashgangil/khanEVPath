@@ -5,7 +5,10 @@
 #include <string.h>
 #include <fstream>
 #include <map>
+#include <queue>
+#include <utility>
 #include <unistd.h>
+#include <vector>
 #include "database.h"
 #include "utils.h"
 #include "log.h"
@@ -135,6 +138,7 @@ void process_file(std::string server, std::string fileid, std::string file_path)
               fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
             }
           }
+          process_statistics(5, fileid, database_getval(fileid, "dbuffer1"), database_getval(fileid, "dmask1"));
           std::string destroy = "Destroy";
           call_pyfunc(destroy.c_str(), pInstance);
           log_info("Delete called");
@@ -165,6 +169,67 @@ void extract_attr_init(std::string file_path, int exp_id, std::string filepath) 
   process_file("test1", fileid, file_path);
 }
 
+/*Rolling window conditional average*/
+void RWCA(int window_size, std::string file_id, std::string dbuffer, std::string dmask){
+  static std::queue < std::string > image_window;
+  image_window.push(file_id);
+
+  static std::map <std::string, std::pair<std::string, std::string> > image_data;
+  image_data[file_id] = make_pair(dbuffer, dmask);
+  printf("Queue size: %zu\n", image_window.size());
+  if(image_window.size() < 5) return;
+  else if(image_window.size() == 5){
+    std::string mask_image_id = image_window.front();
+    image_window.pop();
+    std::string mask = image_data[mask_image_id].second;
+    std::queue<std::string> current_window_images (image_window);
+    std::string window_image_id = mask_image_id + "";
+    std::string window_image_intensity = "mask_intensity ";
+    while(!current_window_images.empty()){
+      std::string image_id = current_window_images.front();
+      window_image_id += image_id + " " ;
+      window_image_intensity += "rando ";
+      current_window_images.pop();
+    }
+    database_setval("RWCA", window_image_id, window_image_intensity);
+    image_data.erase(mask_image_id);
+  }
+}
+
+typedef void (*fptr)(int, std::string, std::string, std::string);
+std::vector<std::string> f_list;
+std::map<std::string, fptr> f_map;
+
+void process_statistics(int arg, std::string file_id, std::string dbuffer, std::string dmask){
+  for(std::vector<std::string>::iterator it = f_list.begin(); it != f_list.end(); ++it)
+    (*f_map[*it])(arg, file_id, dbuffer, dmask);
+}  
+
+void process_analytics_pipeline(std::string cwd) {
+  f_map["RWCA"] = &RWCA;
+  std::string script_name, line;
+  std::string r_path = "/plugins/analytics.txt";
+  std::string analytics_path = cwd + r_path;
+  log_info("Analytics Path %s", analytics_path.c_str());
+  std::ifstream transducers_file(analytics_path.c_str());
+  getline(transducers_file, script_name);
+  getline(transducers_file, line);
+  const char *firstchar=line.c_str();
+  while(firstchar[0]=='-') {
+    std::stringstream ss(line.c_str());
+    std::string attr;
+    std::string temp;
+    ss >> temp;
+    ss >> attr;
+    attr=trim(attr);
+    f_list.push_back(attr);
+    database_setval("functions", "analytics", attr);
+    getline(transducers_file,line);
+    firstchar=line.c_str();
+  }
+  transducers_file.close();
+}
+
 void process_transducers(std::string server) {
 
   stopwatch_start(sw);
@@ -172,7 +237,12 @@ void process_transducers(std::string server) {
     return;
   }
   std::string script_name, file_type, line;
-  std::ifstream transducers_file(("plugins/attributes.txt"));
+  char cwd[1024];
+  std::string r_path = "/plugins/attributes.txt";
+  std::string cwd_path = strdup(getcwd(cwd, sizeof(cwd)));
+  std::string attribute_path = cwd_path + r_path;
+  log_info("Attribute path %s", attribute_path.c_str());
+  std::ifstream transducers_file(attribute_path.c_str());
   while(transducers_file.good()){
     getline(transducers_file, script_name);
     getline(transducers_file, file_type);
@@ -183,7 +253,7 @@ void process_transducers(std::string server) {
     database_setval(file_type, "attrs", "ext");
     database_setval(file_type, "attrs", "experiment_id");
     database_setval(file_type, "attrs", "file_path");
-    
+
     std::string ext=file_type;
     /*  PRIMARY ATTRIBUTE CODE
         getline(transducers_file, line);
@@ -209,9 +279,10 @@ void process_transducers(std::string server) {
       firstchar=line.c_str();
     }
   }
-
+  transducers_file.close();
   stopwatch_stop(sw);
   fprintf(mts_file, "ProcessTransducers,%Lg,secs\n", stopwatch_elapsed(sw));
   fsync(fileno(mts_file));
+  process_analytics_pipeline(cwd_path);
 }
 

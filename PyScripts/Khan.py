@@ -1,14 +1,11 @@
 #!/usr/bin/python
 
-from optparse import OptionParser
-
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir))+'/libim7/libim7')
 
 import numpy as np
 import mahotas
 import libim7 as im7
-import glob
 
 class Khan:
   def __init__(self, path):

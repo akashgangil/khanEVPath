@@ -183,7 +183,7 @@ void RWCA(int window_size, std::string file_id, std::string dbuffer, std::string
     image_window.pop();
     std::string mask = image_data[mask_image_id].second;
     std::queue<std::string> current_window_images (image_window);
-    std::string window_image_id = mask_image_id + "";
+    std::string window_image_id = mask_image_id + " ";
     std::string window_image_intensity = "mask_intensity ";
     while(!current_window_images.empty()){
       std::string image_id = current_window_images.front();

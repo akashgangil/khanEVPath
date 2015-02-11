@@ -202,6 +202,14 @@ int main(int argc, char **argv)
 
   (void)argc; (void)argv;
   cm = CManager_create();
+  int forked = 0;
+  forked = CMfork_comm_thread(cm);
+  assert(forked == 1);
+  if (forked) {
+    log_info("Forked a communication thread");
+  } else {
+    log_info("Doing non-threaded communication handling");
+  }
   CMlisten(cm);
 
   test_master = EVmaster_create(cm);
@@ -236,14 +244,6 @@ int main(int argc, char **argv)
   /**************************/
 
 
-  int forked = 0;
-  forked = CMfork_comm_thread(cm);
-  assert(forked == 1);
-  if (forked) {
-    log_info("Forked a communication thread");
-  } else {
-    log_info("Doing non-threaded communication handling");
-  }
 
   if (sigaction(SIGINT, &act, NULL) < 0) {
     perror ("sigaction");
@@ -336,13 +336,9 @@ int main(int argc, char **argv)
   khan_args.port = port;
 
   pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
-
   log_info("Initialized Khan");
-
   fuse_main(args.argc,args.argv, &khan_ops, khan_data);
-
   log_info("Fuse Running");
-  CMrun_network(cm);
 
   return 0;
 }

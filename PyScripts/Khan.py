@@ -11,7 +11,8 @@ class Khan:
   def __init__(self, path):
     self.path = path.split("/")
     self.s = path 
-    self.buffer, self.attr = im7.readim7(self.s)
+    if path:
+      self.buffer, self.attr = im7.readim7(self.s)
 
   def Destroy(self):
     self.path = None
@@ -143,3 +144,11 @@ class Khan:
       bfunc = np.vectorize(lambda a, b: a if a>=b else 0)
       binarize_frame1 = bfunc(frame1, mahotas.thresholding.otsu(frame1))
       return str(np.mean(binarize_frame1)) 
+
+  def getIntensityFrame(self, frame, mask):
+      bfunc = np.vectorize(lambda a, b: a if a>=b else 0)
+      binarize_frame = bfunc(np.fromstring(frame, dtype=np.uint8), 
+                             np.fromstring(mask, dtype=np.uint8))
+      print "buffer ", np.sum(np.fromstring(frame, dtype=np.uint8)) 
+      print "  mask ", np.sum(np.fromstring(mask, dtype=np.uint8))
+      return str(np.mean(binarize_frame))

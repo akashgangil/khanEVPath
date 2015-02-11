@@ -29,6 +29,8 @@ int init_python_processing(std::string script_name){
 
     log_info("**Executed**");
 
+    //TODO: Remove it from there to some general init function
+
     pName = PyString_FromString(script_name.c_str());
     if(pName != NULL){
       pModule = PyImport_Import(pName);
@@ -61,7 +63,9 @@ void cleanup_python(){
   Py_DECREF(pClass);
 }
 
-std::string call_pyfunc(std::string func_name, PyObject *pInstance){
+std::string call_pyfunc(std::string func_name, PyObject *pInstance,
+                        std::string format_str, std::string arg1, 
+                        std::string arg2){
 
   std::string result;
 
@@ -70,8 +74,16 @@ std::string call_pyfunc(std::string func_name, PyObject *pInstance){
   if (PyCallable_Check(pClass))
   {
     char *func = strdup(func_name.c_str());
-    pValue = PyObject_CallMethod(pInstance, func, NULL);
-
+    if(format_str.empty()){
+      pValue = PyObject_CallMethod(pInstance, func, NULL);
+    }
+    else{
+      char *cformat_str = strdup(format_str.c_str());
+      char *carg1 = strdup(arg1.c_str());
+      char *carg2 = strdup(arg2.c_str());
+      pValue = PyObject_CallMethod(pInstance, func, cformat_str, carg1, carg2);
+    }
+    
     if(pValue != NULL)
     {
       result = PyString_AsString(pValue);
@@ -126,7 +138,7 @@ void process_file(std::string server, std::string fileid, std::string file_path)
               }
 
               stopwatch_start(sw);
-              std::string res =  call_pyfunc(token, pInstance);
+              std::string res =  call_pyfunc(token, pInstance, "", "", "");
               stopwatch_stop(sw);
               fprintf(mts_file, "ProcessFilePython:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
 
@@ -138,9 +150,9 @@ void process_file(std::string server, std::string fileid, std::string file_path)
               fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
             }
           }
-          process_statistics(5, fileid, database_getval(fileid, "dbuffer1"), database_getval(fileid, "dmask1"));
+          process_statistics(4, fileid, database_getval(fileid, "dbuffer1"), database_getval(fileid, "dmask1"));
           std::string destroy = "Destroy";
-          call_pyfunc(destroy.c_str(), pInstance);
+          call_pyfunc(destroy.c_str(), pInstance, "", "", "");
           log_info("Delete called");
           Py_DECREF(pArgs);
           Py_DECREF(pInstance);
@@ -177,20 +189,39 @@ void RWCA(int window_size, std::string file_id, std::string dbuffer, std::string
   static std::map <std::string, std::pair<std::string, std::string> > image_data;
   image_data[file_id] = make_pair(dbuffer, dmask);
   printf("Queue size: %zu\n", image_window.size());
-  if(image_window.size() < 5) return;
-  else if(image_window.size() == 5){
+  
+  if((int)image_window.size() < window_size) return;
+  else if((int)image_window.size() == window_size){
     std::string mask_image_id = image_window.front();
     image_window.pop();
     std::string mask = image_data[mask_image_id].second;
     std::queue<std::string> current_window_images (image_window);
     std::string window_image_id = mask_image_id + " ";
-    std::string window_image_intensity = "mask_intensity ";
+  
+    PyObject *pInstance, *pFile, *pArgs;
+    /*Initialize PyObjects Needed per file*/
+    pFile = PyString_FromString("");
+    pArgs = PyTuple_New(1);
+    PyTuple_SetItem(pArgs, 0, pFile);
+    pInstance = PyObject_CallObject(pClass, pArgs);
+    
+    std::string window_image_intensity = call_pyfunc("getIntensityFrame", pInstance, 
+                                                      "(s s)", dbuffer.c_str(), dmask.c_str()) + " ";
+    
+    std::string base_image_id = current_window_images.front();
+    current_window_images.pop();
+
     while(!current_window_images.empty()){
       std::string image_id = current_window_images.front();
       window_image_id += image_id + " " ;
-      window_image_intensity += "rando ";
+      window_image_intensity += call_pyfunc("getIntensityFrame", pInstance, "(s s)", 
+                                      image_data[image_id].first.c_str(), image_data[base_image_id].second.c_str()) + " ";
       current_window_images.pop();
     }
+
+    Py_DECREF(pArgs);
+    Py_DECREF(pInstance);
+      
     database_setval("RWCA", window_image_id, window_image_intensity);
     image_data.erase(mask_image_id);
   }
@@ -283,6 +314,6 @@ void process_transducers(std::string server) {
   stopwatch_stop(sw);
   fprintf(mts_file, "ProcessTransducers,%Lg,secs\n", stopwatch_elapsed(sw));
   fsync(fileno(mts_file));
-  process_analytics_pipeline(cwd_path);
+  process_analytics_pipeline(cwd_path); 
 }
 

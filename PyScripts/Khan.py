@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), os.pardir))+'/libim7/libim7')
-
+print os.path.dirname(__file__)+'/libim7/libim7'
+sys.path.append(os.path.dirname(__file__)+'/libim7/libim7')
+    
+import libim7 as im7
 import numpy as np
 import mahotas
-import libim7 as im7
 
 class Khan:
   def __init__(self, path):

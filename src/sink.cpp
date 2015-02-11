@@ -243,8 +243,6 @@ int main(int argc, char **argv)
 
   /**************************/
 
-
-
   if (sigaction(SIGINT, &act, NULL) < 0) {
     perror ("sigaction");
     return 1;

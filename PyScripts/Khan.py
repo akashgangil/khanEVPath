@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import sys, os
-print os.path.dirname(__file__)+'/libim7/libim7'
 sys.path.append(os.path.dirname(__file__)+'/libim7/libim7')
     
 import libim7 as im7

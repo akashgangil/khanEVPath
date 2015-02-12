@@ -183,6 +183,12 @@ void create_graphs(int signum)
   }
 }
 
+static char *router_function = "\
+{\n\
+      static int count = 0;\n\
+            return (count++) % EVmax_output();\n\
+}\0\0";
+
 int main(int argc, char **argv)
 {
   struct sigaction act;
@@ -193,12 +199,15 @@ int main(int argc, char **argv)
   measurements_init();
 
   char *nodes[] = {"a", "b", NULL};
+  int node_count = 2;
   char *str_contact;
   EVmaster test_master;
   EVdfg test_dfg;
   EVclient test_client;
-  EVdfg_stone src, sink;
+  EVdfg_stone src, sink, router;
   EVclient_sinks sink_capabilities;
+
+  char* router_action;
 
   (void)argc; (void)argv;
   cm = CManager_create();
@@ -223,17 +232,28 @@ int main(int argc, char **argv)
    **  DFG CREATION
    */
   test_dfg = EVdfg_create(test_master);
+  router_action = create_router_action_spec(simple_format_list, router_function);
 
   src = EVdfg_create_source_stone(test_dfg, "event source");
-  EVdfg_assign_node(src, "b");
-  sink = EVdfg_create_sink_stone(test_dfg, "simple_handler");
-  EVdfg_assign_node(sink, "a");
-  EVdfg_link_port(src, 0, sink);
+  EVdfg_assign_node(src, nodes[1]);
 
+  router = EVdfg_create_stone(test_dfg, router_action);
+  EVdfg_assign_node(router, nodes[0]);
+  
+//  sink = EVdfg_create_sink_stone(test_dfg, "simple_handler");
+//  EVdfg_assign_node(sink, node[0]);
+  EVdfg_link_dest(src, router);
+
+  for (int i=1; i < node_count; i++) {
+    EVdfg_stone terminal = EVdfg_create_sink_stone(test_dfg,"simple_handler");
+    EVdfg_link_port(router, i-1, terminal);
+    EVdfg_assign_node(terminal, nodes[i-1]);
+  }
+   
   EVdfg_realize(test_dfg);
 
   /* We're node "a" in the DFG */
-  test_client = EVclient_assoc_local(cm, "a", test_master, NULL, sink_capabilities);
+  test_client = EVclient_assoc_local(cm, nodes[0], test_master, NULL, sink_capabilities);
 
   printf("Contact list is \"%s\"\n", str_contact);
   if (EVclient_ready_wait(test_client) != 1) {

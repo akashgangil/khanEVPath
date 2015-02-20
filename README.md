@@ -60,4 +60,6 @@ $ ./bin/net_recv -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt
 $ ./bin/net_send 0:Abdsf23424324233423423423 -s stores.txt
 ```
 
+* You might need to do python setup.py build && python setup.py install in PyScripts/libim7 folder
+
 Porting Khan to EVPath http://www.cc.gatech.edu/systems/projects/EVPath/

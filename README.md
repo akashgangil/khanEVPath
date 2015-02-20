@@ -1,5 +1,10 @@
 Dependencies:
 
+#### Install Curl
+```sh
+$ sudo apt-get install libcurl4-gnutls-dev
+```
+
 #### Install Fuse
 ```sh
 $ sudo apt-get install fuse libfuse-dev
@@ -17,6 +22,8 @@ $ git clone https://github.com/redis/hiredis
 $ cd hiredis
 $ make
 ```
+*Had to create a symbolic link in the hiredis directory to the .so library named *.so.0.12.
+
 #### Redis
 ```sh
 $ wget http://download.redis.io/releases/redis-2.8.15.tar.gz

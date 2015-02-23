@@ -21,6 +21,7 @@
 #include "stopwatch.h"
 #include "measurements.h"
 #include "log.h"
+#include "dfg_functions.h"
 
 extern struct fuse_operations khan_ops;
 extern struct stopwatch_t* sw;
@@ -124,8 +125,6 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
   log_info("Simple Handler");
   simple_rec_ptr event = (_simple_rec*)vevent;
   file_receive(event);
-  //free(event->file_buf);
-  //free(event->file_path);
   return 1;
 }
 
@@ -183,12 +182,6 @@ void create_graphs(int signum)
   }
 }
 
-static char *router_function = "\
-{\n\
-      static int count = 0;\n\
-            return (count++) % EVmax_output();\n\
-}\0\0";
-
 int main(int argc, char **argv)
 {
   struct sigaction act;
@@ -198,16 +191,8 @@ int main(int argc, char **argv)
 
   measurements_init();
 
-  char *nodes[] = {"a", "b", NULL};
-  int node_count = 2;
-  char *str_contact;
-  EVmaster test_master;
-  EVdfg test_dfg;
   EVclient test_client;
-  EVdfg_stone src, sink, router;
   EVclient_sinks sink_capabilities;
-
-  char* router_action;
 
   (void)argc; (void)argv;
   cm = CManager_create();
@@ -221,41 +206,18 @@ int main(int argc, char **argv)
   }
   CMlisten(cm);
 
-  test_master = EVmaster_create(cm);
-  str_contact = EVmaster_get_contact_list(test_master);
-  EVmaster_register_node_list(test_master, &nodes[0]);
+  char master_address[200];
+  dfg_get_master_contact_func(master_address,"master.info");
 
-  sink_capabilities = EVclient_register_sink_handler(cm, "simple_handler", simple_format_list,
+  char source_node[300] = "src_";
+  strcat(source_node, argv[1]);
+
+  sink_capabilities = EVclient_register_sink_handler(cm, source_node, simple_format_list,
       (EVSimpleHandlerFunc) simple_handler, NULL);
 
-  /*
-   **  DFG CREATION
-   */
-  test_dfg = EVdfg_create(test_master);
-  router_action = create_router_action_spec(simple_format_list, router_function);
-
-  src = EVdfg_create_source_stone(test_dfg, "event source");
-  EVdfg_assign_node(src, nodes[1]);
-
-  router = EVdfg_create_stone(test_dfg, router_action);
-  EVdfg_assign_node(router, nodes[0]);
-  
-//  sink = EVdfg_create_sink_stone(test_dfg, "simple_handler");
-//  EVdfg_assign_node(sink, node[0]);
-  EVdfg_link_dest(src, router);
-
-  for (int i=1; i < node_count; i++) {
-    EVdfg_stone terminal = EVdfg_create_sink_stone(test_dfg,"simple_handler");
-    EVdfg_link_port(router, i-1, terminal);
-    EVdfg_assign_node(terminal, nodes[i-1]);
-  }
-   
-  EVdfg_realize(test_dfg);
-
   /* We're node "a" in the DFG */
-  test_client = EVclient_assoc_local(cm, nodes[0], test_master, NULL, sink_capabilities);
+  test_client = EVclient_assoc(cm, argv[1], master_address, NULL, sink_capabilities);
 
-  printf("Contact list is \"%s\"\n", str_contact);
   if (EVclient_ready_wait(test_client) != 1) {
     /* dfg initialization failed! */
     exit(1);

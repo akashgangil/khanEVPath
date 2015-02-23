@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <glob.h>
 
+#include "dfg_functions.h"
 #include "evpath.h"
 #include "ev_dfg.h"
 #include "log.h"
@@ -52,14 +53,19 @@ int main(int argc, char **argv)
   EVsource source_handle;
   EVclient test_client;
   EVclient_sources source_capabilities;
-
+  
   (void)argc; (void)argv;
   cm = CManager_create();
 
-  source_handle = EVcreate_submit_handle(cm, -1, simple_format_list);
-  source_capabilities = EVclient_register_source("event source", source_handle);
+  char master_address[200];
+  dfg_get_master_contact_func(master_address,"master.info");
 
-  test_client = EVclient_assoc(cm, "b", argv[1], source_capabilities, NULL);
+  char source_node[300] = "src_";
+  strcat(source_node, argv[1]);
+
+  source_handle = EVcreate_submit_handle(cm, -1, simple_format_list);
+  source_capabilities = EVclient_register_source(source_node, source_handle);
+  test_client = EVclient_assoc(cm, argv[1], master_address, source_capabilities, NULL);
 
   if (EVclient_ready_wait(test_client) != 1) {
     /* initialization failed! */

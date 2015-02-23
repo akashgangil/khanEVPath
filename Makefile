@@ -16,11 +16,13 @@ SERVER_SRCS  = $(SRCDIR)/khan.cpp \
 							 $(SRCDIR)/cloudupload_v1.c \
 							 $(SRCDIR)/cloudupload_supplement.c \
 							 $(SRCDIR)/stopwatch.cpp \
-							 $(SRCDIR)/measurements.cpp
+							 $(SRCDIR)/measurements.cpp \
+							 $(SRCDIR)/dfg_functions.cpp
 
 SERVER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SERVER_SRCS))
 
-CLIENT_SRCS  = $(SRCDIR)/source.cpp
+CLIENT_SRCS  = $(SRCDIR)/source.cpp \
+							 $(SRCDIR)/dfg_functions.cpp
 CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CLIENT_SRCS))
 
 DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
@@ -85,5 +87,5 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CCX) $(CCXFLAGS) $(EVPATH_INCLUDE_DIRS) $(PYTHON_INCLUDE_DIRS) $(REDIS_INCLUDE_DIRS) $(OPTS) -c $< -o $@
 
 clean:
-	rm $(SERVER) $(CLIENT) $(OBJDIR) $(BINDIR) -Rf
+	rm $(SERVER) $(CLIENT) $(DFG_MASTER) $(OBJDIR) $(BINDIR) -Rf
 

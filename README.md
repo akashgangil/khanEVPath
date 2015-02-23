@@ -53,6 +53,27 @@ Modify stores.txt to point to the data by replacing the first string on the seco
 #### Create a "test" directory
 Under the project base folder, this is the place where the fuse filesystem gets mounted.
 
+
+### To Run
+
+#### Initialize the dfg topology
+```sh
+./rundfgmaster.sh
+```
+
+#### Run the source test client
+```sh
+./bin/net_send "a" -s stores.txt
+```
+
+#### Run the sink client
+```sh
+./bin/net_recv "b" -m /net/hu21/agangil3/khanEVPath/test -d -p 6279 -s stores.txt
+```
+
+
+### Deprecated
+
 #### Run `net_recv`  which gives the `stone-id`
 ```sh
 $ ./bin/net_recv -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt

@@ -23,7 +23,10 @@ SERVER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SERVER_SRCS))
 CLIENT_SRCS  = $(SRCDIR)/source.cpp
 CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CLIENT_SRCS))
 
+DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
+									$(SRCDIR)/dfg_functions.cpp
 
+DFG_MASTER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_MASTER_SRCS))
 
 CCX = g++
 CCXFLAGS = -Wall -D_FILE_OFFSET_BITS=64 -Wno-write-strings
@@ -58,8 +61,9 @@ FUSE_LIBS = `pkg-config fuse --cflags --libs`
 
 SERVER = net_recv
 CLIENT = net_send
+DFG_MASTER = dfg_master
 
-all: builddir bindir $(SERVER) $(CLIENT)
+all: builddir bindir $(SERVER) $(CLIENT) $(DFG_MASTER)
   
 builddir:
 	mkdir -p $(OBJDIR)
@@ -73,6 +77,9 @@ $(SERVER): $(SERVER_OBJS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
+
+$(DFG_MASTER): $(DFG_MASTER_OBJS)
+	$(CCX) $(CCXFLAGS) $(DFG_MASTER_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CCX) $(CCXFLAGS) $(EVPATH_INCLUDE_DIRS) $(PYTHON_INCLUDE_DIRS) $(REDIS_INCLUDE_DIRS) $(OPTS) -c $< -o $@

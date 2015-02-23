@@ -1,6 +1,8 @@
 #include "dfg_functions.h"
 static char *CONTACT_FILE="master.info";
 
+struct dfg_unit test_dfg;
+
 int dfg_init_func(void)
 {
   test_dfg.cm=CManager_create();

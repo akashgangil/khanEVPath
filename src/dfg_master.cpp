@@ -8,7 +8,7 @@ void usage()
   printf("Usage:\n ./dfg_master nodesfile sourcestonesfile linksfile\n where nodesfile is a line separated list of nodes with the first line specifying the number of nodes, \n and sourcestonesfile is a file that lists the stones  as \"nodename sources src_end\" \n and linksfile is a file that specifies the links between the stones as \"sinknode sink source(s)\"\n");
 }
 
-int test_main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   /*
    * 		We want the dfg creator file to be able to read in a list of nodes, a list of stones per node and links between stones.

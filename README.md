@@ -76,15 +76,15 @@ Under the project base folder, this is the place where the fuse filesystem gets 
 
 ### Deprecated
 
---#### Run `net_recv`  which gives the `stone-id`--
---```sh--
---$ ./bin/net_recv -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt--
---```--
+~~#### Run `net_recv`  which gives the `stone-id`--
+```sh
+~~$ ./bin/net_recv -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt~~
+```
 
---#### Run `net_send` with stone id obtained in the last step as an argument.--
---```sh--
---$ ./bin/net_send 0:Abdsf23424324233423423423 -s stores.txt--
---```--
+~~#### Run `net_send` with stone id obtained in the last step as an argument.~~
+```sh
+~~$ ./bin/net_send 0:Abdsf23424324233423423423 -s stores.txt~~
+```
 
 
 Porting Khan to EVPath http://www.cc.gatech.edu/systems/projects/EVPath/

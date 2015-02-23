@@ -1,5 +1,4 @@
 #include "dfg_functions.h"
-static char *CONTACT_FILE="master.info";
 
 struct dfg_unit test_dfg;
 
@@ -16,8 +15,6 @@ int dfg_init_func(void)
 
   return 1;
 }
-
-
 
 int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandlerFunc func)
 {
@@ -56,9 +53,7 @@ int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandler
       }
       else
         fprintf(stderr,"Node Join Handler Function not valid \n");
-
     }
-
   }
   else
     fprintf(stderr,"DFG not initialized correctly, call dfg_init_func first\n");
@@ -142,16 +137,11 @@ int dfg_finalize_func(void)
   return ret;
 }
 
-void dfg_get_master_contact_func(char *retvalue)
+void dfg_get_master_contact_func(char *retvalue, char* contact_file)
 {
-  //       if(test_dfg.str_contact)
-  //     retvalue=strdup((const char*)test_dfg.str_contact);
-  //	printf("Master is at %s \n",test_dfg.str_contact);
   FILE *op;
-  op = fopen(CONTACT_FILE,"r");
+  op = fopen(contact_file,"r");
   fscanf(op,"%s",retvalue);
   fclose(op);
-  printf("Master is at %s \n",test_dfg.str_contact);
-
 }
 

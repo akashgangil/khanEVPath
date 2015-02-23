@@ -63,10 +63,10 @@ int main(int argc, char *argv[])
           linksfile = fopen(argv[3],"r");
           char *sink;
           int numsources;
-          while(fscanf(linksfile,"%s",&token)!=EOF)
+          while(fscanf(linksfile,"%s", token)!=EOF)
           {
             node=strdup((const char *)token);
-            fscanf(linksfile," %s",&token);
+            fscanf(linksfile," %s", token);
             sink =strdup((const char*) token);
             fscanf(linksfile, " %d",&numsources);
             char *sources[numsources+1];
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
           fclose(linksfile);
           /*Finalize DFG*/
           char mastercontact[1024];
-          dfg_get_master_contact_func(&mastercontact[0]);
+          dfg_get_master_contact_func(&mastercontact[0], "master.info");
           printf("Master: %s\n",mastercontact);
           gettimeofday(&end,NULL);
           printf("DFG time taken = %ld usec\n",(end.tv_usec + (end.tv_sec * 1000000)) - (start.tv_usec + (start.tv_sec * 1000000)));

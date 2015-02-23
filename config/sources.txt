@@ -1,2 +1,1 @@
 a src_a src_end
-b src_b src_end

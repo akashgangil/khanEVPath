@@ -1,0 +1,2 @@
+c src_c 1 src_a
+d src_d 1 src_b

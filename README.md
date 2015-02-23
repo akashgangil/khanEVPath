@@ -50,6 +50,9 @@ cd ~/redis/src
 #### Point khan to the data
 Modify stores.txt to point to the data by replacing the first string on the second line.
 
+#### Create a "test" directory
+Under the project base folder, this is the place where the fuse filesystem gets mounted.
+
 #### Run `net_recv`  which gives the `stone-id`
 ```sh
 $ ./bin/net_recv -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt

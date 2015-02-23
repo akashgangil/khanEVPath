@@ -26,28 +26,19 @@ CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCDIR)/$(CLIENT_SRC
 CCX = g++
 CCXFLAGS = -Wall -D_FILE_OFFSET_BITS=64 -Wno-write-strings
 
-EVPATH_LIB_DIRS = -L/net/hp41/chaos/rhe6-64-icc/atl/lib \
-                  -L/net/hp41/chaos/rhe6-64-icc/evpath/lib \
-                  -L/net/hp41/chaos/rhe6-64-icc/ffs/lib \
-                  -L/net/hp41/chaos/rhe6-64-icc/dill/lib \
-                  -L/net/hp41/chaos/rhe6-64-icc/cercs_env/lib \
-                  -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/atl/lib \
-                  -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/ffs/lib \
-                  -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/dill/lib \
-                  -Wl,-rpath=/net/hp41/chaos/rhe6-64-icc/cercs_env/lib
+EVPATH_LIB_DIRS = -L/home/wolf/lib \
+                  -Wl,-rpath=/home/wolf/lib
 
-EVPATH_INCLUDE_DIRS = -I/net/hp41/chaos/rhe6-64-icc/atl/include \
-                      -I/net/hp41/chaos/rhe6-64-icc/ffs/include \
-                      -I/net/hp41/chaos/rhe6-64-icc/evpath/include
+EVPATH_INCLUDE_DIRS = -I/home/wolf/include
 
-REDIS_LIB_DIRS  = -L/net/hu21/agangil3/hiredis -Wl,-rpath=/net/hu21/agangil3/hiredis 
-REDIS_INCLUDE_DIRS=-I/net/hu21/agangil3/hiredis
+REDIS_LIB_DIRS  = -L$(PWD)/hiredis -Wl,-rpath=$(PWD)/hiredis 
+REDIS_INCLUDE_DIRS=-I$(PWD)/hiredis
 
-PYTHON_INCLUDE_DIRS = -I/usr/include/python2.6 
-PYTHON_LIB_DIRS = -L/usr/lib64/python -Wl,-rpath=/usr/lib64
+PYTHON_INCLUDE_DIRS = -I/usr/include/python2.7 
+PYTHON_LIB_DIRS = -L/usr/lib/python2.7 -Wl,-rpath=/usr/lib
 
 EVPATH_LIBS  = -latl -levpath -lffs -ldill -lcercs_env -lrt
-PYTHON_LIBS  = -lpython2.6
+PYTHON_LIBS  = -lpython2.7
 REDIS_LIBS   = -lhiredis
 PTHREAD_LIBS = -lpthread
 CURL_LIBS = -lcurl

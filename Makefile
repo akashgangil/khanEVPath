@@ -20,8 +20,10 @@ SERVER_SRCS  = $(SRCDIR)/khan.cpp \
 
 SERVER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SERVER_SRCS))
 
-CLIENT_SRCS  = source.cpp
-CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRCDIR)/$(CLIENT_SRCS))
+CLIENT_SRCS  = $(SRCDIR)/source.cpp
+CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CLIENT_SRCS))
+
+
 
 CCX = g++
 CCXFLAGS = -Wall -D_FILE_OFFSET_BITS=64 -Wno-write-strings

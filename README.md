@@ -74,6 +74,14 @@ Under the project base folder, this is the place where the fuse filesystem gets 
 * You might need to do python setup.py build && python setup.py install in PyScripts/libim7 folder
 
 
+###Know Problems
+##### Segfault due to fuse filesystem
+Fuse might not have unmounted properly. Unmount is using fusermount -zu <mount folder>
+```sh
+fusermount -zu test
+```
+
+
 ### Deprecated
 
 ~~#### Run `net_recv`  which gives the `stone-id`~~

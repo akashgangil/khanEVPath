@@ -3,10 +3,9 @@ SRCDIR = src
 BINDIR = bin
 
 SERVER_SRCS  = $(SRCDIR)/khan.cpp \
+							 $(SRCDIR)/fuse_helper.cpp \
 							 $(SRCDIR)/data_analytics.cpp \
 							 $(SRCDIR)/localizations.cpp \
-							 $(SRCDIR)/fuseapi.cpp \
-							 $(SRCDIR)/fuse_helper.cpp \
 							 $(SRCDIR)/redis.cpp \
                $(SRCDIR)/utils.cpp \
                $(SRCDIR)/database.cpp \
@@ -29,6 +28,20 @@ DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
 									$(SRCDIR)/dfg_functions.cpp
 
 DFG_MASTER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_MASTER_SRCS))
+
+FS_CLIENT_SRCS = $(SRCDIR)/fs_client.cpp \
+								 $(SRCDIR)/fuseapi.cpp \
+								 $(SRCDIR)/fuse_helper.cpp \
+								 $(SRCDIR)/database.cpp \
+								 $(SRCDIR)/utils.cpp \
+								 $(SRCDIR)/localizations.cpp \
+								 $(SRCDIR)/redis.cpp \
+								 $(SRCDIR)/khan.cpp \
+								 $(SRCDIR)/stopwatch.cpp \
+								 $(SRCDIR)/measurements.cpp \
+								 $(SRCDIR)/fileprocessor.cpp
+
+FS_CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(FS_CLIENT_SRCS))
 
 CCX = g++
 CCXFLAGS = -Wall -D_FILE_OFFSET_BITS=64 -Wno-write-strings -g
@@ -55,8 +68,9 @@ FUSE_LIBS = `pkg-config fuse --cflags --libs`
 SERVER = net_recv
 CLIENT = net_send
 DFG_MASTER = dfg_master
+FS_CLIENT = fs_client
 
-all: builddir bindir $(SERVER) $(CLIENT) $(DFG_MASTER)
+all: builddir bindir $(SERVER) $(CLIENT) $(DFG_MASTER) $(FS_CLIENT)
   
 builddir:
 	mkdir -p $(OBJDIR)
@@ -66,13 +80,17 @@ bindir:
 
 $(SERVER): $(SERVER_OBJS)
 	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) \
-  -o $(BINDIR)/$@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(FUSE_LIBS) $(CURL_LIBS)
+  -o $(BINDIR)/$@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(CURL_LIBS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
 
 $(DFG_MASTER): $(DFG_MASTER_OBJS)
 	$(CCX) $(CCXFLAGS) $(DFG_MASTER_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
+
+$(FS_CLIENT): $(FS_CLIENT_OBJS)
+	$(CCX) $(CCXFLAGS) $(FS_CLIENT_OBJS) $(EVPATH_LIB_DIRS) $(PYTHON_LIB_DIRS) $(REDIS_LIB_DIRS) \
+  -o $(BINDIR)/$@ $(FUSE_LIBS) $(REDIS_LIBS) $(PYTHON_LIBS) 
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CCX) $(CCXFLAGS) $(EVPATH_INCLUDE_DIRS) $(PYTHON_INCLUDE_DIRS) $(REDIS_INCLUDE_DIRS) $(OPTS) -c $< -o $@

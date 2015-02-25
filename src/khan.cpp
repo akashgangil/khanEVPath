@@ -251,7 +251,7 @@ initializing_khan (void* khan_args)
         khan_getattr (const char *c_path, struct stat *stbuf)
         {
           std::cout << "started get attr" << std::endl << std::flush;
-          stopwatch_start(sw);
+//          stopwatch_start(sw);
           std::string pre_processed = c_path + 1;
           if (pre_processed == ".DS_Store")
           {
@@ -265,8 +265,8 @@ initializing_khan (void* khan_args)
            *         file_pop_stbuf(stbuf, "test");
            *                 int ret = 0; */
           int ret = populate_getattr_buffer (stbuf, path);
-          stopwatch_stop(sw);
-          fprintf(mts_file, "List Directory: %s, %Lf, secs\n", c_path, stopwatch_elapsed(sw));
+//          stopwatch_stop(sw);
+//          fprintf(mts_file, "List Directory: %s, %Lf, secs\n", c_path, stopwatch_elapsed(sw));
           std::cout << "ended get attr" << std::endl << std::flush;
           return ret;
         }

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <fstream>
-
 #include "params.h"
 
 #include <fuse.h>
@@ -18,11 +17,9 @@
 #include "log.h"
 
 struct fuse_operations khan_ops;
-
   void
 xmp_initialize ()
 {
-
   khan_ops.getattr = khan_getattr;
   khan_ops.init = khan_init;
   khan_ops.access = xmp_access;

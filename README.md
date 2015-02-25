@@ -68,10 +68,23 @@ Under the project base folder, this is the place where the fuse filesystem gets 
 
 #### Run the sink client
 ```sh
-./bin/net_recv "b" -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt
+./bin/net_recv "b" -p 6279 -s stores.txt
+```
+
+#### Run the Fuse Client if you want the filesystem
+```sh
+./bin/fs_client -m /net/hu21/agangil3/khanEVPath/test -d
 ```
 
 * You might need to do python setup.py build && python setup.py install in PyScripts/libim7 folder
+
+
+###Know Problems
+##### Segfault due to fuse filesystem
+Fuse might not have unmounted properly. Unmount is using fusermount -zu <mount folder>
+```sh
+fusermount -zu test
+```
 
 
 ### Deprecated

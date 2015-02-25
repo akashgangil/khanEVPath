@@ -15,56 +15,26 @@
 #include "threadpool.h"
 #include "evpath.h"
 #include "ev_dfg.h"
-#include "fuseapi.h"
 #include "khan.h" 
 #include "data_analytics.h"
 #include "stopwatch.h"
 #include "measurements.h"
 #include "log.h"
 #include "dfg_functions.h"
+#include "khan_ffs.h"
 
-extern struct fuse_operations khan_ops;
 extern struct stopwatch_t* sw;
-
-struct fuse_context* f_context;
-
-std::vector < std::string > servers;
-std::vector < std::string > server_ids;
-
-std::string this_server;
-std::string this_server_id;
-
-std::string mount_point;
-
-struct khan_state* khan_data;
 
 CManager cm;
 
-struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
-
 pthread_t khan_init_thread;
+std::vector < std::string > servers;
+std::vector < std::string > server_ids;
+std::string this_server;
+std::string this_server_id;
 
-typedef struct _simple_rec {
-  int exp_id;
-  char* file_path;
-  long file_buf_len;
-  char* file_buf;
-} simple_rec, *simple_rec_ptr;
-
-static FMField simple_field_list[] =
-{
-  {"exp_id", "integer", sizeof(int), FMOffset(simple_rec_ptr, exp_id)},
-  {"file_path", "string", sizeof(char*), FMOffset(simple_rec_ptr, file_path)},
-  {"file_buf_len", "integer", sizeof(long), FMOffset(simple_rec_ptr, file_buf_len)},
-  {"file_buf", "char[file_buf_len]", sizeof(char), FMOffset(simple_rec_ptr, file_buf)},
-  {NULL, NULL, 0, 0}
-};
-
-static FMStructDescRec simple_format_list[] =
-{
-  {"simple", simple_field_list, sizeof(simple_rec), NULL},
-  {NULL, NULL}
-};
+extern FMField simple_field_list[];
+extern FMStructDescRec simple_format_list[]; 
 
 static void _mkdir(const char *dir) {
   char tmp[1000];
@@ -138,8 +108,6 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
 
   measurements_cleanup();
 
-  log_info("Freed constants and fuse arguments");
-
   //CMsleep(cm, 10); /* service network for 600 seconds */
   CManager_close(cm);
   log_info("Closed the CManager");
@@ -157,20 +125,6 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Exit pthreads");
   redis_destroy();
   log_info("Shut down redis");
-
-  log_info("Get fuse context");
-  f_context = fuse_get_context();
-  printf("UID: %d GID: %d", f_context->uid, f_context->gid);
-  log_info("Unmount fuse");
-
-  std::string command = "fusermount -zu " + mount_point;
-  FILE* stream=popen(command.c_str(),"r");
-  if(!stream) fclose(stream);
-
-  log_info("Free fuse args");
-  fuse_opt_free_args(&args);
-  log_info("Free khan_data");
-  if(!khan_data) free(khan_data);
 
   exit(0);
 }
@@ -198,14 +152,6 @@ int main(int argc, char **argv)
 
   (void)argc; (void)argv;
   cm = CManager_create();
-  int forked = 0;
-  forked = CMfork_comm_thread(cm);
-  assert(forked == 1);
-  if (forked) {
-    log_info("Forked a communication thread");
-  } else {
-    log_info("Doing non-threaded communication handling");
-  }
   CMlisten(cm);
 
   char master_address[200];
@@ -243,29 +189,15 @@ int main(int argc, char **argv)
   std::string pyscripts_path = strdup(getcwd(cwd, sizeof(cwd))) + py;
   PyList_Append(path, PyString_FromString(pyscripts_path.c_str()));
   PySys_SetObject("path", path);
-  xmp_initialize();
 
   std::string store_filename="stores.txt"; /* Default */
 
   int port = -1;
   int opt;
-
-  /*Add the program name to fuse*/
-  fuse_opt_add_arg(&args, argv[0]);
-
-  while ((opt = getopt (argc, argv, "dm:p:s:")) != -1)
+  while ((opt = getopt (argc, argv, "p:s:")) != -1)
   {
     switch (opt)
     {
-      case 'm':
-        mount_point = optarg;
-        fuse_opt_add_arg(&args, optarg);
-        break;
-
-      case 'd':
-        fuse_opt_add_arg(&args, "-d");
-        break;
-
       case 'p':
         port = atoi(optarg);
         break;
@@ -275,23 +207,12 @@ int main(int argc, char **argv)
         break;
     }
   }
-
-  /* Setting fuse options */
-  //  fuse_opt_add_arg(&args, "-o");
-  //  fuse_opt_add_arg(&args, "allow_other");
-  fuse_opt_add_arg(&args, "-o");
-  fuse_opt_add_arg(&args, "default_permissions");
-  fuse_opt_add_arg(&args, "-o");
-  fuse_opt_add_arg(&args, "umask=022"); 
-
   /* Set signal handler */
   //signal(SIGTERM, cleanup_handler);
   //signal(SIGKILL, cleanup_handler);
   //signal(SIGSEGV, cleanup_handler);
 
-  log_info("Store filename %s", store_filename.c_str());
-
-  FILE* stores = fopen(store_filename.c_str(), "r");
+    FILE* stores = fopen(store_filename.c_str(), "r");
   char buffer[100];
   char buffer2[100];
   fscanf(stores, "%s\n", buffer);
@@ -305,11 +226,6 @@ int main(int argc, char **argv)
   }
   fclose(stores);
 
-  khan_data = (khan_state*)calloc(sizeof(struct khan_state), 1);
-  if (khan_data == NULL)  {
-    log_err("Could not allocate memory to khan_data.. Aborting");
-    abort();
-  }
 
   arg_struct khan_args;
   khan_args.mnt_dir = argv[1];
@@ -319,8 +235,7 @@ int main(int argc, char **argv)
 
   pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
   log_info("Initialized Khan");
-  fuse_main(args.argc,args.argv, &khan_ops, khan_data);
-  log_info("Fuse Running");
 
+  CMrun_network(cm);
   return 0;
 }

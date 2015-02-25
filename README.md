@@ -68,7 +68,7 @@ Under the project base folder, this is the place where the fuse filesystem gets 
 
 #### Run the sink client
 ```sh
-./bin/net_recv "b" -m /net/hu21/agangil3/khanEVPath/test -d -p 6279 -s stores.txt
+./bin/net_recv "b" -m /net/hu21/agangil3/khanEVPath/test -d -p 6379 -s stores.txt
 ```
 
 * You might need to do python setup.py build && python setup.py install in PyScripts/libim7 folder

@@ -31,7 +31,7 @@ DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
 DFG_MASTER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_MASTER_SRCS))
 
 CCX = g++
-CCXFLAGS = -Wall -D_FILE_OFFSET_BITS=64 -Wno-write-strings
+CCXFLAGS = -Wall -D_FILE_OFFSET_BITS=64 -Wno-write-strings -g
 
 EVPATH_LIB_DIRS = -L/home/wolf/lib \
                   -Wl,-rpath=/home/wolf/lib

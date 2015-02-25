@@ -92,6 +92,8 @@ void file_receive(simple_rec_ptr event){
     log_info("file_path %s", event->file_path);
     log_info("file_buf_len %ld", event->file_buf_len);
   }
+  // FIXME:Need to make a more dynamic way of doing this, rather than hard
+  // coding this in the future.
   std::string filepath (event->file_path);
   //24 is the length of the server name
   //10 is the length of the im7 file name

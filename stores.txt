@@ -1,3 +1,3 @@
 laptop
-/net/hu21/agangil3/data laptop
+/home/wolf/Systems/Systems/Akash_Kahn/khanEVPath/data laptop
 

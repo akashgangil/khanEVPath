@@ -141,7 +141,14 @@ void dfg_get_master_contact_func(char *retvalue, char* contact_file)
 {
   FILE *op;
   op = fopen(contact_file,"r");
-  fscanf(op,"%s",retvalue);
-  fclose(op);
+  if(op != NULL)
+  {
+    fscanf(op,"%s",retvalue);
+    fclose(op);
+  }
+  else
+  {
+    fprintf(stderr, "Could not open master.info file\n");
+  }
 }
 

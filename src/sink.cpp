@@ -237,7 +237,8 @@ int main(int argc, char **argv)
   khan_args.port = port;
   khan_args.host = host;
 
-  pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
+  initializing_khan((void*)&khan_args);
+//  pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
   log_info("Initialized Khan");
 
   CMrun_network(cm);

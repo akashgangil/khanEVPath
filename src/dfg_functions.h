@@ -16,6 +16,8 @@
 
 struct source_stone_unit {
   EVdfg_stone src;
+  EVdfg_stone router;
+  int port;
   char* sourcename;
 };
 

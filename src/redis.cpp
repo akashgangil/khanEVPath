@@ -5,12 +5,12 @@
 redisContext* c;
 redisReply* reply;
 
-bool redis_init(int port) {
+bool redis_init(std::string host, int port) {
  
   log_info("Redis Initialized");
   
   struct timeval timeout = { 3600, 0};
-  c=redisConnectWithTimeout((char*)"localhost", port, timeout);
+  c=redisConnectWithTimeout(host.c_str(), port, timeout);
     
   if(c->err) {
     fprintf(stderr, "Connection error: %s\n", c->errstr);

@@ -29,6 +29,7 @@ typedef struct{
   std::vector < std::string > servers;
   std::vector < std::string > server_ids;
   int port;
+  std::string host;
 } arg_struct;
 
 void* initializing_khan(void* args);

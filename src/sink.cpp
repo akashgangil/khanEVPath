@@ -194,7 +194,8 @@ int main(int argc, char **argv)
 
   int port = -1;
   int opt;
-  while ((opt = getopt (argc, argv, "p:s:")) != -1)
+  std::string host = "localhost";
+  while ((opt = getopt (argc, argv, "p:s:h:")) != -1)
   {
     switch (opt)
     {
@@ -204,6 +205,10 @@ int main(int argc, char **argv)
 
       case 's':
         store_filename = optarg;
+        break;
+
+      case 'h':
+        host = optarg;
         break;
     }
   }
@@ -232,8 +237,10 @@ int main(int argc, char **argv)
   khan_args.servers = servers;
   khan_args.server_ids = server_ids;
   khan_args.port = port;
+  khan_args.host = host;
 
-  pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
+  initializing_khan((void*)&khan_args);
+//  pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
   log_info("Initialized Khan");
 
   CMrun_network(cm);

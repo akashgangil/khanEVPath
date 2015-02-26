@@ -1,6 +1,18 @@
 #include "dfg_functions.h"
+#include "khan_ffs.h"
 
 struct dfg_unit test_dfg;
+
+extern FMField simple_field_list[];
+extern FMStructDescRec simple_format_list[];
+
+static char *router_function = "\
+{\n\
+  static int count = 0;\n\
+    return (count++) % 2;\n\
+}\0\0";
+
+char *router_action;
 
 int dfg_init_func(void)
 {
@@ -12,7 +24,7 @@ int dfg_init_func(void)
   op = fopen("master.info","w");
   fprintf(op,"%s",test_dfg.str_contact);
   fclose(op);
-
+  router_action = create_router_action_spec(simple_format_list, router_function);
   return 1;
 }
 
@@ -72,8 +84,18 @@ int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
     if(i<=test_dfg.node_count) {
       test_dfg.srcstone[test_dfg.numsourcestones].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
       EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].src, nodename);
+
+      test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
+      EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].router, nodename);
+
       test_dfg.srcstone[test_dfg.numsourcestones].sourcename=sourcestone;
       test_dfg.numsourcestones++;
+
+      test_dfg.srcstone[test_dfg.numsourcestones].port = 0;
+
+//      EVdfg_link_dest(test_dfg.srcstone[test_dfg.numsourcestones].src, 
+//                      test_dfg.srcstone[test_dfg.numsourcestones].router);
+
       ret = 1;
     }
     else
@@ -84,6 +106,7 @@ int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
 
 int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int numsources, char **sourcename)
 {
+  static int once = 0;
   int ret = 0, i,j;
   assert(test_dfg.dfg);
   if(handler!=NULL)
@@ -97,7 +120,14 @@ int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int n
       {
         for(j=0;strcmp(sourcename[i],test_dfg.srcstone[j].sourcename)!=0 && j<test_dfg.numsourcestones;++j);
         if(j<test_dfg.numsourcestones) {
-          EVdfg_link_dest(test_dfg.srcstone[j].src,sink);
+          if(once == 0)
+          {
+              EVdfg_link_dest(test_dfg.srcstone[j].src, test_dfg.srcstone[j].router);
+              once = 1;
+          }
+          EVdfg_link_port(test_dfg.srcstone[j].router, test_dfg.srcstone[j].port++, sink);
+        
+//          EVdfg_link_dest(test_dfg.srcstone[j].src,sink);
           ret = 1;
         }
         else

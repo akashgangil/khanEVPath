@@ -68,7 +68,7 @@ Under the project base folder, this is the place where the fuse filesystem gets 
 
 #### Run the sink client
 ```sh
-./bin/net_recv "b" -p 6279 -s stores.txt
+./bin/net_recv "b" -p 6379 -s stores.txt
 ```
 
 #### Run the Fuse Client if you want the filesystem

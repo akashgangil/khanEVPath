@@ -5,7 +5,7 @@
 #include "hiredis.h"
 
 
-bool redis_init(int port);
+bool redis_init(std::string host, int port);
 std::string redis_getval(std::string file_id, std::string col);
 std::string redis_getkey_cols(std::string col);
 std::string redis_setval(std::string file_id, std::string col, std::string val);

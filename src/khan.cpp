@@ -49,7 +49,7 @@ initializing_khan (void* khan_args)
     log_info("Directory opened successfully");
   }
 
-  init_database(args->port);
+  init_database(args->host, args->port);
 
   /* check if we've loaded metadata before */
   std::string output = database_getval ("setup", "value");

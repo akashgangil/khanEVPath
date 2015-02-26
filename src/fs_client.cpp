@@ -37,6 +37,7 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void *context){
   fuse_opt_free_args(&args);
   log_info("Free khan_data");
   if(!khan_data) free(khan_data);
+  exit(1);
 }
 
 int main(int argc, char **argv){
@@ -50,10 +51,11 @@ int main(int argc, char **argv){
     return 1;
   }
   int opt;
-
+  int port;
+  std::string host = "localhost";
   fuse_opt_add_arg(&args, argv[0]);
 
-  while ((opt = getopt (argc, argv, "dm:")) != -1)
+  while ((opt = getopt (argc, argv, "dm:h:p:")) != -1)
   {
     switch (opt)
     {
@@ -65,10 +67,16 @@ int main(int argc, char **argv){
       case 'd':
         fuse_opt_add_arg(&args, "-d");
         break;
+
+      case 'p':
+        port = atoi(optarg);
+
+      case 'h':
+        host = optarg;
     }
   }
 
-  init_database(6379);
+  init_database(host, port);
 
   xmp_initialize();
 

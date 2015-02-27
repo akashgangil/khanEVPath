@@ -27,7 +27,7 @@ extern struct stopwatch_t* sw;
 
 CManager cm;
 
-pthread_t khan_init_thread;
+//pthread_t khan_init_thread;
 std::vector < std::string > servers;
 std::vector < std::string > server_ids;
 std::string this_server;
@@ -35,6 +35,8 @@ std::string this_server_id;
 
 extern FMField simple_field_list[];
 extern FMStructDescRec simple_format_list[]; 
+
+EVsource source_handle;
 
 static void _mkdir(const char *dir) {
   char tmp[1000];
@@ -93,6 +95,8 @@ void file_receive(simple_rec_ptr event){
 static int simple_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
   log_info("Simple Handler");
+  simple_rec data;
+  EVsubmit(source_handle, &data, NULL);
   simple_rec_ptr event = (_simple_rec*)vevent;
   file_receive(event);
   return 1;
@@ -117,8 +121,8 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Stop Python");
   Py_Finalize();
 
-  pthread_cancel(khan_init_thread);
-  pthread_join(khan_init_thread, NULL);
+  //pthread_cancel(khan_init_thread);
+  //pthread_join(khan_init_thread, NULL);
   //pthread_exit(NULL); 
   log_info("Exit pthreads");
   redis_destroy();
@@ -147,6 +151,7 @@ int main(int argc, char **argv)
 
   EVclient test_client;
   EVclient_sinks sink_capabilities;
+  EVclient_sources source_capabilities;
 
   (void)argc; (void)argv;
   cm = CManager_create();
@@ -158,11 +163,13 @@ int main(int argc, char **argv)
   char source_node[300] = "src_";
   strcat(source_node, argv[1]);
 
+  source_handle = EVcreate_submit_handle(cm, -1, simple_format_list);
+  source_capabilities = EVclient_register_source("src_c", source_handle);
   sink_capabilities = EVclient_register_sink_handler(cm, source_node, simple_format_list,
       (EVSimpleHandlerFunc) simple_handler, NULL);
 
   /* We're node "a" in the DFG */
-  test_client = EVclient_assoc(cm, argv[1], master_address, NULL, sink_capabilities);
+  test_client = EVclient_assoc(cm, argv[1], master_address, source_capabilities, sink_capabilities);
 
   if (EVclient_ready_wait(test_client) != 1) {
     /* dfg initialization failed! */
@@ -215,7 +222,7 @@ int main(int argc, char **argv)
   //signal(SIGKILL, cleanup_handler);
   //signal(SIGSEGV, cleanup_handler);
 
-    FILE* stores = fopen(store_filename.c_str(), "r");
+  FILE* stores = fopen(store_filename.c_str(), "r");
   char buffer[100];
   char buffer2[100];
   fscanf(stores, "%s\n", buffer);
@@ -228,7 +235,6 @@ int main(int argc, char **argv)
     }
   }
   fclose(stores);
-
 
   arg_struct khan_args;
   khan_args.mnt_dir = argv[1];

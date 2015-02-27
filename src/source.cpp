@@ -3,13 +3,15 @@
 #include <string>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
+#include <time.h>
 #include <vector>
 #include <set>
+#include <signal.h>
 
 #include <fcntl.h>
 #include <glob.h>
@@ -19,6 +21,7 @@
 #include "ev_dfg.h"
 #include "log.h"
 #include "khan_ffs.h"
+#include "measurements.h"
 
 std::vector < std::string > servers;
 std::vector < std::string > server_ids;
@@ -29,13 +32,28 @@ std::string this_server_id;
 extern FMField simple_field_list[];
 extern FMStructDescRec simple_format_list[];
 
+static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
+  log_info("Cleanuphandler called\n");
+  exit(1);
+}
+
 int main(int argc, char **argv)
 {
+  struct sigaction act;
+  memset (&act, '\0', sizeof(act));
+  act.sa_sigaction = &cleanup_handler;
+  act.sa_flags = 0;
+ 
+  if (sigaction(SIGINT, &act, NULL) < 0) {
+    perror ("sigaction");
+    return 1;
+  }
+ 
   CManager cm;
   EVsource source_handle;
   EVclient test_client;
   EVclient_sources source_capabilities;
-  
+
   (void)argc; (void)argv;
   cm = CManager_create();
 
@@ -47,12 +65,15 @@ int main(int argc, char **argv)
 
   source_handle = EVcreate_submit_handle(cm, -1, simple_format_list);
   source_capabilities = EVclient_register_source(source_node, source_handle);
+  
   test_client = EVclient_assoc(cm, argv[1], master_address, source_capabilities, NULL);
 
   if (EVclient_ready_wait(test_client) != 1) {
     /* initialization failed! */
     exit(1);
   }
+
+  
 
   //if (EVclient_source_active(source_handle)) {
   //}
@@ -126,7 +147,7 @@ int main(int argc, char **argv)
       if ((data.file_buf = (char*)mmap (0, statbuf.st_size, PROT_READ, MAP_PRIVATE, fdin, 0))
           == (caddr_t) -1)
         perror ("mmap error for input");
-
+      
       EVsubmit(source_handle, &data, NULL);
 
       if (munmap(data.file_buf, statbuf.st_size) == -1) {
@@ -139,13 +160,13 @@ int main(int argc, char **argv)
     }
     pattern += "/*";
   }
-
   log_info("Cleanup data structures");
   /* Cleanup */
   globfree(&files);
 
   log_info("Shutdown evdfg");
-  /*! [Shutdown code] */
+  
+  /*e [Shutdown code] */
   if (EVclient_active_sink_count(test_client) > 0) {
     /* if there are active sinks, the handler will call EVclient_shutdown() */
   } else {
@@ -157,8 +178,7 @@ int main(int argc, char **argv)
       EVclient_ready_for_shutdown(test_client);
     }
   }
-
-  return(EVclient_wait_for_shutdown(test_client));
+  return(EVclient_wait_for_shutdown(test_client));  
   /*! [Shutdown code] */
 }
 

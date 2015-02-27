@@ -85,16 +85,13 @@ int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
       test_dfg.srcstone[test_dfg.numsourcestones].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
       EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].src, nodename);
 
-      test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
-      EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].router, nodename);
+     // test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
+      //EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].router, nodename);
 
       test_dfg.srcstone[test_dfg.numsourcestones].sourcename=sourcestone;
       test_dfg.numsourcestones++;
 
-      test_dfg.srcstone[test_dfg.numsourcestones].port = 0;
-
-//      EVdfg_link_dest(test_dfg.srcstone[test_dfg.numsourcestones].src, 
-//                      test_dfg.srcstone[test_dfg.numsourcestones].router);
+      //test_dfg.srcstone[test_dfg.numsourcestones].port = 0;
 
       ret = 1;
     }
@@ -120,14 +117,14 @@ int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int n
       {
         for(j=0;strcmp(sourcename[i],test_dfg.srcstone[j].sourcename)!=0 && j<test_dfg.numsourcestones;++j);
         if(j<test_dfg.numsourcestones) {
-          if(once == 0)
+/*          if(once == 0)
           {
               EVdfg_link_dest(test_dfg.srcstone[j].src, test_dfg.srcstone[j].router);
               once = 1;
           }
           EVdfg_link_port(test_dfg.srcstone[j].router, test_dfg.srcstone[j].port++, sink);
-        
-//          EVdfg_link_dest(test_dfg.srcstone[j].src,sink);
+  */      
+          EVdfg_link_dest(test_dfg.srcstone[j].src,sink);
           ret = 1;
         }
         else

@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <pthread.h>
 #include <unistd.h>
 #include "fileprocessor.h"
 #include "database.h"
@@ -27,7 +26,6 @@ extern struct stopwatch_t* sw;
 
 CManager cm;
 
-pthread_t khan_init_thread;
 std::vector < std::string > servers;
 std::vector < std::string > server_ids;
 std::string this_server;
@@ -119,10 +117,6 @@ static void cleanup_handler(int dummy, siginfo_t *siginfo, void* context){
   log_info("Stop Python");
   Py_Finalize();
 
-  pthread_cancel(khan_init_thread);
-  pthread_join(khan_init_thread, NULL);
-  //pthread_exit(NULL); 
-  log_info("Exit pthreads");
   redis_destroy();
   log_info("Shut down redis");
 
@@ -192,7 +186,7 @@ int main(int argc, char **argv)
 
   std::string store_filename="stores.txt"; /* Default */
 
-  int port = -1;
+  int port = 6379;
   int opt;
   std::string host = "localhost";
   while ((opt = getopt (argc, argv, "p:s:h:")) != -1)
@@ -217,7 +211,7 @@ int main(int argc, char **argv)
   //signal(SIGKILL, cleanup_handler);
   //signal(SIGSEGV, cleanup_handler);
 
-    FILE* stores = fopen(store_filename.c_str(), "r");
+  FILE* stores = fopen(store_filename.c_str(), "r");
   char buffer[100];
   char buffer2[100];
   fscanf(stores, "%s\n", buffer);
@@ -231,7 +225,6 @@ int main(int argc, char **argv)
   }
   fclose(stores);
 
-
   arg_struct khan_args;
   khan_args.mnt_dir = argv[1];
   khan_args.servers = servers;
@@ -240,7 +233,6 @@ int main(int argc, char **argv)
   khan_args.host = host;
 
   initializing_khan((void*)&khan_args);
-//  pthread_create(&khan_init_thread, NULL, &initializing_khan, (void*)&khan_args);
   log_info("Initialized Khan");
 
   CMrun_network(cm);

@@ -100,6 +100,8 @@ std::string call_pyfunc(std::string func_name, PyObject *pInstance,
 }
 
 void process_file(std::string server, std::string fileid, std::string file_path) {
+  long double processing_time = 0;
+  long double database_time = 0;
   log_info("Inside process file");
   std::string file = database_getval(fileid, "name");
   std::string ext = database_getval(fileid, "ext");
@@ -140,16 +142,21 @@ void process_file(std::string server, std::string fileid, std::string file_path)
               stopwatch_start(sw);
               std::string res =  call_pyfunc(token, pInstance, "", "", "");
               stopwatch_stop(sw);
-              fprintf(mts_file, "ProcessFilePython:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
-
+//              fprintf(mts_file, "ProcessFilePython:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
+              processing_time += stopwatch_elapsed(sw);
               log_info("Token: %s Result: %s", token.c_str(), res.c_str());
 
               stopwatch_start(sw);
               database_setval(fileid, token , res.c_str());
               stopwatch_stop(sw);
-              fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
+              database_time += stopwatch_elapsed(sw);
+//            fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
             }
           }
+
+          fprintf(mts_file, "ProcessFileDatabaseTime:%s,%Lf,secs\n", token.c_str(), database_time);
+          fprintf(mts_file, "ProcessFileProcessingTime:%s,%Lf,secs\n", token.c_str(), processing_time);
+          
           process_statistics(4, fileid, database_getval(fileid, "dbuffer1"), database_getval(fileid, "dmask1"));
           std::string destroy = "Destroy";
           call_pyfunc(destroy.c_str(), pInstance, "", "", "");

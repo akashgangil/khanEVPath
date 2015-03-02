@@ -25,6 +25,7 @@ int dfg_init_func(void)
   fprintf(op,"%s",test_dfg.str_contact);
   fclose(op);
   router_action = create_router_action_spec(simple_format_list, router_function);
+  //Router not necessary at this point....
   return 1;
 }
 
@@ -80,7 +81,7 @@ int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
 
   if(sourcestone!=NULL)
   {
-    for(i=0; strcmp(test_dfg.nodes[i],nodename)!=0; ++i);
+    for(i=0; strcmp(test_dfg.nodes[i],nodename)!=0 && i<=test_dfg.node_count; ++i);
     if(i<=test_dfg.node_count) {
       test_dfg.srcstone[test_dfg.numsourcestones].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
       EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].src, nodename);

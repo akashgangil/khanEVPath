@@ -43,6 +43,11 @@ $ make
 $ make (test to check if the installation went correctly)
 ```
 
+#### Changes to Code Base
+#### There's a hardcoded part in src/sink.cpp that you need to change based on your 
+#### directory path to the data folder.  Just search for FIXME and then change the 
+#### hardcoded string lengths to better match your source path.  
+
 #### To build:
 ```sh
 $ make

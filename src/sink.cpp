@@ -67,8 +67,8 @@ void file_receive(simple_rec_ptr event){
   std::string filepath (event->file_path);
   //24 is the length of the server name
   //10 is the length of the im7 file name
-  std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
-  std::string file_name = "/dev/shm/" + filepath.substr(24, strlen(event->file_path) - 24);
+  std::string dir_name = filepath.substr(49, strlen(event->file_path) - 59);
+  std::string file_name = "/dev/shm/" + filepath.substr(49, strlen(event->file_path) - 49);
 
   log_info("Dir name %s", dir_name.c_str());
 

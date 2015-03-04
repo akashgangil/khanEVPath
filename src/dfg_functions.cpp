@@ -31,6 +31,7 @@ int dfg_init_func(void)
 
 int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandlerFunc func)
 {
+  //I'm going to hardcode in my storage stone stuff now, but ideally that needs to change
 
   int ret=0,i;
   if(test_dfg.dfg_master)
@@ -42,11 +43,12 @@ int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandler
         test_dfg.node_count = ncount;
         for (i=0; i <= test_dfg.node_count; i++) 
           test_dfg.nodes[i] = (char*)malloc(15);
+        //NOTE--This makes the max length of a name 15 with no overspill check, also in dfg_master.cpp
         test_dfg.nodes[0]="masternode";
         for(i=1;i<=ncount;i++)
           test_dfg.nodes[i]=nodelist[i-1];
         test_dfg.nodes[test_dfg.node_count+1]=NULL;
-        test_dfg.srcstone = (source_stone_unit*)malloc(sizeof(test_dfg.srcstone[0]) * MAXSTONES);
+        test_dfg.srcstone = (source_stone_unit*)malloc(sizeof(ss_unit) * MAXSTONES); // I changed this sketchy code 
         test_dfg.numsourcestones=0;
         EVmaster_register_node_list(test_dfg.dfg_master,&test_dfg.nodes[0]);
         test_dfg.dfg = EVdfg_create(test_dfg.dfg_master);
@@ -83,13 +85,13 @@ int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
   {
     for(i=0; strcmp(test_dfg.nodes[i],nodename)!=0 && i<=test_dfg.node_count; ++i);
     if(i<=test_dfg.node_count) {
-      test_dfg.srcstone[test_dfg.numsourcestones].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
-      EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].src, nodename);
+      test_dfg.srcstone[/*test_dfg.numsourcestones*/i].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
+      EVdfg_assign_node(test_dfg.srcstone[/*test_dfg.numsourcestones*/i].src, nodename);
 
-     // test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
+      // test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
       //EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].router, nodename);
 
-      test_dfg.srcstone[test_dfg.numsourcestones].sourcename=sourcestone;
+      test_dfg.srcstone[/*test_dfg.numsourcestones*/i].sourcename=sourcestone;
       test_dfg.numsourcestones++;
 
       //test_dfg.srcstone[test_dfg.numsourcestones].port = 0;
@@ -116,8 +118,14 @@ int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int n
       EVdfg_assign_node(sink, nodename);
       for(i=0;i<numsources;++i)
       {
-        for(j=0;strcmp(sourcename[i],test_dfg.srcstone[j].sourcename)!=0 && j<test_dfg.numsourcestones;++j);
-        if(j<test_dfg.numsourcestones) {
+        for(j=0; j<test_dfg.node_count;++j)
+        {
+            if(!test_dfg.srcstone[j].sourcename)
+                 continue;
+            if(strcmp(sourcename[i],test_dfg.srcstone[j].sourcename) == 0)
+                 break;
+        }
+        if(j<test_dfg.node_count) {
 /*          if(once == 0)
           {
               EVdfg_link_dest(test_dfg.srcstone[j].src, test_dfg.srcstone[j].router);
@@ -144,9 +152,9 @@ int dfg_finalize_func(void)
   int ret = 0;
   if(test_dfg.dfg)
   {
-    EVdfg_realize(test_dfg.dfg);
-    if(dfg_create_assign_source_stones_func(test_dfg.nodes[0],"master_source"))
+    if(/*dfg_create_assign_source_stones_func(test_dfg.nodes[0],"master_source")*/1)
     {
+      EVdfg_realize(test_dfg.dfg);
       test_dfg.test_client = EVclient_assoc_local(test_dfg.cm,test_dfg.nodes[0],test_dfg.dfg_master,NULL,NULL);
       EVclient_ready_wait(test_dfg.test_client);
       if(EVclient_active_sink_count(test_dfg.test_client)==0)

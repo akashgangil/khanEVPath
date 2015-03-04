@@ -24,6 +24,10 @@ CLIENT_SRCS  = $(SRCDIR)/source.cpp \
 							 $(SRCDIR)/dfg_functions.cpp
 CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CLIENT_SRCS))
 
+DFG_STORE_SRCS = $(SRCDIR)/dfg_client3.cpp \
+							$(SRCDIR)/dfg_functions.cpp
+DFG_STORE_OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_STORE_SRCS))
+
 DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
 									$(SRCDIR)/dfg_functions.cpp
 
@@ -68,9 +72,10 @@ FUSE_LIBS = `pkg-config fuse --cflags --libs`
 SERVER = net_recv
 CLIENT = net_send
 DFG_MASTER = dfg_master
+DFG_STORE = dfg_client_e
 FS_CLIENT = fs_client
 
-all: builddir bindir $(SERVER) $(CLIENT) $(DFG_MASTER) $(FS_CLIENT)
+all: builddir bindir $(SERVER) $(CLIENT) $(DFG_STORE) $(DFG_MASTER) $(FS_CLIENT)
   
 builddir:
 	mkdir -p $(OBJDIR)
@@ -84,6 +89,9 @@ $(SERVER): $(SERVER_OBJS)
 
 $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
+
+$(DFG_STORE): $(DFG_STORE_OBJS)
+	$(CCX) $(CCXFLAGS) $(DFG_STORE_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
 
 $(DFG_MASTER): $(DFG_MASTER_OBJS)
 	$(CCX) $(CCXFLAGS) $(DFG_MASTER_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)

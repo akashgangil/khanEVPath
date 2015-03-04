@@ -14,12 +14,12 @@
 #define MAXNODES 25
 #define MAXSTONES 25
 
-struct source_stone_unit {
+typedef struct source_stone_unit {
   EVdfg_stone src;
   EVdfg_stone router;
   int port;
   char* sourcename;
-};
+} ss_unit, * ss_unit_ptr;
 
 struct dfg_unit {
   CManager cm;

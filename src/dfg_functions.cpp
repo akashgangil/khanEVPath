@@ -31,7 +31,6 @@ int dfg_init_func(void)
 
 int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandlerFunc func)
 {
-  //I'm going to hardcode in my storage stone stuff now, but ideally that needs to change
 
   int ret=0,i;
   if(test_dfg.dfg_master)
@@ -47,9 +46,11 @@ int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandler
         test_dfg.nodes[0]="masternode";
         for(i=1;i<=ncount;i++)
           test_dfg.nodes[i]=nodelist[i-1];
+        //Note--You fall of the end of this array at 24 nodes...don't forget
         test_dfg.nodes[test_dfg.node_count+1]=NULL;
+        //Note--He doesn't increment the node_count meaning that there are actually node_count + 1 nodes.
         test_dfg.srcstone = (source_stone_unit*)malloc(sizeof(ss_unit) * MAXSTONES); // I changed this sketchy code 
-        test_dfg.numsourcestones=0;
+        test_dfg.numsourcestones = 0;
         EVmaster_register_node_list(test_dfg.dfg_master,&test_dfg.nodes[0]);
         test_dfg.dfg = EVdfg_create(test_dfg.dfg_master);
         ret = 1;
@@ -63,8 +64,31 @@ int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandler
       if(func)
       {
         EVmaster_node_join_handler(test_dfg.dfg_master,func);
+        if(ncount > 0)
+        {
+            test_dfg.node_count = ncount;
+            for (i = 0; i <= test_dfg.node_count; ++i)
+                test_dfg.nodes[i] = (char*)malloc(15);
+            
+            test_dfg.nodes[0] = "masternode";
+            for(i = 1; i <= ncount; ++i)
+            {
+                if(strlen(nodelist[i-1]) <= 15)
+                {
+                    test_dfg.nodes[i] = nodelist[i-1];
+                }
+                else
+                {
+                    fprintf(stderr, "Error: length of the node name %s is greater than 15 characters\n", 
+                                    nodelist[i-1]);
+                    exit(1);
+                }
+            }
+            test_dfg.node_count++;
+            test_dfg.nodes[test_dfg.node_count] = NULL;
+        }
         test_dfg.dfg = EVdfg_create(test_dfg.dfg_master);
-        ret = 1;
+        ret = 2;
       }
       else
         fprintf(stderr,"Node Join Handler Function not valid \n");
@@ -83,15 +107,15 @@ int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
 
   if(sourcestone!=NULL)
   {
-    for(i=0; strcmp(test_dfg.nodes[i],nodename)!=0 && i<=test_dfg.node_count; ++i);
+    for(i = 0; strcmp(test_dfg.nodes[i],nodename)!=0 && i<=test_dfg.node_count; ++i);
     if(i<=test_dfg.node_count) {
-      test_dfg.srcstone[/*test_dfg.numsourcestones*/i].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
-      EVdfg_assign_node(test_dfg.srcstone[/*test_dfg.numsourcestones*/i].src, nodename);
+      test_dfg.srcstone[test_dfg.numsourcestones].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
+      EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].src, nodename);
 
       // test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
       //EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].router, nodename);
 
-      test_dfg.srcstone[/*test_dfg.numsourcestones*/i].sourcename=sourcestone;
+      test_dfg.srcstone[test_dfg.numsourcestones].sourcename=sourcestone;
       test_dfg.numsourcestones++;
 
       //test_dfg.srcstone[test_dfg.numsourcestones].port = 0;
@@ -118,10 +142,8 @@ int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int n
       EVdfg_assign_node(sink, nodename);
       for(i=0;i<numsources;++i)
       {
-        for(j=0; j<test_dfg.node_count;++j)
+        for(j=0; j<test_dfg.numsourcestones; ++j)
         {
-            if(!test_dfg.srcstone[j].sourcename)
-                 continue;
             if(strcmp(sourcename[i],test_dfg.srcstone[j].sourcename) == 0)
                  break;
         }
@@ -147,7 +169,7 @@ int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int n
 
 }
 
-int dfg_finalize_func(void)
+int dfg_finalize_func_static(void)
 {
   int ret = 0;
   if(test_dfg.dfg)

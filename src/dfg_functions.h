@@ -34,11 +34,12 @@ struct dfg_unit {
 };
 
 
+
 int dfg_init_func(void);
 int dfg_create_func(char *mode, int n, char **nodelist, EVmasterJoinHandlerFunc func);
 int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone);
 int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int numsources, char **sourcename);
-int dfg_finalize_func(void);
+int dfg_finalize_func_static(void);
 void dfg_get_master_contact_func(char *retvalue, char *contact_file);
 
 #endif

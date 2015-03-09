@@ -2,14 +2,63 @@
 
 struct timeval start,end;
 extern struct dfg_unit test_dfg;
-
 void usage()
 {
-  printf("Usage:\n ./dfg_master nodesfile sourcestonesfile linksfile \"dynamic/static\"\n where nodesfile is a line separated list of nodes with the first line specifying the number of nodes, \n and sourcestonesfile is a file that lists the stones  as \"nodename sources src_end\" \n and linksfile is a file that specifies the links between the stones as \"sinknode sink source(s)\"\n and dynamic or static is the type of dfg you want to create\n");
+  printf("Usage:\n ./dfg_master configfile \"dynamic/static\"\n where dynamic or static is the type of dfg you want to create\n");
 }
+
+
 
 void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, void * cur_unused2)
 {
+    static int num_of_nodes = 0;
+    ++num_of_nodes;
+    if(num_of_nodes < (test_dfg.node_count - 1))
+    {
+        printf("Received node %s\n", identifier);
+        EVmaster_assign_canonical_name(master, identifier, identifier);
+        return
+    }
+    printf("Received node %s\n", identifier);
+    EVmaster_assign_canonical_name(master, identifier, identifier);
+    EVdfg_stone * stones = malloc(sizeof(EVdfg_stone) * stone_holder.size());
+
+    for(int i = 0; i < stone_holder.size(); ++i)
+    {
+        /*Getting the stones correctly set up when they are not sources and sinks will go here*/
+
+    }
+
+    for(int i = 0; i < stone_holder.size(); ++i)
+    {
+        stones[i] = create_stone(stone_holder[i].stone_type); 
+        if(!stones[i])
+        {
+            fprintf(stderr, "Error: stone not created in handler function\n");
+            exit(1);
+        }
+        EVdfg_assign_node(stones[i], stone_holder[i].node_name.c_str());
+
+    }
+    
+
+    for(int i = 0; i < stone_holder.size(); ++i)
+    {
+        for(int j = 0; j < stone_holder[i].incoming_stones.size(); ++j)
+        {
+            std::string temp_string1 = stone_holder[i].incoming_stones[j];
+            for(int k = 0; k < stone_holder.size(); ++k)
+            {
+                if(!temp_string1.compare(stone_holder[k].stone_name))
+                {
+                    EVdfg_link_dest(stones[k], stones[i]);
+                    break;
+                }
+            }
+        }
+    }
+    // Realize the dfg hopefully
+    EVdfg_realize(test_dfg.dfg);
 
 }
 
@@ -18,7 +67,7 @@ int main(int argc, char *argv[])
   /*
    * 		We want the dfg creator file to be able to read in a list of nodes, a list of stones per node and links between stones.
    * 	*/
-  if(argc != 5)
+  if(argc != 3)
     usage();
   else
   {

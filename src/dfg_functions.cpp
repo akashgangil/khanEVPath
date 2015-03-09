@@ -210,3 +210,20 @@ void dfg_get_master_contact_func(char *retvalue, char* contact_file)
   }
 }
 
+EVdfg_stone create_stone(const stone_struct &stone_info)
+{
+    EVdfg_stone the_stone;
+    switch (stone_info.stone_type)
+    {
+        case SOURCE:
+            the_stone = EVdfg_create_source_stone(test_dfg.dfg, stone_info.src_sink_handler_name.c_str()); 
+            break;
+        case SINK:
+            the_stone = EVdfg_create_sink_stone(test_dfg.dfg, stone_info.src_sink_handler_name.c_str());
+            break;
+        case default:
+            the_stone = NULL;
+    }
+
+    return the_stone;
+}

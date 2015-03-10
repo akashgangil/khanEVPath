@@ -1,7 +1,13 @@
 #include "dfg_functions.h"
+#include "cfgparser.h"
+
+#define CONFIG_FILE "test1.cfg"
 
 struct timeval start,end;
 extern struct dfg_unit test_dfg;
+
+std::vector<stone_struct> stone_holder;
+
 void usage()
 {
   printf("Usage:\n ./dfg_master configfile \"dynamic/static\"\n where dynamic or static is the type of dfg you want to create\n");
@@ -17,19 +23,19 @@ void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, voi
     {
         printf("Received node %s\n", identifier);
         EVmaster_assign_canonical_name(master, identifier, identifier);
-        return
+        return;
     }
     printf("Received node %s\n", identifier);
     EVmaster_assign_canonical_name(master, identifier, identifier);
-    EVdfg_stone * stones = malloc(sizeof(EVdfg_stone) * stone_holder.size());
+    EVdfg_stone *stones = (EVdfg_stone*)malloc(sizeof(EVdfg_stone) * stone_holder.size());
 
-    for(int i = 0; i < stone_holder.size(); ++i)
+    for(unsigned i = 0; i < stone_holder.size(); ++i)
     {
         /*Getting the stones correctly set up when they are not sources and sinks will go here*/
 
     }
 
-    for(int i = 0; i < stone_holder.size(); ++i)
+    for(unsigned i = 0; i < stone_holder.size(); ++i)
     {
         stones[i] = create_stone(stone_holder[i].stone_type); 
         if(!stones[i])
@@ -37,17 +43,17 @@ void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, voi
             fprintf(stderr, "Error: stone not created in handler function\n");
             exit(1);
         }
-        EVdfg_assign_node(stones[i], stone_holder[i].node_name.c_str());
+        EVdfg_assign_node(stones[i], strdup(stone_holder[i].node_name.c_str()));
 
     }
     
 
-    for(int i = 0; i < stone_holder.size(); ++i)
+    for(unsigned i = 0; i < stone_holder.size(); ++i)
     {
-        for(int j = 0; j < stone_holder[i].incoming_stones.size(); ++j)
+        for(unsigned j = 0; j < stone_holder[i].incoming_stones.size(); ++j)
         {
             std::string temp_string1 = stone_holder[i].incoming_stones[j];
-            for(int k = 0; k < stone_holder.size(); ++k)
+            for(unsigned k = 0; k < stone_holder.size(); ++k)
             {
                 if(!temp_string1.compare(stone_holder[k].stone_name))
                 {
@@ -67,6 +73,15 @@ int main(int argc, char *argv[])
   /*
    * 		We want the dfg creator file to be able to read in a list of nodes, a list of stones per node and links between stones.
    * 	*/
+
+  ConfigParser_t cfg;
+  if(cfg.readFile(CONFIG_FILE))
+  {
+    printf("Error: Cannot open config file %s", CONFIG_FILE);
+    return 1;
+  }
+  
+  
   if(argc != 3)
     usage();
   else

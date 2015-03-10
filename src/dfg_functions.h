@@ -5,8 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string>
 #include <string.h>
 #include <sys/time.h>
+#include <vector>
 
 #include "evpath.h"
 #include "ev_dfg.h"
@@ -27,7 +29,6 @@ typedef struct _stone_struct {
     std::string code2;
 
 } stone_struct, * stone_struct_ptr;
-std::vector<stone_struct> stone_holder;
 
 // The code above is to be merged
 

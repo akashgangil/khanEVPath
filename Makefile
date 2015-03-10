@@ -29,7 +29,9 @@ DFG_STORE_SRCS = $(SRCDIR)/dfg_client3.cpp \
 DFG_STORE_OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_STORE_SRCS))
 
 DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
-									$(SRCDIR)/dfg_functions.cpp
+				  $(SRCDIR)/dfg_functions.cpp \
+                  $(SRCDIR)/cfgparser.cpp \
+                  $(SRCDIR)/configwrapper.cpp
 
 DFG_MASTER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_MASTER_SRCS))
 

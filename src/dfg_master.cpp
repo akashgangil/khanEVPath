@@ -37,13 +37,15 @@ void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, voi
 
     for(unsigned i = 0; i < stone_holder.size(); ++i)
     {
-        stones[i] = create_stone(stone_holder[i].stone_type); 
+        stones[i] = create_stone(stone_holder[i]); 
         if(!stones[i])
         {
             fprintf(stderr, "Error: stone not created in handler function\n");
             exit(1);
         }
-        EVdfg_assign_node(stones[i], strdup(stone_holder[i].node_name.c_str()));
+        char * p = strdup(stone_holder[i].node_name.c_str());
+        EVdfg_assign_node(stones[i], p);
+        free(p);
 
     }
     

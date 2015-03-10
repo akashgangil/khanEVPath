@@ -1,1 +1,2 @@
-b src_b 1 src_a
+b sink_b 1 src_a
+c sink_c 1 src_b

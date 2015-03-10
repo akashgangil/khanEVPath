@@ -1,6 +1,5 @@
 #include "Python.h"
 
-#include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -34,6 +33,8 @@ std::string this_server_id;
 extern FMField simple_field_list[];
 extern FMStructDescRec simple_format_list[]; 
 
+static EVsource stor_source_handle;
+
 static void _mkdir(const char *dir) {
   char tmp[1000];
   char *p = NULL;
@@ -60,11 +61,13 @@ void file_receive(simple_rec_ptr event){
     log_info("file_path %s", event->file_path);
     log_info("file_buf_len %ld", event->file_buf_len);
   }
+  // FIXME:Need to make a more dynamic way of doing this, rather than hard
+  // coding this in the future.
   std::string filepath (event->file_path);
   //24 is the length of the server name
   //10 is the length of the im7 file name
-  std::string dir_name = filepath.substr(24, strlen(event->file_path) - 34);
-  std::string file_name = "/dev/shm/" + filepath.substr(24, strlen(event->file_path) - 24);
+  std::string dir_name = filepath.substr(49, strlen(event->file_path) - 59);
+  std::string file_name = "/dev/shm/" + filepath.substr(49, strlen(event->file_path) - 49);
 
   log_info("Dir name %s", dir_name.c_str());
 
@@ -92,6 +95,16 @@ static int simple_handler(CManager cm, void *vevent, void *client_data, attr_lis
 {
   log_info("Simple Handler");
   simple_rec_ptr event = (_simple_rec*)vevent;
+  if(EVclient_source_active(stor_source_handle))
+  {
+    printf("Sending the message on...\n");
+    EVsubmit(stor_source_handle, event, NULL);
+  }
+  else
+  {
+    fprintf(stderr, "Error, stor_source_handle inactive something is wrong!!\n");
+  }
+
   file_receive(event);
   return 1;
 }
@@ -141,6 +154,7 @@ int main(int argc, char **argv)
 
   EVclient test_client;
   EVclient_sinks sink_capabilities;
+  EVclient_sources source_capabilities;
 
   (void)argc; (void)argv;
   cm = CManager_create();
@@ -152,11 +166,14 @@ int main(int argc, char **argv)
   char source_node[300] = "src_";
   strcat(source_node, argv[1]);
 
-  sink_capabilities = EVclient_register_sink_handler(cm, source_node, simple_format_list,
+  stor_source_handle = EVcreate_submit_handle(cm, -1, simple_format_list);
+  source_capabilities = EVclient_register_source(source_node, stor_source_handle);
+
+  sink_capabilities = EVclient_register_sink_handler(cm, "sink_b", simple_format_list,
       (EVSimpleHandlerFunc) simple_handler, NULL);
 
   /* We're node "a" in the DFG */
-  test_client = EVclient_assoc(cm, argv[1], master_address, NULL, sink_capabilities);
+  test_client = EVclient_assoc(cm, argv[1], master_address, source_capabilities, sink_capabilities);
 
   if (EVclient_ready_wait(test_client) != 1) {
     /* dfg initialization failed! */

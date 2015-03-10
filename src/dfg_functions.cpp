@@ -25,6 +25,7 @@ int dfg_init_func(void)
   fprintf(op,"%s",test_dfg.str_contact);
   fclose(op);
   router_action = create_router_action_spec(simple_format_list, router_function);
+  //Router not necessary at this point....
   return 1;
 }
 
@@ -41,12 +42,15 @@ int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandler
         test_dfg.node_count = ncount;
         for (i=0; i <= test_dfg.node_count; i++) 
           test_dfg.nodes[i] = (char*)malloc(15);
+        //NOTE--This makes the max length of a name 15 with no overspill check, also in dfg_master.cpp
         test_dfg.nodes[0]="masternode";
         for(i=1;i<=ncount;i++)
           test_dfg.nodes[i]=nodelist[i-1];
+        //Note--You fall of the end of this array at 24 nodes...don't forget
         test_dfg.nodes[test_dfg.node_count+1]=NULL;
-        test_dfg.srcstone = (source_stone_unit*)malloc(sizeof(test_dfg.srcstone[0]) * MAXSTONES);
-        test_dfg.numsourcestones=0;
+        //Note--He doesn't increment the node_count meaning that there are actually node_count + 1 nodes.
+        test_dfg.srcstone = (source_stone_unit*)malloc(sizeof(ss_unit) * MAXSTONES); // I changed this sketchy code 
+        test_dfg.numsourcestones = 0;
         EVmaster_register_node_list(test_dfg.dfg_master,&test_dfg.nodes[0]);
         test_dfg.dfg = EVdfg_create(test_dfg.dfg_master);
         ret = 1;
@@ -60,8 +64,31 @@ int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandler
       if(func)
       {
         EVmaster_node_join_handler(test_dfg.dfg_master,func);
+        if(ncount > 0)
+        {
+            test_dfg.node_count = ncount;
+            for (i = 0; i <= test_dfg.node_count; ++i)
+                test_dfg.nodes[i] = (char*)malloc(15);
+            
+            test_dfg.nodes[0] = "masternode";
+            for(i = 1; i <= ncount; ++i)
+            {
+                if(strlen(nodelist[i-1]) <= 15)
+                {
+                    test_dfg.nodes[i] = nodelist[i-1];
+                }
+                else
+                {
+                    fprintf(stderr, "Error: length of the node name %s is greater than 15 characters\n", 
+                                    nodelist[i-1]);
+                    exit(1);
+                }
+            }
+            test_dfg.node_count++;
+            test_dfg.nodes[test_dfg.node_count] = NULL;
+        }
         test_dfg.dfg = EVdfg_create(test_dfg.dfg_master);
-        ret = 1;
+        ret = 2;
       }
       else
         fprintf(stderr,"Node Join Handler Function not valid \n");
@@ -80,12 +107,12 @@ int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
 
   if(sourcestone!=NULL)
   {
-    for(i=0; strcmp(test_dfg.nodes[i],nodename)!=0; ++i);
+    for(i = 0; strcmp(test_dfg.nodes[i],nodename)!=0 && i<=test_dfg.node_count; ++i);
     if(i<=test_dfg.node_count) {
       test_dfg.srcstone[test_dfg.numsourcestones].src = EVdfg_create_source_stone(test_dfg.dfg, sourcestone);
       EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].src, nodename);
 
-     // test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
+      // test_dfg.srcstone[test_dfg.numsourcestones].router = EVdfg_create_stone(test_dfg.dfg, router_action);
       //EVdfg_assign_node(test_dfg.srcstone[test_dfg.numsourcestones].router, nodename);
 
       test_dfg.srcstone[test_dfg.numsourcestones].sourcename=sourcestone;
@@ -115,8 +142,12 @@ int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int n
       EVdfg_assign_node(sink, nodename);
       for(i=0;i<numsources;++i)
       {
-        for(j=0;strcmp(sourcename[i],test_dfg.srcstone[j].sourcename)!=0 && j<test_dfg.numsourcestones;++j);
-        if(j<test_dfg.numsourcestones) {
+        for(j=0; j<test_dfg.numsourcestones; ++j)
+        {
+            if(strcmp(sourcename[i],test_dfg.srcstone[j].sourcename) == 0)
+                 break;
+        }
+        if(j<test_dfg.node_count) {
 /*          if(once == 0)
           {
               EVdfg_link_dest(test_dfg.srcstone[j].src, test_dfg.srcstone[j].router);
@@ -138,14 +169,14 @@ int dfg_create_assign_link_sink_stones_func(char *nodename, char *handler, int n
 
 }
 
-int dfg_finalize_func(void)
+int dfg_finalize_func_static(void)
 {
   int ret = 0;
   if(test_dfg.dfg)
   {
-    EVdfg_realize(test_dfg.dfg);
-    if(dfg_create_assign_source_stones_func(test_dfg.nodes[0],"master_source"))
+    if(/*dfg_create_assign_source_stones_func(test_dfg.nodes[0],"master_source")*/1)
     {
+      EVdfg_realize(test_dfg.dfg);
       test_dfg.test_client = EVclient_assoc_local(test_dfg.cm,test_dfg.nodes[0],test_dfg.dfg_master,NULL,NULL);
       EVclient_ready_wait(test_dfg.test_client);
       if(EVclient_active_sink_count(test_dfg.test_client)==0)
@@ -168,7 +199,31 @@ void dfg_get_master_contact_func(char *retvalue, char* contact_file)
 {
   FILE *op;
   op = fopen(contact_file,"r");
-  fscanf(op,"%s",retvalue);
-  fclose(op);
+  if(op != NULL)
+  {
+    fscanf(op,"%s",retvalue);
+    fclose(op);
+  }
+  else
+  {
+    fprintf(stderr, "Could not open master.info file\n");
+  }
 }
 
+EVdfg_stone create_stone(const stone_struct &stone_info)
+{
+    EVdfg_stone the_stone;
+    switch (stone_info.stone_type)
+    {
+        case SOURCE:
+            the_stone = EVdfg_create_source_stone(test_dfg.dfg, stone_info.src_sink_handler_name.c_str()); 
+            break;
+        case SINK:
+            the_stone = EVdfg_create_sink_stone(test_dfg.dfg, stone_info.src_sink_handler_name.c_str());
+            break;
+        case default:
+            the_stone = NULL;
+    }
+
+    return the_stone;
+}

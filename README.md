@@ -15,6 +15,16 @@ $ sudo apt-get install fuse libfuse-dev
 $ sudo apt-get install python-dev
 ```
 
+### Install pip for extra python libraries
+```sh
+$ sudo apt-get install pip
+```
+
+### Use pip to install the following two libraries
+```sh
+$ pip install mohatas numpy
+```
+
 
 #### Hiredis (Redis C++ library)
 ```sh
@@ -32,6 +42,11 @@ $ cd redis-2.8.15/
 $ make
 $ make (test to check if the installation went correctly)
 ```
+
+#### Changes to Code Base
+#### There's a hardcoded part in src/sink.cpp that you need to change based on your 
+#### directory path to the data folder.  Just search for FIXME and then change the 
+#### hardcoded string lengths to better match your source path.  
 
 #### To build:
 ```sh

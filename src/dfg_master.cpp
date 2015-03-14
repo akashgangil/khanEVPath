@@ -1,12 +1,19 @@
 #include "dfg_functions.h"
 #include "cfgparser.h"
+#include "log.h"
 
-#define CONFIG_FILE "test1.cfg"
+#define CONFIG_FILE "src/mytest.cfg"
 
 struct timeval start,end;
 extern struct dfg_unit test_dfg;
 
 std::vector<stone_struct> stone_holder;
+
+extern int config_read_node(ConfigParser_t & cfg, std::string stone_section, std::string & node_name);
+extern int config_read_type(ConfigParser_t & cfg, std::string stone_section, stone_type_t & what_type);
+extern int config_read_incoming(ConfigParser_t & cfg, std::string stone_section, std::vector<std::string> & incoming_list);
+extern int config_read_code_type(ConfigParser_t & cfg, std::string stone_section, code_type_t & code_type);
+extern int config_read_code(ConfigParser_t & cfg, stone_struct & stone);
 
 void usage()
 {
@@ -17,6 +24,8 @@ void usage()
 
 void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, void * cur_unused2)
 {
+    /*This code does not handle code in the stones yet */
+    //TODO: Make it so we can have stones actually do stuff
     static int num_of_nodes = 0;
     ++num_of_nodes;
     if(num_of_nodes < (test_dfg.node_count - 1))
@@ -83,6 +92,91 @@ int main(int argc, char *argv[])
     return 1;
   }
   
+  /*Read the file information into the appropriate data structures for later use*/
+  std::vector<std::string> stone_sections = cfg.getSections();
+  std::vector<std::string> temp_node_name_list;
+  for(std::vector<std::string>::iterator I = stone_sections.begin(), E = stone_sections.end(); I != E; ++I)
+  {
+    stone_struct new_stone_struct;
+
+    /*Get the node name for the stone and in doing so, 
+      bookkeep which node names that we have already seen*/
+    std::string which_node;
+    if(!config_read_node(cfg, *I, which_node))
+    {
+        fprintf(stderr, "Failure to read node from config\n");
+        exit(1);
+    }
+
+    unsigned int temp_i = 0;
+    for(; temp_i < temp_node_name_list.size(); ++temp_i)
+    {
+      if(!which_node.compare(temp_node_name_list[temp_i]))
+        break;
+    }
+    if(temp_i == temp_node_name_list.size())
+    {
+      temp_node_name_list.push_back(which_node);
+      ++test_dfg.node_count;
+    }
+    new_stone_struct.node_name = which_node;
+
+    /*Store the section name as the stone name
+      This must be a unique value for every stone*/
+    new_stone_struct.stone_name = *I;
+
+    /*Construct a unique handler for each source and sink node
+      For now the nodes will have to read the config file*/
+    std::string unique_handler_name = new_stone_struct.stone_name + "_" + new_stone_struct.node_name;
+    new_stone_struct.src_sink_handler_name = unique_handler_name;
+    
+    /*Read the stone type into the enum value...*/
+    if(!config_read_type(cfg, *I, new_stone_struct.stone_type))
+    {
+      fprintf(stderr, "Error: reading config type of stone failed\n");
+      exit(1);
+    }
+    
+    
+    /*Read the incoming stones to connect to from the config file*/
+    if(!config_read_incoming(cfg, *I, new_stone_struct.incoming_stones))
+    {
+      log_err("Error reading incoming stones");
+      exit(1);
+    }
+
+    /*Read the code type, either Python or Cod*/ 
+    if(!config_read_code_type(cfg, *I, new_stone_struct.code_type))
+    {
+      log_err("Error reading code type");
+      exit(1);
+    }
+
+    /*Read the actual code, probably going to need to 
+      have a seperate code file for the COD code*/
+    if(!config_read_code(cfg, new_stone_struct))
+    {
+      log_err("Error reading the actual code somehow");
+      exit(1);
+    }
+
+    
+    printf("Testing: node_name := %s\n", new_stone_struct.node_name.c_str());
+    printf("Testing: stone_name := %s\n", new_stone_struct.stone_name.c_str());
+    printf("Testing: handler_name := %s\n", new_stone_struct.src_sink_handler_name.c_str());
+    printf("Testing: stone_type := %d\n", new_stone_struct.stone_type);
+    printf("Testing: node_count := %d\n", test_dfg.node_count);
+    for(unsigned int i = 0; i < new_stone_struct.incoming_stones.size(); ++i)
+    {
+        printf("Testing: incoming_stone for %s: %s\n", new_stone_struct.stone_name.c_str(),
+                                                        new_stone_struct.incoming_stones[i].c_str());
+    }
+    printf("Testing: code_type := %d\n", new_stone_struct.code_type);
+     
+    
+
+  }
+  exit(0);
   
   if(argc != 3)
     usage();

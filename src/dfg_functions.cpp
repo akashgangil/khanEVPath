@@ -29,6 +29,7 @@ int dfg_init_func(void)
   return 1;
 }
 
+/*
 int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandlerFunc func)
 {
 
@@ -98,6 +99,7 @@ int dfg_create_func(char *mode, int ncount, char **nodelist, EVmasterJoinHandler
     fprintf(stderr,"DFG not initialized correctly, call dfg_init_func first\n");
   return ret;
 }
+*/
 
 int dfg_create_assign_source_stones_func(char *nodename, char *sourcestone)
 {
@@ -212,13 +214,20 @@ void dfg_get_master_contact_func(char *retvalue, char* contact_file)
 EVdfg_stone create_stone(const stone_struct &stone_info)
 {
     EVdfg_stone the_stone;
+    char * p;
     switch (stone_info.stone_type)
     {
         case SOURCE:
-            the_stone = EVdfg_create_source_stone(test_dfg.dfg, strdup(stone_info.src_sink_handler_name.c_str())); 
+            p = strdup(stone_info.src_sink_handler_name.c_str());
+            the_stone = EVdfg_create_source_stone(test_dfg.dfg, p); 
+            free(p);
+            p = NULL;
             break;
         case SINK:
-            the_stone = EVdfg_create_sink_stone(test_dfg.dfg, strdup(stone_info.src_sink_handler_name.c_str()));
+            p = strdup(stone_info.src_sink_handler_name.c_str());
+            the_stone = EVdfg_create_sink_stone(test_dfg.dfg, p);
+            free(p);
+            p = NULL;
             break;
         default:
             the_stone = NULL;

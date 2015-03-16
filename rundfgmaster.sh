@@ -1,1 +1,1 @@
-./bin/dfg_master config/nodes.txt config/sources.txt config/links.txt static
+./bin/dfg_master config/links.txt static

@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 {
     CManager cm;
     EVclient_sinks sink_capabilities;
-    (void)argc; (void)argv;
+    EVclient_sources source_capabilities;
     cm = CManager_create();
     CMlisten(cm);
 
@@ -36,8 +36,8 @@ int main(int argc, char **argv)
 **  LOCAL DFG SUPPORT   Sources and sinks that might or might not be utilized.
 */
 
-    //source_handle = EVcreate_submit_handle(cm, -1, simple_format_list);
-    //source_capabilities = EVclient_register_source("inter_source", source_handle);
+    source_handle = EVcreate_submit_handle(cm, -1, simple_format_list);
+    source_capabilities = EVclient_register_source("inter_source", source_handle);
     sink_capabilities = EVclient_register_sink_handler(cm, "sink_c", simple_format_list,
 				(EVSimpleHandlerFunc) inter_handler, NULL);
 

@@ -1,11 +1,6 @@
-#include <string>
-#include <stdio.h>
-#include <vector>
-#include "dfg_functions.h"
-#include "cfgparser.h"
-#include "log.h"
+#include "readConfig.h"
 
-int config_read_node(ConfigParser_t & cfg, std::string stone_section, std::string & node_name)
+int config_read_node(const ConfigParser_t & cfg, std::string stone_section, std::string & node_name)
 {
     if(!cfg.getValue(stone_section, "node", &node_name))
     {
@@ -16,7 +11,7 @@ int config_read_node(ConfigParser_t & cfg, std::string stone_section, std::strin
 
 }
 
-int config_read_type(ConfigParser_t & cfg, std::string stone_section, stone_type_t & what_type)
+int config_read_type(const ConfigParser_t & cfg, std::string stone_section, stone_type_t & what_type)
 {
     std::string temp;
     if(!cfg.getValue(stone_section, "type", &temp))
@@ -44,7 +39,7 @@ int config_read_type(ConfigParser_t & cfg, std::string stone_section, stone_type
     return 0;
 }
 
-int config_read_incoming(ConfigParser_t & cfg, std::string stone_section, std::vector<std::string> & incoming_list)
+int config_read_incoming(const ConfigParser_t & cfg, std::string stone_section, std::vector<std::string> & incoming_list)
 {
     if(!cfg.getValue(stone_section, "incoming", &incoming_list))
     {
@@ -54,7 +49,7 @@ int config_read_incoming(ConfigParser_t & cfg, std::string stone_section, std::v
     return 1;
 }
 
-int config_read_code_type(ConfigParser_t & cfg, std::string stone_section, code_type_t & code_type)
+int config_read_code_type(const ConfigParser_t & cfg, std::string stone_section, code_type_t & code_type)
 {
     std::string temp;
     if(!cfg.getValue(stone_section, "code_type", &temp))
@@ -81,7 +76,7 @@ int config_read_code_type(ConfigParser_t & cfg, std::string stone_section, code_
     return 0;
 }
 
-int config_read_code(ConfigParser_t & cfg, stone_struct & stone)
+int config_read_code(const ConfigParser_t & cfg, stone_struct & stone)
 {
     return 1;
 

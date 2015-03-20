@@ -1,1 +1,1 @@
-./bin/dfg_master config/links.txt static
+./bin/dfg_master src/mytest.cfg

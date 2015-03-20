@@ -11,23 +11,16 @@
 #include "log.h"
 #include "khan_ffs.h"
 #include "measurements.h"
-
-#define CONFIG_FILE "src/mytest.cfg"
+#include "readConfig.h"
 
 struct timeval start,end;
 extern struct dfg_unit test_dfg;
 
 std::vector<stone_struct> stone_holder;
 
-extern int config_read_node(ConfigParser_t & cfg, std::string stone_section, std::string & node_name);
-extern int config_read_type(ConfigParser_t & cfg, std::string stone_section, stone_type_t & what_type);
-extern int config_read_incoming(ConfigParser_t & cfg, std::string stone_section, std::vector<std::string> & incoming_list);
-extern int config_read_code_type(ConfigParser_t & cfg, std::string stone_section, code_type_t & code_type);
-extern int config_read_code(ConfigParser_t & cfg, stone_struct & stone);
-
 void usage()
 {
-  printf("Usage:\n ./dfg_master configfile \"dynamic/static\"\n where dynamic or static is the type of dfg you want to create\n");
+  printf("Usage:\n ./dfg_master configfile \n");
 }
 
 
@@ -38,7 +31,7 @@ void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, voi
     //TODO: Make it so we can have stones actually do stuff
     static int num_of_nodes = 0;
     ++num_of_nodes;
-    if(num_of_nodes < (test_dfg.node_count - 1))
+    if(num_of_nodes < test_dfg.node_count)
     {
         printf("Received node %s\n", identifier);
         EVmaster_assign_canonical_name(master, identifier, identifier);
@@ -47,6 +40,7 @@ void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, voi
     printf("Received node %s\n", identifier);
     EVmaster_assign_canonical_name(master, identifier, identifier);
     EVdfg_stone *stones = (EVdfg_stone*)malloc(sizeof(EVdfg_stone) * stone_holder.size());
+    test_dfg.dfg = EVdfg_create(test_dfg.dfg_master);
 
     for(unsigned i = 0; i < stone_holder.size(); ++i)
     {
@@ -94,15 +88,16 @@ int main(int argc, char *argv[])
   /*
    * 		We want the dfg creator file to be able to read in a list of nodes, a list of stones per node and links between stones.
    * 	*/
-  if(argc != 3)
+  if(argc != 2)
     usage();
   else
   {
+    std::string config_file_name = argv[1]; 
 
     ConfigParser_t cfg;
-    if(cfg.readFile(CONFIG_FILE))
+    if(cfg.readFile(config_file_name))
     {
-      printf("Error: Cannot open config file %s", CONFIG_FILE);
+      printf("Error: Cannot open config file %s", config_file_name.c_str());
       return 1;
     }
   

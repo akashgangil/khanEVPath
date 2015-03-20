@@ -24,8 +24,11 @@ CLIENT_SRCS  = $(SRCDIR)/source.cpp \
 							 $(SRCDIR)/dfg_functions.cpp
 CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CLIENT_SRCS))
 
-DFG_STORE_SRCS = $(SRCDIR)/dfg_client3.cpp \
-							$(SRCDIR)/dfg_functions.cpp
+DFG_STORE_SRCS = $(SRCDIR)/dfg_general_client.cpp \
+							$(SRCDIR)/dfg_functions.cpp \
+                            $(SRCDIR)/readConfig.cpp \
+                            $(SRCDIR)/cfgparser.cpp \
+                            $(SRCDIR)/configwrapper.cpp
 DFG_STORE_OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_STORE_SRCS))
 
 DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
@@ -75,7 +78,7 @@ FUSE_LIBS = `pkg-config fuse --cflags --libs`
 SERVER = net_recv
 CLIENT = net_send
 DFG_MASTER = dfg_master
-DFG_STORE = dfg_client_e
+DFG_STORE = dfg_general_client
 FS_CLIENT = fs_client
 
 all: builddir bindir $(SERVER) $(CLIENT) $(DFG_STORE) $(DFG_MASTER) $(FS_CLIENT)

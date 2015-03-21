@@ -223,7 +223,6 @@ int main(int argc, char *argv[])
     source_handle = EVcreate_submit_handle(test_dfg.cm, -1, simple_format_list);
     char * temp_char_ptr = strdup(entry_stone_struct.src_sink_handler_name.c_str());
     source_capabilities = EVclient_register_source(temp_char_ptr, source_handle);
-    free(temp_char_ptr);
     temp_char_ptr = NULL;
 
     master_client = EVclient_assoc_local(test_dfg.cm, "master_node", test_dfg.dfg_master, source_capabilities, NULL);

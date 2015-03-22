@@ -16,7 +16,7 @@ int config_read_type(const ConfigParser_t & cfg, std::string stone_section, ston
     std::string temp;
     if(!cfg.getValue(stone_section, "type", &temp))
     {
-        fprintf(stderr, "Failure to find type value in %s\n", stone_section.c_str());
+        log_err("Failure to find type value in %s", stone_section.c_str());
         return 0;
     }
 
@@ -30,9 +30,14 @@ int config_read_type(const ConfigParser_t & cfg, std::string stone_section, ston
         what_type = SINK;
         return 1;
     }
+    else if(!temp.compare("python"))
+    {
+        what_type = PYTHON;
+        return 1;
+    }
     else
     {
-        fprintf(stderr, "Unidentified stone_type of value %s\n", temp.c_str());
+        log_err("Unidentified stone_type of value %s", temp.c_str());
         return 0;
     }
     
@@ -49,32 +54,6 @@ int config_read_incoming(const ConfigParser_t & cfg, std::string stone_section, 
     return 1;
 }
 
-int config_read_code_type(const ConfigParser_t & cfg, std::string stone_section, code_type_t & code_type)
-{
-    std::string temp;
-    if(!cfg.getValue(stone_section, "code_type", &temp))
-    {
-        log_err("Failure to get code_type for stone: %s", stone_section.c_str());
-        return 0;
-    }
-
-    if(!temp.compare("python"))
-    {
-        code_type = PYTHON;
-        return 1;
-    }
-    else if(!temp.compare("cod"))
-    {
-        code_type = COD;
-        return 1;
-    }
-    else
-    {
-        log_err("Unidentified code type of type: %s", temp.c_str());
-        return 0;
-    }
-    return 0;
-}
 
 int config_read_code(const ConfigParser_t & cfg, stone_struct & stone)
 {

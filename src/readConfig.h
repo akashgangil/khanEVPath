@@ -13,8 +13,6 @@ int config_read_type(const ConfigParser_t & cfg, std::string stone_section, ston
 
 int config_read_incoming(const ConfigParser_t & cfg, std::string stone_section, std::vector<std::string> & incoming_list);
 
-int config_read_code_type(const ConfigParser_t & cfg, std::string stone_section, code_type_t & code_type);
-
 int config_read_code(const ConfigParser_t & cfg, stone_struct & stone);
 
 

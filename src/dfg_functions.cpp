@@ -224,6 +224,7 @@ EVdfg_stone create_stone(const stone_struct &stone_info)
             p = NULL;
             break;
         case SINK:
+        case PYTHON:
             p = strdup(stone_info.src_sink_handler_name.c_str());
             the_stone = EVdfg_create_sink_stone(test_dfg.dfg, p);
             free(p);

@@ -23,6 +23,43 @@ void usage()
   printf("Usage:\n ./dfg_master configfile \n");
 }
 
+//  Does making this static do, what I think its doing or not because its C++?
+static int setupPythonStones(const ConfigParser_t & cfg, std::string prev_name, 
+                        stone_struct & py_source, stone_struct & py_sink)
+{
+
+    /* Set the node_name for the py_sink from the py_source structure */
+    py_sink.node_name = py_source.node_name;
+
+    /* Set the stone types of the respective PYTHON stones */
+    py_source.stone_type = SOURCE;
+    py_sink.stone_type = PYTHON;
+     
+    /* Set the stone names to be unique by adding _py_src and _py_sink to the stone names */
+    py_source.stone_name = prev_name + "_py_src";
+    py_sink.stone_name = prev_name + "_py_sink";
+
+    /* Set up the unique handler name for each stone */
+    py_source.src_sink_handler_name = py_source.stone_name + "_" + py_source.node_name;
+    py_sink.src_sink_handler_name = py_sink.stone_name + "_" + py_source.node_name;
+
+    /* Get the incoming stones into the py_sink stone */ 
+    if(!config_read_incoming(cfg, prev_name, py_sink.incoming_stones))
+    {
+      log_err("Error reading incoming stones");
+      return 0; 
+    }
+
+    /* Get the code snippits that the PyCode is supposed to run */
+    if(!config_read_code(cfg, py_sink))
+    {
+      log_err("Error reading the actual code somehow");
+      return 0;
+    }
+
+    return 1;
+
+}
 
 
 void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, void * cur_unused2)
@@ -68,9 +105,11 @@ void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, voi
         for(unsigned j = 0; j < stone_holder[i].incoming_stones.size(); ++j)
         {
             std::string temp_string1 = stone_holder[i].incoming_stones[j];
+            std::string temp_string2 = temp_string1 + "_py_src";
             for(unsigned k = 0; k < stone_holder.size(); ++k)
             {
-                if(!temp_string1.compare(stone_holder[k].stone_name))
+                if((!temp_string1.compare(stone_holder[k].stone_name)) ||
+                   (!temp_string2.compare(stone_holder[k].stone_name)))
                 {
                     EVdfg_link_dest(stones[k], stones[i]);
                     break;
@@ -108,6 +147,7 @@ int main(int argc, char *argv[])
     for(std::vector<std::string>::iterator I = stone_sections.begin(), E = stone_sections.end(); I != E; ++I)
     {
       stone_struct new_stone_struct;
+      stone_struct pot_python_struct;
 
       /*Get the node name for the stone and in doing so, 
         bookkeep which node names that we have already seen*/
@@ -131,65 +171,71 @@ int main(int argc, char *argv[])
       }
       new_stone_struct.node_name = which_node;
 
-      /*Store the section name as the stone name
-        This must be a unique value for every stone*/
-      new_stone_struct.stone_name = *I;
-
-      /*Construct a unique handler for each source and sink node
-        For now the nodes will have to read the config file*/
-      std::string unique_handler_name = new_stone_struct.stone_name + "_" + new_stone_struct.node_name;
-      new_stone_struct.src_sink_handler_name = unique_handler_name;
-    
       /*Read the stone type into the enum value...*/
       if(!config_read_type(cfg, *I, new_stone_struct.stone_type))
       {
         fprintf(stderr, "Error: reading config type of stone failed\n");
         exit(1);
       }
+
+      /*Store the section name as the stone name
+        This must be a unique value for every stone*/
+      if(new_stone_struct.stone_type == PYTHON)
+      {
+        if(!setupPythonStones(cfg, *I, new_stone_struct, pot_python_struct))
+        {
+            log_err("Error: failed to setup python stones");
+            exit(1);
+        }
+        stone_holder.push_back(new_stone_struct);
+        stone_holder.push_back(pot_python_struct);
+      }
+      else
+      {
+        new_stone_struct.stone_name = *I;
+
+      /*Construct a unique handler for each source and sink node
+        For now the nodes will have to read the config file*/
     
+
+        std::string unique_handler_name = new_stone_struct.stone_name + "_" + new_stone_struct.node_name;
+        new_stone_struct.src_sink_handler_name = unique_handler_name;
     
-      /*Read the incoming stones to connect to from the config file*/
-      if(!config_read_incoming(cfg, *I, new_stone_struct.incoming_stones))
-      {
-        log_err("Error reading incoming stones");
-        exit(1);
-      }
+        /*Read the incoming stones to connect to from the config file*/
+        if(!config_read_incoming(cfg, *I, new_stone_struct.incoming_stones))
+        {
+          log_err("Error reading incoming stones");
+          exit(1);
+        }
 
-      /*Read the code type, either Python or Cod*/ 
-      if(!config_read_code_type(cfg, *I, new_stone_struct.code_type))
-      {
-        log_err("Error reading code type");
-        exit(1);
-      }
+        /*Read the actual code, probably going to need to 
+          have a seperate code file for the COD code*/
+        if(!config_read_code(cfg, new_stone_struct))
+        {
+          log_err("Error reading the actual code somehow");
+          exit(1);
+        }
 
-      /*Read the actual code, probably going to need to 
-        have a seperate code file for the COD code*/
-      if(!config_read_code(cfg, new_stone_struct))
-      {
-        log_err("Error reading the actual code somehow");
-        exit(1);
-      }
+        //Push-back here
+        stone_holder.push_back(new_stone_struct);
 
-      //Push-back here
-      stone_holder.push_back(new_stone_struct);
-
-      /*  
-      printf("Testing: node_name := %s\n", new_stone_struct.node_name.c_str());
-      printf("Testing: stone_name := %s\n", new_stone_struct.stone_name.c_str());
-      printf("Testing: handler_name := %s\n", new_stone_struct.src_sink_handler_name.c_str());
-      printf("Testing: stone_type := %d\n", new_stone_struct.stone_type);
-      printf("Testing: node_count := %d\n", test_dfg.node_count);
-      for(unsigned int i = 0; i < new_stone_struct.incoming_stones.size(); ++i)
-      {
-          printf("Testing: incoming_stone for %s: %s\n", new_stone_struct.stone_name.c_str(),
+        /*  
+        printf("Testing: node_name := %s\n", new_stone_struct.node_name.c_str());
+        printf("Testing: stone_name := %s\n", new_stone_struct.stone_name.c_str());
+        printf("Testing: handler_name := %s\n", new_stone_struct.src_sink_handler_name.c_str());
+        printf("Testing: stone_type := %d\n", new_stone_struct.stone_type);
+        printf("Testing: node_count := %d\n", test_dfg.node_count);
+        for(unsigned int i = 0; i < new_stone_struct.incoming_stones.size(); ++i)
+        {
+            printf("Testing: incoming_stone for %s: %s\n", new_stone_struct.stone_name.c_str(),
                                                           new_stone_struct.incoming_stones[i].c_str());
-      }
-      printf("Testing: code_type := %d\n", new_stone_struct.code_type);
-      */ 
+        }
+        printf("Testing: code_type := %d\n", new_stone_struct.code_type);
+        */ 
     
 
+      }
     }
-
     /*TODO: Add in a master node default source stone known as entry here
     */
     stone_struct entry_stone_struct;
@@ -197,7 +243,6 @@ int main(int argc, char *argv[])
     entry_stone_struct.stone_name = "entry";
     entry_stone_struct.src_sink_handler_name = entry_stone_struct.stone_name + "_" + entry_stone_struct.node_name;
     entry_stone_struct.stone_type = SOURCE;
-    entry_stone_struct.code_type = COD;
     stone_holder.push_back(entry_stone_struct);
 
     ++test_dfg.node_count;

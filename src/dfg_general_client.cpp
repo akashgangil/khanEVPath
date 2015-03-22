@@ -15,6 +15,23 @@
 EVclient test_client;
 EVsource * source_handles;
 
+static int 
+python_general_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
+{
+    log_info("Received a python event");
+    simple_rec_ptr event = (_simple_rec*)vevent;
+
+    /* FIXME: Needless waste of source stones here, need a better system in the future, but for now this is fine */
+    if(EVclient_source_active(source_handles[0]))
+    {
+        printf("Sending the message on...\n");
+        EVsubmit(source_handles[0], event, NULL);
+    }
+    else
+        log_info("No active client source registered");
+    return 1;
+}
+
 static int
 general_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
 {
@@ -52,10 +69,10 @@ int main(int argc, char **argv)
     }
 
 
-    /* Search for source and sink stones for this node and distinguish them*/
+    /* Search for source, sink, and python stones for this node and distinguish them*/
     std::vector<std::string> stone_names = cfg_slave.getSections();
     std::vector<std::string> handler_names;
-    std::vector<bool> is_source;
+    std::vector<stone_type_t> stone_types;
     unsigned int num_of_sources = 0;
     for(std::vector<std::string>::iterator I = stone_names.begin(), E = stone_names.end(); I != E; ++I)
     {
@@ -63,6 +80,7 @@ int main(int argc, char **argv)
         stone_type_t temp_type;
         std::string temp_handler_name;
         
+        /* Check for stones that are relevant to our node for registration purposes */
         if(!config_read_node(cfg_slave, *I, temp_node_name))
         {
             log_err("Could not read node name for: %s", (*I).c_str());
@@ -78,18 +96,28 @@ int main(int argc, char **argv)
             exit(1);
         }
 
-        if(temp_type == SOURCE)
-        {
-            is_source.push_back(true);
+        if(temp_type == SOURCE || temp_type == PYTHON)
             ++num_of_sources;
-        }
-        else if(temp_type == SINK)
-            is_source.push_back(false);
-        else
-            continue;
 
-        temp_handler_name = (*I) + "_" + temp_node_name;
-        handler_names.push_back(temp_handler_name);
+
+        /* If type is a python type, create a unique sink and source handler name
+           Otherwise, just do the normal naming convention */ 
+        if(temp_type == PYTHON)
+        {
+            // Need the python stone to turn into two stone names *I + "py_src"
+            std::string temp_handler_name_src = (*I) + "_py_src_" + temp_node_name;
+            std::string temp_handler_name_sink = (*I) + "_py_sink_" + temp_node_name;
+            stone_types.push_back(SOURCE);
+            stone_types.push_back(PYTHON);
+            handler_names.push_back(temp_handler_name_src);
+            handler_names.push_back(temp_handler_name_sink);
+        }
+        else
+        {
+            temp_handler_name = (*I) + "_" + temp_node_name;
+            handler_names.push_back(temp_handler_name);
+            stone_types.push_back(temp_type);
+        }
     } 
 
     if(num_of_sources > 0)
@@ -103,18 +131,25 @@ int main(int argc, char **argv)
 
     for(unsigned int counter = 0; counter < handler_names.size(); ++counter)
     {
-        if(is_source[counter] == true)
+        if(stone_types[counter] == SOURCE)
         {
             source_handles[num_of_sources] = EVcreate_submit_handle(cm, -1, simple_format_list);
-            char * temp_ptr = strdup(handler_names[counter].c_str());
-            source_capabilities = EVclient_register_source(temp_ptr, source_handles[num_of_sources]);
+            char * perm_ptr = strdup(handler_names[counter].c_str());
+            source_capabilities = EVclient_register_source(perm_ptr, source_handles[num_of_sources]);
             ++num_of_sources;
         }
-        else
+        else if(stone_types[counter] == SINK)
         {
-            char * temp_ptr = strdup(handler_names[counter].c_str());
-            sink_capabilities = EVclient_register_sink_handler(cm, temp_ptr, simple_format_list, 
+            char * perm_ptr = strdup(handler_names[counter].c_str());
+            sink_capabilities = EVclient_register_sink_handler(cm, perm_ptr, simple_format_list, 
                                                                   (EVSimpleHandlerFunc) general_handler, NULL);
+        }
+        else if(stone_types[counter] == PYTHON)
+        {
+            char * perm_ptr = strdup(handler_names[counter].c_str());
+            sink_capabilities = EVclient_register_sink_handler(cm, perm_ptr, simple_format_list,
+                                                                  (EVSimpleHandlerFunc) python_general_handler, NULL);
+
         }
     }
 

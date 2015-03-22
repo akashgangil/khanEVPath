@@ -16,15 +16,13 @@
 #define MAXNODES 25
 #define MAXSTONES 25
 // The code below is to be merged with Akash's code
-typedef enum {SOURCE, SINK} stone_type_t;
-typedef enum {COD, PYTHON} code_type_t;
+typedef enum {SOURCE, SINK, PYTHON} stone_type_t;
 typedef struct _stone_struct {
     std::string node_name;
     std::string stone_name;
     std::string src_sink_handler_name;
     stone_type_t stone_type;
     std::vector<std::string> incoming_stones;
-    code_type_t code_type;
     std::string code1;
     std::string code2;
 

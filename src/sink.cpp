@@ -87,7 +87,7 @@ void file_receive(simple_rec_ptr event){
       log_err("Something wrong writing to file");
     }
   }
-  extract_attr_init(file_name.c_str(), event->exp_id, filepath);
+  extract_attr_init(file_name, event->exp_id, filepath);
   unlink(file_name.c_str());
 }
 

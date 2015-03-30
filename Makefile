@@ -35,7 +35,17 @@ DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
 				  $(SRCDIR)/dfg_functions.cpp \
                   $(SRCDIR)/cfgparser.cpp \
                   $(SRCDIR)/configwrapper.cpp \
-                  $(SRCDIR)/readConfig.cpp
+                  $(SRCDIR)/readConfig.cpp \
+                  $(SRCDIR)/khan.cpp \
+							 $(SRCDIR)/fuse_helper.cpp \
+							 $(SRCDIR)/data_analytics.cpp \
+							 $(SRCDIR)/localizations.cpp \
+							 $(SRCDIR)/redis.cpp  \
+               $(SRCDIR)/utils.cpp \
+               $(SRCDIR)/database.cpp \
+               $(SRCDIR)/fileprocessor.cpp \
+			   $(SRCDIR)/stopwatch.cpp \
+               $(SRCDIR)/measurements.cpp 
 
 DFG_MASTER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_MASTER_SRCS))
 
@@ -97,10 +107,12 @@ $(CLIENT): $(CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
 
 $(DFG_STORE): $(DFG_STORE_OBJS)
-	$(CCX) $(CCXFLAGS) $(DFG_STORE_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
+	$(CCX) $(CCXFLAGS) $(DFG_STORE_OBJS) $(EVPATH_LIB_DIRS) $(PYTHON_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS) \
+    $(PYTHON_LIBS)
 
 $(DFG_MASTER): $(DFG_MASTER_OBJS)
-	$(CCX) $(CCXFLAGS) $(DFG_MASTER_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
+	$(CCX) $(CCXFLAGS) $(DFG_MASTER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS) \
+    $(REDIS_LIBS) $(PYTHON_LIBS)
 
 $(FS_CLIENT): $(FS_CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(FS_CLIENT_OBJS) $(EVPATH_LIB_DIRS) $(PYTHON_LIB_DIRS) $(REDIS_LIB_DIRS) \

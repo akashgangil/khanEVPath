@@ -10,13 +10,56 @@
 #include "cfgparser.h"
 #include "log.h"
 #include "khan_ffs.h"
+#include "khan.h"
 #include "measurements.h"
+#include "database.h"
 #include "readConfig.h"
 
-struct timeval start,end;
 extern struct dfg_unit test_dfg;
 
 std::vector<stone_struct> stone_holder;
+
+std::vector < std::string > servers;
+std::vector < std::string > server_ids;
+
+std::string this_server;
+std::string this_server_id;
+
+/* Init the database values.  Return 0 on failure, 1 on success */
+int init_database_values(simple_rec & data)
+{
+    std::string original_fp;
+    std::string shared_fn;
+    char exp_id_str[10];
+
+    if (sprintf(exp_id_str, "%d", data.exp_id) <= 0)
+    {
+        log_err("Copy of file id string failed.");
+        return 0;
+    }
+
+    original_fp = data.file_path; 
+    shared_fn = "/dev/shm/" + original_fp.substr(49, strlen(data.file_path) - 49);
+
+    log_info("Extract attributed for %s", shared_fn.c_str());
+    std::string ext = strrchr(original_fp.c_str(),'.')+1;
+    std::string filename=strrchr(original_fp.c_str(),'/')+1;
+
+    std::string fileid = database_setval("null","name",filename);
+    if(!fileid.compare("fail"))
+    {
+        log_err("Failure to set filename value in database");
+        return 0;
+    }
+    data.db_id = strdup(fileid.c_str());
+    //test1 and test2 are non-descript here, we need to ask Akash about there purpose
+    database_setval(fileid,"ext",ext);
+    database_setval(fileid,"server","test1");
+    database_setval(fileid,"location","test2");
+    database_setval(fileid,"file_path", original_fp);
+    database_setval(fileid,"experiment_id", exp_id_str);
+    return 1;
+}
 
 void usage()
 {
@@ -258,11 +301,6 @@ int main(int argc, char *argv[])
     EVclient master_client;
     EVclient_sources source_capabilities;
 
-    std::vector < std::string > servers;
-    std::vector < std::string > server_ids;
-
-    std::string this_server;
-    std::string this_server_id;
 
 
     source_handle = EVcreate_submit_handle(test_dfg.cm, -1, simple_format_list);
@@ -277,20 +315,29 @@ int main(int argc, char *argv[])
       exit(1);
     }
 
-  
-    simple_rec data;
+    /* Setting up the options and stuff, before sending anything */
+    std::string store_filename="stores.txt"; /* Default */
+    int port = 6379;
 
-    std::string store_filename="stores.txt";
+    int opt;
+    std::string host = "localhost";
+    while ((opt = getopt (argc, argv, "p:s:h:")) != -1)
+    {
+      switch (opt)
+      {
+        case 'p':
+          port = atoi(optarg);
+          break;
 
-    /*int opt;
-    while((opt = getopt(argc, argv, "s:")) != -1){
-      switch(opt){ 
         case 's':
           store_filename = optarg;
           break;
 
+        case 'h':
+          host = optarg;
+          break;
       }
-     }*/
+    }
 
     FILE* stores = fopen(store_filename.c_str(), "r");
     char buffer[100];
@@ -298,18 +345,27 @@ int main(int argc, char *argv[])
     fscanf(stores, "%s\n", buffer);
     this_server_id = buffer;
     while(fscanf(stores, "%s %s\n", buffer, buffer2)!=EOF) {
-      if(strcmp(buffer,"cloud")==0) {
-        std::string module = buffer2;
-        module = "cloud." + module;
-        //cloud_interface = PyImport_ImportModule(module.c_str());
-      }   
       servers.push_back(buffer);
       server_ids.push_back(buffer2);
       if(this_server_id == buffer2) {
         this_server = buffer;
-      }   
+      } 
     }
     fclose(stores);
+
+    /* Initialization of Khan */
+    arg_struct khan_args;
+    khan_args.mnt_dir = argv[1];
+    khan_args.servers = servers;
+    khan_args.server_ids = server_ids;
+    khan_args.port = port;
+    khan_args.host = host;
+
+    initializing_khan((void*)&khan_args);
+    log_info("Initialized Khan");
+
+    /* Here's where we set up and send the data */
+    simple_rec data;
 
     std::string pattern = servers[0] + "/*";
     glob_t files;
@@ -347,7 +403,17 @@ int main(int argc, char *argv[])
         if ((data.file_buf = (char*)mmap (0, statbuf.st_size, PROT_READ, MAP_PRIVATE, fdin, 0))
             == (caddr_t) -1)
           perror ("mmap error for input");
-      
+
+        /* Adding in code here to ensure that the event gets setup in Redis correctly before it gets sent out */
+
+        std::string original_fp (data.file_path);
+        std::string shared_fn = "/dev/shm/" + original_fp.substr(49, strlen(data.file_path) - 49);
+        if(!init_database_values(data))
+        {
+            log_err("Error in initializing database values for %s", data.file_path);
+            exit(1);
+        }
+
         EVsubmit(source_handle, &data, NULL);
 
         if (munmap(data.file_buf, statbuf.st_size) == -1) {

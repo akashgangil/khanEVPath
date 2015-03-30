@@ -15,8 +15,8 @@
 #include "measurements.h"
 #include "fileprocessor.h"
 
-extern struct stopwatch_t* sw;
-extern FILE* mts_file;
+//extern struct stopwatch_t* sw;
+//extern FILE* mts_file;
 
 static int execute_once = 0;
 
@@ -100,8 +100,8 @@ std::string call_pyfunc(std::string func_name, PyObject *pInstance,
 }
 
 void process_file(std::string server, std::string fileid, std::string file_path) {
-  long double processing_time = 0;
-  long double database_time = 0;
+  //long double processing_time = 0;
+  //long double database_time = 0;
   log_info("Inside process file");
   std::string file = database_getval(fileid, "name");
   std::string ext = database_getval(fileid, "ext");
@@ -139,23 +139,23 @@ void process_file(std::string server, std::string fileid, std::string file_path)
                 continue;
               }
 
-              stopwatch_start(sw);
+              //stopwatch_start(sw);
               std::string res =  call_pyfunc(token, pInstance, "", "", "");
-              stopwatch_stop(sw);
+              //stopwatch_stop(sw);
 //              fprintf(mts_file, "ProcessFilePython:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
-              processing_time += stopwatch_elapsed(sw);
+              //processing_time += stopwatch_elapsed(sw);
               log_info("Token: %s Result: %s", token.c_str(), res.c_str());
 
-              stopwatch_start(sw);
+              //stopwatch_start(sw);
               database_setval(fileid, token , res.c_str());
-              stopwatch_stop(sw);
-              database_time += stopwatch_elapsed(sw);
+              //stopwatch_stop(sw);
+              //database_time += stopwatch_elapsed(sw);
 //            fprintf(mts_file, "ProcessFileDatabase:%s,%Lf,secs\n", token.c_str(), stopwatch_elapsed(sw));
             }
           }
 
-          fprintf(mts_file, "ProcessFileDatabaseTime:%s,%Lf,secs\n", token.c_str(), database_time);
-          fprintf(mts_file, "ProcessFileProcessingTime:%s,%Lf,secs\n", token.c_str(), processing_time);
+          //fprintf(mts_file, "ProcessFileDatabaseTime:%s,%Lf,secs\n", token.c_str(), database_time);
+          //fprintf(mts_file, "ProcessFileProcessingTime:%s,%Lf,secs\n", token.c_str(), processing_time);
           
           process_statistics(4, fileid, database_getval(fileid, "dbuffer1"), database_getval(fileid, "dmask1"));
           std::string destroy = "Destroy";
@@ -169,7 +169,8 @@ void process_file(std::string server, std::string fileid, std::string file_path)
   }
 
 }
-
+// Here the first file_path is the shared memory file_path and the second is the 
+// one inside the event.
 void extract_attr_init(std::string file_path, int exp_id, std::string filepath) {
 
   char exp_id_str[10];
@@ -270,7 +271,7 @@ void process_analytics_pipeline(std::string cwd) {
 
 void process_transducers(std::string server) {
 
-  stopwatch_start(sw);
+  //stopwatch_start(sw);
   if(server == "cloud") {
     return;
   }
@@ -312,15 +313,16 @@ void process_transducers(std::string server) {
       ss >> attr;
       attr=trim(attr);
       database_setval(ext,"attrs",attr);
+      // Doesn't this rewrite things?
       database_setval("plugins", script_name, attr);
       getline(transducers_file,line);
       firstchar=line.c_str();
     }
   }
   transducers_file.close();
-  stopwatch_stop(sw);
-  fprintf(mts_file, "ProcessTransducers,%Lg,secs\n", stopwatch_elapsed(sw));
-  fsync(fileno(mts_file));
+  //stopwatch_stop(sw);
+  //fprintf(mts_file, "ProcessTransducers,%Lg,secs\n", stopwatch_elapsed(sw));
+  //fsync(fileno(mts_file));
   process_analytics_pipeline(cwd_path); 
 }
 

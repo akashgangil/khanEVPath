@@ -17,8 +17,8 @@
 #include "measurements.h"
 #include "utils.h"
 
-extern struct stopwatch_t* sw;
-extern FILE* mts_file;
+//extern struct stopwatch_t* sw;
+//extern FILE* mts_file;
 
 std::string primary_attribute = "";
 

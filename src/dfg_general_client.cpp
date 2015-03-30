@@ -3,17 +3,77 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 #include "evpath.h"
 #include "ev_dfg.h"
 #include "dfg_functions.h"
 #include "khan_ffs.h"
 #include "readConfig.h"
+#include "Python.h"
 
 //extern FMField simple_field_list[];
 //extern FMStructDescRec simple_format_list[]; 
 
 EVclient test_client;
 EVsource * source_handles;
+
+/* Used for creating the recursive subdirectories */ 
+static void _mkdir(const char *dir) {
+  char tmp[1000];
+  char *p = NULL;
+  size_t len;
+
+  snprintf(tmp, sizeof(tmp),"%s",dir);
+  len = strlen(tmp);
+  if(tmp[len - 1] == '/')
+    tmp[len - 1] = 0;
+  for(p = tmp + 1; *p; p++)
+    if(*p == '/') {
+      *p = 0;
+      mkdir(tmp, S_IRWXU);
+      *p = '/';
+    }
+  mkdir(tmp, S_IRWXU);
+}
+
+/* Set's up a shared memory location for the python files
+   to pull their information from */
+void file_receive(simple_rec_ptr event){
+
+  if(event) {
+    log_info("file_path %s", event->file_path);
+    log_info("file_buf_len %ld", event->file_buf_len);
+  }
+  
+  // FIXME:Need to make a more dynamic way of doing this, rather than hard
+  // coding this in the future.
+  std::string filepath (event->file_path);
+  //49 is the length of the server name, the path name up to "data"
+  //10 is the length of the im7 file name
+  std::string dir_name = filepath.substr(49, strlen(event->file_path) - 59);
+  std::string file_name = "/dev/shm/" + filepath.substr(49, strlen(event->file_path) - 49);
+
+  log_info("Dir name %s", dir_name.c_str());
+
+  _mkdir(("/dev/shm/" + dir_name).c_str());
+
+  if(event->file_buf != NULL) {
+
+    FILE* pFile = fopen(file_name.c_str(), "wb");
+
+    if (pFile){
+      size_t w = fwrite(event->file_buf, 1, event->file_buf_len, pFile);
+      log_info("Wrote to file %zu", w );
+      fsync(fileno(pFile));
+      fclose(pFile);
+    }
+    else{
+      log_err("Something wrong writing to file");
+    }
+  }
+  // Process attribute for python
+
+}
 
 static int 
 python_general_handler(CManager cm, void *vevent, void *client_data, attr_list attrs)
@@ -29,6 +89,8 @@ python_general_handler(CManager cm, void *vevent, void *client_data, attr_list a
     }
     else
         log_info("No active client source registered");
+
+    file_receive(event);
     return 1;
 }
 
@@ -159,6 +221,18 @@ int main(int argc, char **argv)
     test_client = EVclient_assoc(cm, temp_ptr, master_address, source_capabilities, sink_capabilities);
     free(temp_ptr);
     temp_ptr = NULL;
+
+
+    /* Set the python to the path for later processing */
+    Py_SetProgramName(argv[2]);  /* optional but recommended */
+    Py_Initialize();
+    PyObject *sys = PyImport_ImportModule("sys");
+    PyObject *path = PyObject_GetAttrString(sys, "path");
+    char cwd[1024];
+    std::string py = "/PyScripts";
+    std::string pyscripts_path = strdup(getcwd(cwd, sizeof(cwd))) + py;
+    PyList_Append(path, PyString_FromString(pyscripts_path.c_str()));
+    PySys_SetObject("path", path);
 
 	if (EVclient_ready_wait(test_client) != 1) {
 	/* dfg initialization failed! */

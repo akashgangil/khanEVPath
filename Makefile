@@ -11,41 +11,23 @@ SERVER_SRCS  = $(SRCDIR)/khan.cpp \
                $(SRCDIR)/database.cpp \
                $(SRCDIR)/fileprocessor.cpp \
                $(SRCDIR)/threadpool.c \
-               $(SRCDIR)/sink.cpp \
-							 $(SRCDIR)/cloudupload_v1.c \
-							 $(SRCDIR)/cloudupload_supplement.c \
 							 $(SRCDIR)/stopwatch.cpp \
 							 $(SRCDIR)/measurements.cpp \
 							 $(SRCDIR)/dfg_functions.cpp
 
-SERVER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SERVER_SRCS))
-
-CLIENT_SRCS  = $(SRCDIR)/source.cpp \
-							 $(SRCDIR)/dfg_functions.cpp
-CLIENT_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CLIENT_SRCS))
-
-DFG_STORE_SRCS = $(SRCDIR)/dfg_general_client.cpp \
-							$(SRCDIR)/dfg_functions.cpp \
+DFG_STORE_SRCS = $(SERVER_SRCS) \
+                    $(SRCDIR)/dfg_general_client.cpp \
                             $(SRCDIR)/readConfig.cpp \
                             $(SRCDIR)/cfgparser.cpp \
-                            $(SRCDIR)/configwrapper.cpp
+                            $(SRCDIR)/configwrapper.cpp 
+
 DFG_STORE_OBJS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_STORE_SRCS))
 
-DFG_MASTER_SRCS = $(SRCDIR)/dfg_master.cpp \
-				  $(SRCDIR)/dfg_functions.cpp \
+DFG_MASTER_SRCS = $(SERVER_SRCS) \
+                  $(SRCDIR)/dfg_master.cpp \
                   $(SRCDIR)/cfgparser.cpp \
                   $(SRCDIR)/configwrapper.cpp \
-                  $(SRCDIR)/readConfig.cpp \
-                  $(SRCDIR)/khan.cpp \
-							 $(SRCDIR)/fuse_helper.cpp \
-							 $(SRCDIR)/data_analytics.cpp \
-							 $(SRCDIR)/localizations.cpp \
-							 $(SRCDIR)/redis.cpp  \
-               $(SRCDIR)/utils.cpp \
-               $(SRCDIR)/database.cpp \
-               $(SRCDIR)/fileprocessor.cpp \
-			   $(SRCDIR)/stopwatch.cpp \
-               $(SRCDIR)/measurements.cpp 
+                  $(SRCDIR)/readConfig.cpp 
 
 DFG_MASTER_OBJS  = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(DFG_MASTER_SRCS))
 
@@ -85,13 +67,11 @@ CURL_LIBS = -lcurl
 
 FUSE_LIBS = `pkg-config fuse --cflags --libs`
 
-SERVER = net_recv
-CLIENT = net_send
 DFG_MASTER = dfg_master
 DFG_STORE = dfg_general_client
 FS_CLIENT = fs_client
 
-all: builddir bindir $(SERVER) $(CLIENT) $(DFG_STORE) $(DFG_MASTER) $(FS_CLIENT)
+all: builddir bindir $(DFG_STORE) $(DFG_MASTER) $(FS_CLIENT)
   
 builddir:
 	mkdir -p $(OBJDIR)
@@ -103,16 +83,13 @@ $(SERVER): $(SERVER_OBJS)
 	$(CCX) $(SERVER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) \
   -o $(BINDIR)/$@ $(EVPATH_LIBS) $(PYTHON_LIBS) $(REDIS_LIBS) $(PTHREAD_LIBS) $(CURL_LIBS)
 
-$(CLIENT): $(CLIENT_OBJS)
-	$(CCX) $(CCXFLAGS) $(CLIENT_OBJS) $(EVPATH_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS)
-
 $(DFG_STORE): $(DFG_STORE_OBJS)
-	$(CCX) $(CCXFLAGS) $(DFG_STORE_OBJS) $(EVPATH_LIB_DIRS) $(PYTHON_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS) \
-    $(PYTHON_LIBS)
+	$(CCX) $(CCXFLAGS) $(DFG_STORE_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS) \
+    $(REDIS_LIBS) $(PYTHON_LIBS) $(PTHREAD_LIBS) $(CURL_LIBS)
 
 $(DFG_MASTER): $(DFG_MASTER_OBJS)
 	$(CCX) $(CCXFLAGS) $(DFG_MASTER_OBJS) $(EVPATH_LIB_DIRS) $(REDIS_LIB_DIRS) $(PYTHON_LIB_DIRS) -o $(BINDIR)/$@ $(EVPATH_LIBS) \
-    $(REDIS_LIBS) $(PYTHON_LIBS)
+    $(REDIS_LIBS) $(PYTHON_LIBS) $(PTHREAD_LIBS) $(CURL_LIBS)
 
 $(FS_CLIENT): $(FS_CLIENT_OBJS)
 	$(CCX) $(CCXFLAGS) $(FS_CLIENT_OBJS) $(EVPATH_LIB_DIRS) $(PYTHON_LIB_DIRS) $(REDIS_LIB_DIRS) \

@@ -15,4 +15,6 @@ int config_read_incoming(const ConfigParser_t & cfg, std::string stone_section, 
 
 int config_read_code(const ConfigParser_t & cfg, stone_struct & stone);
 
+int config_read_script_name(const ConfigParser_t & cfg, std::string stone_section, std::string & script_name);
 
+int config_read_method_name(const ConfigParser_t & cfg, std::string stone_section, std::string & method_name);

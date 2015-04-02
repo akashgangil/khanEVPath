@@ -48,16 +48,29 @@ int config_read_incoming(const ConfigParser_t & cfg, std::string stone_section, 
 {
     if(!cfg.getValue(stone_section, "incoming", &incoming_list))
     {
-        log_err("Faliure to return correct incoming list from %s", stone_section.c_str());
+        log_err("Failure to return correct incoming list from %s", stone_section.c_str());
         return 0;
     }
     return 1;
 }
 
 
-int config_read_code(const ConfigParser_t & cfg, stone_struct & stone)
+int config_read_script_name(const ConfigParser_t & cfg, std::string stone_section, std::string & script_name)
 {
+    if(!cfg.getValue(stone_section, "script", &script_name))
+    {
+        log_err("Failure to return correct script name from %s", stone_section.c_str());
+        return 0;
+    }
     return 1;
-
 }
 
+int config_read_method_name(const ConfigParser_t & cfg, std::string stone_section, std::string & method_name)
+{
+    if(!cfg.getValue(stone_section, "method", &method_name))
+    {
+        log_err("Failure to return correct method name from %s", stone_section.c_str());
+        return 0;
+    }
+    return 1;
+}

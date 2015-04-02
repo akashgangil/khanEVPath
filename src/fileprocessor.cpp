@@ -99,6 +99,36 @@ std::string call_pyfunc(std::string func_name, PyObject *pInstance,
   return result;
 }
 
+int process_python_code(std::string py_script, std::string py_function, std::string file_path, char * db_id)
+{
+  log_info("Processing file %s with method %s", py_script.c_str(), py_function.c_str());
+
+  if(!py_script.compare("null"))
+  {
+    log_err("Error: py_script name was null");
+    return 0;
+  }
+
+  //Get the database file_id
+
+  init_python_processing(py_script);
+  PyObject *pFile, *pArgs, *pInstance;
+  pFile = PyString_FromString(file_path.c_str());
+  pArgs = PyTuple_New(1);
+  PyTuple_SetItem(pArgs, 0, pFile);
+  pInstance = PyObject_CallObject(pClass, pArgs);
+  
+  std::string res = call_pyfunc(py_function, pInstance, "", "", "");
+  res = database_setval(db_id, py_function, res);
+  if(!res.compare("fail"))
+  {
+      log_err("Failed to insert into database value");
+      return 0;
+  }
+  return 1;
+}
+
+
 void process_file(std::string server, std::string fileid, std::string file_path) {
   //long double processing_time = 0;
   //long double database_time = 0;
@@ -243,7 +273,7 @@ void process_statistics(int arg, std::string file_id, std::string dbuffer, std::
   for(std::vector<std::string>::iterator it = f_list.begin(); it != f_list.end(); ++it)
     (*f_map[*it])(arg, file_id, dbuffer, dmask);
 }  
-
+/*
 void process_analytics_pipeline(std::string cwd) {
   f_map["RWCA"] = &RWCA;
   std::string script_name, line;
@@ -268,6 +298,27 @@ void process_analytics_pipeline(std::string cwd) {
   }
   transducers_file.close();
 }
+*/
+
+/* Set the initial attrs for every type found in the config file */
+void initialize_attrs_for_data_types(const std::vector<std::string> & types)
+{
+
+  for(std::vector<std::string>::const_iterator I = types.begin(), E = types.end(); I != E; ++I)
+  {
+
+    database_setval("allfiles", "types", *I);
+    database_setval(*I, "attrs", "name");
+    database_setval(*I, "attrs", "tags");
+    database_setval(*I, "attrs", "location");
+    database_setval(*I, "attrs", "ext");
+    database_setval(*I, "attrs", "experiment_id");
+    database_setval(*I, "attrs", "file_path");
+    log_info("Initialized the attribute values for %s", (*I).c_str());
+
+  }
+}
+
 
 void process_transducers(std::string server) {
 
@@ -286,6 +337,7 @@ void process_transducers(std::string server) {
     getline(transducers_file, script_name);
     getline(transducers_file, file_type);
     database_setval("allfiles","types",file_type);
+    /* Does this write over the attrs over and over again? */
     database_setval(file_type, "attrs", "name");
     database_setval(file_type, "attrs", "tags");
     database_setval(file_type, "attrs", "location");
@@ -323,6 +375,6 @@ void process_transducers(std::string server) {
   //stopwatch_stop(sw);
   //fprintf(mts_file, "ProcessTransducers,%Lg,secs\n", stopwatch_elapsed(sw));
   //fsync(fileno(mts_file));
-  process_analytics_pipeline(cwd_path); 
+  //process_analytics_pipeline(cwd_path); 
 }
 

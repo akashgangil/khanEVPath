@@ -24,6 +24,15 @@ std::string primary_attribute = "";
 
 std::string mountpoint;
 
+void init_database_from_client(std::string hostname, int port)
+{
+    if(!init_database(hostname, port))
+    {
+        log_err("Error setting connecting to the database from the client");
+        exit(1);
+    }
+}
+
   void *
 initializing_khan (void* khan_args)
 {
@@ -67,16 +76,18 @@ initializing_khan (void* khan_args)
   log_info("Set database setup value to true and setup the database");
   database_setval ("setup", "value", "true");
 
-  /* load metadata associatons */
+  /* load metadata associatons 
   for (unsigned i = 0; i < args->servers.size (); i++)
   {
     process_transducers (args->servers.at (i));
   }
+    */
+  // The above is done elsewhere now after khan initialization
 
   /* load metadata for each file on each server */
-  std::string types = database_getval ("allfiles", "types");
+  //std::string types = database_getval ("allfiles", "types");
  
-  log_info("Type to look for %s", types.c_str());
+  //log_info("Type to look for %s", types.c_str());
 
   //analytics ();
   

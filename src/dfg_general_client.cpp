@@ -8,14 +8,18 @@
 #include "ev_dfg.h"
 #include "dfg_functions.h"
 #include "khan_ffs.h"
+#include "khan.h"
 #include "readConfig.h"
 #include "Python.h"
+#include "fileprocessor.h"
 
-//extern FMField simple_field_list[];
-//extern FMStructDescRec simple_format_list[]; 
 
 EVclient test_client;
 EVsource * source_handles;
+std::string script_name;
+std::string method_name;
+std::vector < std::string > servers;
+std::vector < std::string > server_ids;
 
 /* Used for creating the recursive subdirectories */ 
 static void _mkdir(const char *dir) {
@@ -71,7 +75,10 @@ void file_receive(simple_rec_ptr event){
       log_err("Something wrong writing to file");
     }
   }
+  char * database_id = event->db_id;
   // Process attribute for python
+  process_python_code(script_name, method_name, file_name, database_id);
+  unlink(file_name.c_str());
 
 }
 
@@ -109,6 +116,9 @@ int main(int argc, char **argv)
         printf("Usage: dfg_general_client config_file_name node_name\n");
         return 1;
     }
+
+    servers.push_back("nothing");
+    server_ids.push_back("nothing");
 
     std::string config_file_name = argv[1];
     std::string client_node_name = argv[2];
@@ -173,6 +183,17 @@ int main(int argc, char **argv)
             stone_types.push_back(PYTHON);
             handler_names.push_back(temp_handler_name_src);
             handler_names.push_back(temp_handler_name_sink);
+            if(!config_read_script_name(cfg_slave, *I, script_name))
+            {
+                log_err("Could not read script file name for %s", (*I).c_str());
+                exit(1);
+            }
+
+            if(!config_read_method_name(cfg_slave, *I, method_name))
+            {
+                log_err("Could not read method name for %s", (*I).c_str());
+                exit(1);
+            }
         }
         else
         {
@@ -234,15 +255,17 @@ int main(int argc, char **argv)
     PyList_Append(path, PyString_FromString(pyscripts_path.c_str()));
     PySys_SetObject("path", path);
 
+    /*Set up connection to redis */
+    std::string hostname = "localhost";
+    int port = 6379;
+    init_database_from_client(hostname, port);
+
 	if (EVclient_ready_wait(test_client) != 1) {
 	/* dfg initialization failed! */
 	exit(1);
     }
 
     
-
-
-
 
     /*! [Shutdown code] */
 	CMrun_network(cm);

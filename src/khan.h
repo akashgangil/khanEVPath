@@ -32,6 +32,8 @@ typedef struct{
   std::string host;
 } arg_struct;
 
+void init_database_from_client(std::string hostname, int port);
+
 void* initializing_khan(void* args);
       
 int khan_opendir(const char *c_path, struct fuse_file_info *fi);

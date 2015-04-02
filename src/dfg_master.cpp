@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "dfg_functions.h"
+#include "fileprocessor.h"
 #include "cfgparser.h"
 #include "log.h"
 #include "khan_ffs.h"
@@ -93,13 +94,6 @@ static int setupPythonStones(const ConfigParser_t & cfg, std::string prev_name,
       return 0; 
     }
 
-    /* Get the code snippits that the PyCode is supposed to run */
-    if(!config_read_code(cfg, py_sink))
-    {
-      log_err("Error reading the actual code somehow");
-      return 0;
-    }
-
     return 1;
 
 }
@@ -174,6 +168,7 @@ int main(int argc, char *argv[])
     usage();
   else
   {
+    std::vector<std::string> type_names;
     std::string config_file_name = argv[1]; 
 
     ConfigParser_t cfg;
@@ -251,13 +246,9 @@ int main(int argc, char *argv[])
           exit(1);
         }
 
-        /*Read the actual code, probably going to need to 
+        /*TODO:Read the actual code, probably going to need to 
           have a seperate code file for the COD code*/
-        if(!config_read_code(cfg, new_stone_struct))
-        {
-          log_err("Error reading the actual code somehow");
-          exit(1);
-        }
+        
 
         //Push-back here
         stone_holder.push_back(new_stone_struct);
@@ -279,8 +270,7 @@ int main(int argc, char *argv[])
 
       }
     }
-    /*TODO: Add in a master node default source stone known as entry here
-    */
+    // Master node entry stone added to the end of the vector
     stone_struct entry_stone_struct;
     entry_stone_struct.node_name = "master_node";
     entry_stone_struct.stone_name = "entry";
@@ -289,6 +279,7 @@ int main(int argc, char *argv[])
     stone_holder.push_back(entry_stone_struct);
 
     ++test_dfg.node_count;
+
 
     if(dfg_init_func())
     {
@@ -364,6 +355,11 @@ int main(int argc, char *argv[])
     initializing_khan((void*)&khan_args);
     log_info("Initialized Khan");
 
+    // Hardcode the im7 type as the only type for now
+    type_names.push_back("im7");
+    initialize_attrs_for_data_types(type_names);
+    
+
     /* Here's where we set up and send the data */
     simple_rec data;
 
@@ -405,9 +401,9 @@ int main(int argc, char *argv[])
           perror ("mmap error for input");
 
         /* Adding in code here to ensure that the event gets setup in Redis correctly before it gets sent out */
-
-        std::string original_fp (data.file_path);
-        std::string shared_fn = "/dev/shm/" + original_fp.substr(49, strlen(data.file_path) - 49);
+        //TODO:Delete the bottom two lines if I've compiled successfully without them
+        //std::string original_fp (data.file_path);
+        //std::string shared_fn = "/dev/shm/" + original_fp.substr(49, strlen(data.file_path) - 49);
         if(!init_database_values(data))
         {
             log_err("Error in initializing database values for %s", data.file_path);

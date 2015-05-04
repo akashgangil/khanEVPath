@@ -99,11 +99,14 @@ static int setupPythonStones(const ConfigParser_t & cfg, std::string prev_name,
 }
 
 
+
 void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, void * cur_unused2)
 {
     /*This code does not handle code in the stones yet */
     //TODO: Make it so we can have stones actually do stuff
     static int num_of_nodes = 0;
+    //We need this for the python lists
+    //static std::vector<std::string> node_names;
     ++num_of_nodes;
     if(num_of_nodes < test_dfg.node_count)
     {
@@ -154,6 +157,7 @@ void JoinHandlerFunc(EVmaster master, char * identifier, void * cur_unused1, voi
             }
         }
     }
+        
     // Realize the dfg hopefully
     EVdfg_realize(test_dfg.dfg);
 
@@ -287,10 +291,38 @@ int main(int argc, char *argv[])
       printf("DFG handler read...\n");
     }
 
+    /*EVsource * master_list_sources = (EVsource *) malloc(sizeof(EVsource) * temp_node_name_list.size());
     
+    for(unsigned int i = 0; i < temp_node_name_list.size(); ++i)
+    {
+        //Place the list stones into the list
+        stone_struct py_master_list_source;
+        py_master_list_source.node_name = "master_node";
+        py_master_list_source.stone_name = "to_" + temp_node_name_list[i];
+        py_master_list_source.src_sink_handler_name = py_master_list_source.stone_name + "_" + py_master_list_source.node_name;
+        py_master_list_source.stone_type = SOURCE;
+        stone_holder.push_back(py_master_list_source);
+
+        //Register the handler
+        master_list_sources[i] = EVcreate_submit_handle(test_dfg.cm, -1, python_format_list);
+        char * perm_ptr = strdup(py_master_list_source.src_sink_handler_name.c_str());
+        source_capabilities = EVclient_register_source(perm_ptr, master_list_sources[i]);
+        
+        stone_struct py_master_list_sink;
+        py_master_list_sink.node_name = temp_node_name_list[i];
+        py_master_list_sink.stone_name = "python_list";
+        py_master_list_sink.src_sink_handler_name = py_master_list_sink.stone_name + "_" + py_master_list_sink.node_name;
+        py_master_list_sink.incoming_stones.push_back(py_master_list_source.stone_name);
+        py_master_list_sink.stone_type = SINK;
+        stone_holder.push_back(py_master_list_sink);
+    }
+
+
+    */
+    
+    EVclient_sources source_capabilities;
     EVsource source_handle;
     EVclient master_client;
-    EVclient_sources source_capabilities;
 
 
 
@@ -303,8 +335,23 @@ int main(int argc, char *argv[])
 
     if (EVclient_ready_wait(master_client) != 1) {
       /* initialization failed! */
+      log_err("EVclient_ready_wait: FAILED!");
       exit(1);
     }
+    /*
+    python_list test_py_list;
+    test_py_list.dynamic_size = 4;
+    test_py_list.ordered_method_list[0] =  0;
+    test_py_list.ordered_method_list[1] =  1;
+    test_py_list.ordered_method_list[2] = 2;
+    test_py_list.ordered_method_list[3] = 3;
+    for(int i = 0; i < temp_node_name_list.size(); ++i)
+    {
+        EVsubmit(master_list_sources[i], &test_py_list, NULL);
+        printf("Submitted a python list...\n");
+
+    }
+    */
 
     /* Setting up the options and stuff, before sending anything */
     std::string store_filename="stores.txt"; /* Default */
@@ -409,6 +456,8 @@ int main(int argc, char *argv[])
             log_err("Error in initializing database values for %s", data.file_path);
             exit(1);
         }
+        //Set Metadata value to 0
+        data.meta_compare_py = 0;
 
         EVsubmit(source_handle, &data, NULL);
 
@@ -427,7 +476,6 @@ int main(int argc, char *argv[])
     globfree(&files);
 
     log_info("Shutdown evdfg");
-  
 
     CMrun_network(test_dfg.cm);     
   }  

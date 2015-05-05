@@ -15,7 +15,7 @@
 #include "Python.h"
 #include "fileprocessor.h"
 
-#define MAX_SOURCES 10
+#define MAX_SOURCES 20
 
 typedef struct _simple_stone_holder
 {
